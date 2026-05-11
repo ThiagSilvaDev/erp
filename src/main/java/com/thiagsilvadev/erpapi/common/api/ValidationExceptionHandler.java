@@ -1,0 +1,245 @@
+package com.thiagsilvadev.erpapi.common.api;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import jakarta.validation.ConstraintViolationException;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.method.ParameterErrors;
+import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingMatrixVariableException;
+import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingRequestCookieException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.MatrixVariable;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import com.thiagsilvadev.erpapi.common.exception.DomainValidationException;
+
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.MismatchedInputException;
+
+@RestControllerAdvice
+@Order(1)
+public class ValidationExceptionHandler {
+
+    private static final String UNKNOWN_PARAM = "unknown";
+
+    private final ProblemDetailFactory problemDetails;
+
+    public ValidationExceptionHandler(ProblemDetailFactory problemDetails) {
+        this.problemDetails = problemDetails;
+    }
+
+    @ExceptionHandler(DomainValidationException.class)
+    public ProblemDetail handleDomainValidationException(DomainValidationException ex) {
+        return problemDetails.create(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        List<InvalidParam> invalidParams = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> new InvalidParam(error.getField(), getErrorMessage(error)))
+                .toList();
+
+        return problemDetails.enrich(ex.getBody(), invalidParamsProperty(invalidParams));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String paramName = ex.getName();
+        String expectedType = Optional.ofNullable(ex.getRequiredType())
+                .map(Class::getSimpleName)
+                .orElse("valid type");
+
+        String errorMessage = String.format("must be of type %s", expectedType);
+
+        List<InvalidParam> invalidParams = List.of(new InvalidParam(paramName, errorMessage));
+
+        ProblemDetail problemDetail = problemDetails.create(HttpStatus.BAD_REQUEST, "Type mismatch for parameter.");
+
+        return problemDetails.enrich(problemDetail, invalidParamsProperty(invalidParams));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        if (ex.getCause() instanceof MismatchedInputException cause) {
+            var path = cause.getPath();
+            String name = path != null && !path.isEmpty() ? path.getLast().getPropertyName() : UNKNOWN_PARAM;
+
+            String reason;
+            if (cause instanceof InvalidFormatException formatException
+                    && formatException.getTargetType().isEnum()) {
+                String accepted = Arrays.stream(formatException.getTargetType().getEnumConstants())
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", "));
+                reason = "Accepted values are: " + accepted;
+            } else {
+                String targetType =
+                        cause.getTargetType() != null ? cause.getTargetType().getSimpleName() : "valid type";
+                reason = String.format("must be of type %s", targetType);
+            }
+
+            List<InvalidParam> invalidParams = List.of(new InvalidParam(name, reason));
+            ProblemDetail problemDetail = problemDetails.create(HttpStatus.BAD_REQUEST, "Malformed request body");
+            return problemDetails.enrich(problemDetail, invalidParamsProperty(invalidParams));
+        }
+
+        return problemDetails.create(HttpStatus.BAD_REQUEST, "Malformed request body");
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ProblemDetail handleConstraintViolation(ConstraintViolationException ex) {
+        List<InvalidParam> invalidParams = ex.getConstraintViolations().stream()
+                .map(error -> new InvalidParam(error.getPropertyPath().toString(), error.getMessage()))
+                .toList();
+
+        ProblemDetail problemDetail = problemDetails.create(HttpStatus.BAD_REQUEST, "Constraint violation");
+        return problemDetails.enrich(problemDetail, invalidParamsProperty(invalidParams));
+    }
+
+    @ExceptionHandler(ServletRequestBindingException.class)
+    public ProblemDetail handleServletRequestBinding(ServletRequestBindingException ex) {
+        InvalidParam invalidParam = resolveRequestBindingError(ex);
+        List<InvalidParam> invalidParams = List.of(invalidParam);
+        ProblemDetail problemDetail =
+                problemDetails.create(HttpStatus.BAD_REQUEST, "Missing required request component");
+        return problemDetails.enrich(problemDetail, invalidParamsProperty(invalidParams));
+    }
+
+    private InvalidParam resolveRequestBindingError(ServletRequestBindingException ex) {
+        return switch (ex) {
+            case MissingServletRequestParameterException e ->
+                new InvalidParam(
+                        e.getParameterName(),
+                        String.format("Required query parameter '%s' is missing", e.getParameterName()));
+            case MissingRequestHeaderException e ->
+                new InvalidParam(
+                        e.getHeaderName(), String.format("Required request header '%s' is missing", e.getHeaderName()));
+            case MissingRequestCookieException e ->
+                new InvalidParam(
+                        e.getCookieName(), String.format("Required cookie '%s' is missing", e.getCookieName()));
+            case MissingPathVariableException e ->
+                new InvalidParam(
+                        e.getVariableName(),
+                        String.format("Required path variable '%s' is missing", e.getVariableName()));
+            case MissingMatrixVariableException e ->
+                new InvalidParam(
+                        e.getVariableName(),
+                        String.format("Required matrix variable '%s' is missing", e.getVariableName()));
+            case UnsatisfiedServletRequestParameterException e ->
+                new InvalidParam("request parameters", e.getMessage());
+            default -> new InvalidParam("request", ex.getMessage());
+        };
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ProblemDetail handleHandlerMethodValidation(HandlerMethodValidationException ex) {
+        List<InvalidParam> invalidParams = new ArrayList<>();
+        ex.visitResults(new HandlerMethodValidationException.Visitor() {
+
+            private void extractSimpleErrors(@NonNull ParameterValidationResult result) {
+                String paramName =
+                        Objects.requireNonNullElse(result.getMethodParameter().getParameterName(), UNKNOWN_PARAM);
+
+                result.getResolvableErrors()
+                        .forEach(error -> invalidParams.add(new InvalidParam(paramName, getErrorMessage(error))));
+            }
+
+            private void extractComplexErrors(@NonNull ParameterErrors errors) {
+                errors.getFieldErrors()
+                        .forEach(fieldError -> invalidParams.add(
+                                new InvalidParam(fieldError.getField(), getErrorMessage(fieldError))));
+
+                errors.getGlobalErrors().forEach(globalError -> {
+                    String paramName = Objects.requireNonNullElse(
+                            errors.getMethodParameter().getParameterName(), UNKNOWN_PARAM);
+                    invalidParams.add(new InvalidParam(paramName, getErrorMessage(globalError)));
+                });
+            }
+
+            @Override
+            public void cookieValue(@NonNull CookieValue cookieValue, @NonNull ParameterValidationResult result) {
+                extractSimpleErrors(result);
+            }
+
+            @Override
+            public void matrixVariable(
+                    @NonNull MatrixVariable matrixVariable, @NonNull ParameterValidationResult result) {
+                extractSimpleErrors(result);
+            }
+
+            @Override
+            public void modelAttribute(@Nullable ModelAttribute modelAttribute, @NonNull ParameterErrors errors) {
+                extractComplexErrors(errors);
+            }
+
+            @Override
+            public void pathVariable(@NonNull PathVariable pathVariable, @NonNull ParameterValidationResult result) {
+                extractSimpleErrors(result);
+            }
+
+            @Override
+            public void requestBody(@NonNull RequestBody requestBody, @NonNull ParameterErrors errors) {
+                extractComplexErrors(errors);
+            }
+
+            @Override
+            public void requestHeader(@NonNull RequestHeader requestHeader, @NonNull ParameterValidationResult result) {
+                extractSimpleErrors(result);
+            }
+
+            @Override
+            public void requestParam(@Nullable RequestParam requestParam, @NonNull ParameterValidationResult result) {
+                extractSimpleErrors(result);
+            }
+
+            @Override
+            public void requestPart(@NonNull RequestPart requestPart, @NonNull ParameterErrors errors) {
+                extractComplexErrors(errors);
+            }
+
+            @Override
+            public void other(@NonNull ParameterValidationResult result) {
+                extractSimpleErrors(result);
+            }
+        });
+        return problemDetails.enrich(ex.getBody(), invalidParamsProperty(invalidParams));
+    }
+
+    private Map<String, Object> invalidParamsProperty(List<InvalidParam> invalidParams) {
+        return Map.of("invalid_params", invalidParams);
+    }
+
+    private String getErrorMessage(MessageSourceResolvable error) {
+        return error.getDefaultMessage() != null ? error.getDefaultMessage() : "invalid value";
+    }
+
+    private record InvalidParam(String name, String reason) {}
+}
