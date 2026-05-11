@@ -6,10 +6,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
-
-import com.thiagsilvadev.erpapi.common.exception.DomainValidationException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import com.thiagsilvadev.erpapi.common.exception.DomainValidationException;
 
 class DomainAssertTest {
 

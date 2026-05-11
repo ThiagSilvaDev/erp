@@ -1,8 +1,14 @@
 package com.thiagsilvadev.erpapi;
 
+import static org.mockito.Mockito.mock;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
+
+import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 
 @SpringBootTest(
         properties = {
@@ -18,4 +24,13 @@ class ErpApiApplicationTests {
 
     @Test
     void contextLoads() {}
+
+    @TestConfiguration
+    static class CompanyRepositoryTestConfiguration {
+
+        @Bean
+        CompanyRepository companyRepository() {
+            return mock(CompanyRepository.class);
+        }
+    }
 }

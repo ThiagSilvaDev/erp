@@ -4,12 +4,14 @@ import static com.thiagsilvadev.erpapi.support.ValueObjectAssertions.assertValue
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.thiagsilvadev.erpapi.common.exception.DomainValidationException;
 import java.util.function.Consumer;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import com.thiagsilvadev.erpapi.common.exception.DomainValidationException;
 
 class AddressTest {
 
@@ -38,25 +40,25 @@ class AddressTest {
 
     @ParameterizedTest
     @CsvSource({
-            "postalCode, CEP code is required",
-            "street, Street is required",
-            "number, Number is required",
-            "district, District is required",
-            "city, City is required",
-            "region, UF is required"
+        "postalCode, CEP code is required",
+        "street, Street is required",
+        "number, Number is required",
+        "district, District is required",
+        "city, City is required",
+        "region, UF is required"
     })
     void shouldRejectRequiredFields(String field, String expectedMessage) {
         assertThatThrownBy(() -> buildAddressWith(builder -> {
-            switch (field) {
-                case "postalCode" -> builder.postalCode(null);
-                case "street" -> builder.street(" ");
-                case "number" -> builder.number(" ");
-                case "district" -> builder.district(" ");
-                case "city" -> builder.city(" ");
-                case "region" -> builder.region(" ");
-                default -> throw new IllegalArgumentException("Unknown field: " + field);
-            }
-        }))
+                    switch (field) {
+                        case "postalCode" -> builder.postalCode(null);
+                        case "street" -> builder.street(" ");
+                        case "number" -> builder.number(" ");
+                        case "district" -> builder.district(" ");
+                        case "city" -> builder.city(" ");
+                        case "region" -> builder.region(" ");
+                        default -> throw new IllegalArgumentException("Unknown field: " + field);
+                    }
+                }))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessage(expectedMessage);
     }
@@ -77,25 +79,25 @@ class AddressTest {
 
     @ParameterizedTest
     @CsvSource({
-            "street, 151, Street must contain at most 150 characters",
-            "number, 21, Number must contain at most 20 characters",
-            "complement, 101, Complement must contain at most 100 characters",
-            "district, 101, District must contain at most 100 characters",
-            "city, 101, City must contain at most 100 characters"
+        "street, 151, Street must contain at most 150 characters",
+        "number, 21, Number must contain at most 20 characters",
+        "complement, 101, Complement must contain at most 100 characters",
+        "district, 101, District must contain at most 100 characters",
+        "city, 101, City must contain at most 100 characters"
     })
     void shouldRejectFieldsAboveMaximumLength(String field, int length, String expectedMessage) {
         String invalidText = textWithLength(length);
 
         assertThatThrownBy(() -> buildAddressWith(builder -> {
-            switch (field) {
-                case "street" -> builder.street(invalidText);
-                case "number" -> builder.number(invalidText);
-                case "complement" -> builder.complement(invalidText);
-                case "district" -> builder.district(invalidText);
-                case "city" -> builder.city(invalidText);
-                default -> throw new IllegalArgumentException("Unknown field: " + field);
-            }
-        }))
+                    switch (field) {
+                        case "street" -> builder.street(invalidText);
+                        case "number" -> builder.number(invalidText);
+                        case "complement" -> builder.complement(invalidText);
+                        case "district" -> builder.district(invalidText);
+                        case "city" -> builder.city(invalidText);
+                        default -> throw new IllegalArgumentException("Unknown field: " + field);
+                    }
+                }))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessage(expectedMessage);
     }
@@ -130,13 +132,13 @@ class AddressTest {
         String textWith31Characters = textWithLength(31);
         String textWith51Characters = textWithLength(51);
 
-        assertThatThrownBy(() -> buildAddressWith(builder ->
-                builder.country(Country.US).postalCode(textWith31Characters)))
+        assertThatThrownBy(() ->
+                        buildAddressWith(builder -> builder.country(Country.US).postalCode(textWith31Characters)))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessage("Postal code must contain at most 30 characters");
 
-        assertThatThrownBy(() -> buildAddressWith(builder ->
-                builder.country(Country.US).region(textWith51Characters)))
+        assertThatThrownBy(() ->
+                        buildAddressWith(builder -> builder.country(Country.US).region(textWith51Characters)))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessage("Region/state must contain at most 50 characters");
     }
