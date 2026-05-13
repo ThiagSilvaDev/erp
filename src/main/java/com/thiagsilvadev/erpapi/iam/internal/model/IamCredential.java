@@ -1,0 +1,102 @@
+package com.thiagsilvadev.erpapi.iam.internal.model;
+
+import java.util.Locale;
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+
+import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
+
+@Entity
+@Table(
+        name = "iam_credentials",
+        uniqueConstraints = {
+            @UniqueConstraint(name = "uk_iam_credential_user", columnNames = "user_id"),
+            @UniqueConstraint(name = "uk_iam_credential_email", columnNames = "email")
+        })
+public class IamCredential extends AbstractBaseEntity {
+
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private UUID userId;
+
+    @Column(nullable = false, updatable = false, length = 255)
+    private String email;
+
+    @Column(nullable = false, length = 120)
+    private String passwordHash;
+
+    @Column(nullable = false, length = 40)
+    private String role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CredentialStatus status = CredentialStatus.ACTIVE;
+
+    protected IamCredential() {}
+
+    private IamCredential(UUID userId, String email, String passwordHash, String role) {
+        this.userId = requireUserId(userId);
+        this.email = normalizeEmail(email);
+        this.passwordHash = requireText(passwordHash, "Password hash cannot be blank");
+        this.role = requireText(role, "Role cannot be blank").toUpperCase(Locale.ROOT);
+    }
+
+    public static IamCredential create(UUID userId, String email, String passwordHash, String role) {
+        return new IamCredential(userId, email, passwordHash, role);
+    }
+
+    public void activate() {
+        this.status = CredentialStatus.ACTIVE;
+    }
+
+    public void inactivate() {
+        this.status = CredentialStatus.INACTIVE;
+    }
+
+    public boolean isActive() {
+        return status == CredentialStatus.ACTIVE;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public CredentialStatus getStatus() {
+        return status;
+    }
+
+    public static String normalizeEmail(String email) {
+        return requireText(email, "Credential email cannot be blank").toLowerCase(Locale.ROOT);
+    }
+
+    private static UUID requireUserId(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("Credential user cannot be null");
+        }
+        return userId;
+    }
+
+    private static String requireText(String value, String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+        return value.trim();
+    }
+}
