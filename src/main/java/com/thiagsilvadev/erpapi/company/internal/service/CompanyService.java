@@ -3,58 +3,35 @@ package com.thiagsilvadev.erpapi.company.internal.service;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.model.Cnpj;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
-import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
-import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;
-import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyRequest;
-import com.thiagsilvadev.erpapi.company.internal.usecase.*;
+import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
+import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 
 @Service
 public class CompanyService implements CompanyFacade {
 
-    private final CreateCompanyUseCase createCompanyUseCase;
-    private final GetCompanyByIdUseCase getCompanyByIdUseCase;
-    private final ListCompaniesUseCase listCompaniesUseCase;
-    private final FindCompanySnapshotByIdUseCase findCompanySnapshotByIdUseCase;
-    private final FindCompanySnapshotByCnpjUseCase findCompanySnapshotByCnpjUseCase;
+    private final CompanyRepository companyRepository;
+    private final CompanyMapper companyMapper;
 
-    public CompanyService(
-            CreateCompanyUseCase createCompanyUseCase,
-            GetCompanyByIdUseCase getCompanyByIdUseCase,
-            ListCompaniesUseCase listCompaniesUseCase,
-            FindCompanySnapshotByIdUseCase findCompanySnapshotByIdUseCase,
-            FindCompanySnapshotByCnpjUseCase findCompanySnapshotByCnpjUseCase) {
-        this.createCompanyUseCase = createCompanyUseCase;
-        this.getCompanyByIdUseCase = getCompanyByIdUseCase;
-        this.listCompaniesUseCase = listCompaniesUseCase;
-        this.findCompanySnapshotByIdUseCase = findCompanySnapshotByIdUseCase;
-        this.findCompanySnapshotByCnpjUseCase = findCompanySnapshotByCnpjUseCase;
-    }
-
-    public CompanyResponse createCompany(CreateCompanyRequest request) {
-        return createCompanyUseCase.execute(request);
-    }
-
-    public CompanyResponse getCompanyById(UUID id) {
-        return getCompanyByIdUseCase.execute(id);
-    }
-
-    public Page<CompanyResponse> listCompanies(CompanySearchCriteria criteria, Pageable pageable) {
-        return listCompaniesUseCase.execute(criteria, pageable);
+    public CompanyService(CompanyRepository companyRepository, CompanyMapper companyMapper) {
+        this.companyRepository = companyRepository;
+        this.companyMapper = companyMapper;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<CompanySnapshot> findById(UUID id) {
-        return findCompanySnapshotByIdUseCase.execute(id);
+        return companyRepository.findById(id).map(companyMapper::toSnapshot);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<CompanySnapshot> findByCnpj(String cnpj) {
-        return findCompanySnapshotByCnpjUseCase.execute(cnpj);
+        return companyRepository.findByCnpj(Cnpj.create(cnpj)).map(companyMapper::toSnapshot);
     }
 }

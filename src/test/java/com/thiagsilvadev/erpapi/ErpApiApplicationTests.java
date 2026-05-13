@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
+import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 
 @SpringBootTest(
@@ -31,6 +33,16 @@ class ErpApiApplicationTests {
         @Bean
         CompanyRepository companyRepository() {
             return mock(CompanyRepository.class);
+        }
+
+        @Bean
+        CategoryRepository categoryRepository() {
+            return mock(CategoryRepository.class);
+        }
+
+        @Bean
+        ProductRepository productRepository() {
+            return mock(ProductRepository.class);
         }
     }
 }
