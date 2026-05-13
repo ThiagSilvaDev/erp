@@ -1,0 +1,34 @@
+meta {
+  name: Create Product
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/catalog/products
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "sku": "SKU-001",
+    "name": "Industrial Widget",
+    "description": "Standard catalog product",
+    "basePrice": {
+      "amount": 10.50,
+      "currencyCode": "BRL"
+    },
+    "categoryId": "{{categoryId}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body?.id) {
+    bru.setEnvVar("productId", res.body.id);
+  }
+}

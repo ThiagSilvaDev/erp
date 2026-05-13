@@ -1,0 +1,19 @@
+meta {
+  name: List Categories - Filtered
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/catalog/categories
+  body: none
+  auth: none
+}
+
+params:query {
+  code: RAW
+  name: raw
+  status: ACTIVE
+  page: 0
+  size: 20
+}

@@ -1,0 +1,11 @@
+meta {
+  name: Get Category By Id
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/catalog/categories/{{categoryId}}
+  body: none
+  auth: none
+}

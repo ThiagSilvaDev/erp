@@ -1,0 +1,20 @@
+meta {
+  name: List Companies - Filtered
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/company
+  body: none
+  auth: none
+}
+
+params:query {
+  type: FACTORY
+  status: ACTIVE
+  cnpj: 11222333000181
+  name: Acme
+  page: 0
+  size: 20
+}
