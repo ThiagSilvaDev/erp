@@ -7,8 +7,6 @@ import com.thiagsilvadev.erpapi.common.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.model.Contact;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
-import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningFacade;
-import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserResponse;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
@@ -22,19 +20,16 @@ public class CreateUserUseCase {
 
     private final UserRepository userRepository;
     private final CompanyFacade companyFacade;
-    private final CredentialProvisioningFacade credentialProvisioningFacade;
     private final UserMapper userMapper;
     private final UserEventPublisher eventPublisher;
 
     public CreateUserUseCase(
             UserRepository userRepository,
             CompanyFacade companyFacade,
-            CredentialProvisioningFacade credentialProvisioningFacade,
             UserMapper userMapper,
             UserEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.companyFacade = companyFacade;
-        this.credentialProvisioningFacade = credentialProvisioningFacade;
         this.userMapper = userMapper;
         this.eventPublisher = eventPublisher;
     }
@@ -53,13 +48,7 @@ public class CreateUserUseCase {
 
         User user = userMapper.toEntity(request, contact);
         User savedUser = userRepository.save(user);
-        credentialProvisioningFacade.provision(new CredentialProvisioningRequest(
-                savedUser.getId(),
-                savedUser.getContact().getEmail(),
-                request.password(),
-                savedUser.getRole().name()));
-
-        eventPublisher.userCreated(savedUser);
+        eventPublisher.userCreated(savedUser, request.password());
 
         return userMapper.toResponse(savedUser);
     }

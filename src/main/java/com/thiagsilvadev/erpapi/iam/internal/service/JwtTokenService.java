@@ -12,7 +12,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import com.thiagsilvadev.erpapi.iam.internal.config.IamJwtProperties;
-import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
+import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
 
 @Service
 public class JwtTokenService {
@@ -27,7 +27,7 @@ public class JwtTokenService {
         this.clock = clock;
     }
 
-    public IssuedToken issue(IamCredential credential) {
+    public IssuedToken issue(IamUserDetails principal) {
         Instant issuedAt = clock.instant();
         Instant expiresAt = issuedAt.plus(properties.getExpiration());
 
@@ -35,11 +35,10 @@ public class JwtTokenService {
                 .issuer(properties.getIssuer())
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
-                .subject(credential.getUserId().toString())
+                .subject(principal.getUserId().toString())
                 .id(UUID.randomUUID().toString())
-                .claim("email", credential.getEmail())
-                .claim("role", credential.getRole())
-                .claim("scope", "ROLE_" + credential.getRole())
+                .claim("email", principal.getEmail())
+                .claim("role", principal.getRole())
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();

@@ -6,12 +6,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +47,9 @@ class IamSecurityConfigurationTest {
 
     @Autowired
     private WebApplicationContext context;
+
+    @Autowired
+    private JwtEncoder jwtEncoder;
 
     private MockMvc mockMvc;
 
@@ -77,6 +88,34 @@ class IamSecurityConfigurationTest {
     void shouldAllowAdminApiWrites() throws Exception {
         mockMvc.perform(post("/api/v1/security-test").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldAllowAdminApiWritesWithIssuedBearerTokenRoleClaim() throws Exception {
+        mockMvc.perform(post("/api/v1/security-test")
+                        .header("Authorization", "Bearer " + tokenWithRole("ADMIN")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldRejectNonAdminApiWritesWithIssuedBearerTokenRoleClaim() throws Exception {
+        mockMvc.perform(post("/api/v1/security-test")
+                        .header("Authorization", "Bearer " + tokenWithRole("MANAGER")))
+                .andExpect(status().isForbidden());
+    }
+
+    private String tokenWithRole(String role) {
+        Instant issuedAt = Instant.now();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("erp-api")
+                .issuedAt(issuedAt)
+                .expiresAt(issuedAt.plusSeconds(3600))
+                .subject(UUID.randomUUID().toString())
+                .claim("email", "user@example.com")
+                .claim("role", role)
+                .build();
+        return jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
+                .getTokenValue();
     }
 
     @SpringBootApplication

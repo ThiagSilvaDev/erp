@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthUserResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.usecase.LoginUseCase;
@@ -33,7 +34,8 @@ class AuthControllerTest {
     void shouldLogin() throws Exception {
         UUID userId = UUID.randomUUID();
         when(loginUseCase.execute(any(LoginRequest.class)))
-                .thenReturn(new LoginResponse("jwt-token", "Bearer", 3600, userId, "ADMIN"));
+                .thenReturn(LoginResponse.bearer(
+                        "jwt-token", 3600, new AuthUserResponse(userId, "user@example.com", "ADMIN")));
 
         mockMvc.perform(
                         post("/api/v1/auth/login")
@@ -49,7 +51,8 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.accessToken").value("jwt-token"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(jsonPath("$.expiresIn").value(3600))
-                .andExpect(jsonPath("$.userId").value(userId.toString()))
-                .andExpect(jsonPath("$.role").value("ADMIN"));
+                .andExpect(jsonPath("$.user.id").value(userId.toString()))
+                .andExpect(jsonPath("$.user.email").value("user@example.com"))
+                .andExpect(jsonPath("$.user.role").value("ADMIN"));
     }
 }
