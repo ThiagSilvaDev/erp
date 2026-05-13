@@ -10,7 +10,7 @@ import com.thiagsilvadev.erpapi.user.internal.model.User;
 
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
 
-    boolean existsByContactEmail(String email);
+    boolean existsByContactEmailValue(String email);
 
-    Optional<User> findByContactEmail(String email);
+    Optional<User> findByContactEmailValue(String email);
 }

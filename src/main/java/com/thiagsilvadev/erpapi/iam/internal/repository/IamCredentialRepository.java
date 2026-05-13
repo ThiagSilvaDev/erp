@@ -11,7 +11,7 @@ public interface IamCredentialRepository extends JpaRepository<IamCredential, UU
 
     boolean existsByUserId(UUID userId);
 
-    boolean existsByEmail(String email);
+    boolean existsByEmailValue(String email);
 
-    Optional<IamCredential> findByEmail(String email);
+    Optional<IamCredential> findByEmailValue(String email);
 }

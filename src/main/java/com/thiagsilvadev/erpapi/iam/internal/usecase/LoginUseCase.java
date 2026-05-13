@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.model.Email;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.exception.InvalidCredentialsException;
@@ -31,7 +32,7 @@ public class LoginUseCase {
     @Transactional(readOnly = true)
     public LoginResponse execute(LoginRequest request) {
         IamCredential credential = credentialRepository
-                .findByEmail(IamCredential.normalizeEmail(request.email()))
+                .findByEmailValue(Email.create(request.email()).getValue())
                 .orElseThrow(InvalidCredentialsException::new);
 
         if (!credential.isActive() || !passwordEncoder.matches(request.password(), credential.getPasswordHash())) {

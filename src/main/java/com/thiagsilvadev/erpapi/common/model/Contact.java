@@ -1,21 +1,20 @@
 package com.thiagsilvadev.erpapi.common.model;
 
 import java.util.Objects;
-import java.util.regex.Pattern;
 
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 
 import com.thiagsilvadev.erpapi.common.validation.DomainAssert;
 
 @Embeddable
 public class Contact {
 
-    private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE);
-
-    @Column(length = 255, nullable = false)
-    private String email;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false, length = 255))
+    private Email email;
 
     @Column(length = 11)
     private String phone;
@@ -23,7 +22,7 @@ public class Contact {
     protected Contact() {}
 
     private Contact(String email, String phone) {
-        this.email = processEmail(email);
+        this.email = Email.create(email);
         this.phone = processPhone(phone);
     }
 
@@ -36,16 +35,7 @@ public class Contact {
     }
 
     public Contact changePhone(String newPhone) {
-        return new Contact(this.email, newPhone);
-    }
-
-    private static String processEmail(String rawEmail) {
-        String normalizedEmail = rawEmail == null ? null : rawEmail.trim().toLowerCase();
-
-        DomainAssert.notBlank(normalizedEmail, "Email is required");
-        DomainAssert.maxLength(normalizedEmail, 255, "Email must contain at most 255 characters");
-        DomainAssert.matchesPattern(normalizedEmail, EMAIL_PATTERN, "Invalid email format");
-        return normalizedEmail;
+        return new Contact(this.email.getValue(), newPhone);
     }
 
     private static String processPhone(String rawPhone) {
@@ -60,7 +50,7 @@ public class Contact {
     }
 
     public String getEmail() {
-        return email;
+        return email.getValue();
     }
 
     public String getPhone() {

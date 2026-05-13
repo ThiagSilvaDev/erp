@@ -43,7 +43,7 @@ public class CreateUserUseCase {
     public UserResponse execute(CreateUserRequest request) {
         Contact contact = Contact.create(request.email(), request.phone());
 
-        if (userRepository.existsByContactEmail(contact.getEmail())) {
+        if (userRepository.existsByContactEmailValue(contact.getEmail())) {
             throw new EmailAlreadyExistsException(contact.getEmail());
         }
 

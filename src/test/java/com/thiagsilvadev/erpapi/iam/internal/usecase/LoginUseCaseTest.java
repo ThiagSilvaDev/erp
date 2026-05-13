@@ -43,7 +43,7 @@ class LoginUseCaseTest {
     void shouldLoginAndReturnJwt() {
         UUID userId = UUID.randomUUID();
         IamCredential credential = IamCredential.create(userId, " user@example.com ", "hash", "ADMIN");
-        when(credentialRepository.findByEmail("user@example.com")).thenReturn(Optional.of(credential));
+        when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.of(credential));
         when(passwordEncoder.matches("secret123", "hash")).thenReturn(true);
         when(jwtTokenService.issue(credential)).thenReturn(new IssuedToken("jwt-token", 3600));
 
@@ -58,7 +58,7 @@ class LoginUseCaseTest {
 
     @Test
     void shouldRejectUnknownEmail() {
-        when(credentialRepository.findByEmail("user@example.com")).thenReturn(Optional.empty());
+        when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "secret123")))
                 .isInstanceOf(InvalidCredentialsException.class);
@@ -69,7 +69,7 @@ class LoginUseCaseTest {
     @Test
     void shouldRejectInvalidPassword() {
         IamCredential credential = IamCredential.create(UUID.randomUUID(), "user@example.com", "hash", "ADMIN");
-        when(credentialRepository.findByEmail("user@example.com")).thenReturn(Optional.of(credential));
+        when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.of(credential));
         when(passwordEncoder.matches("wrong", "hash")).thenReturn(false);
 
         assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "wrong")))
@@ -82,7 +82,7 @@ class LoginUseCaseTest {
     void shouldRejectInactiveCredential() {
         IamCredential credential = IamCredential.create(UUID.randomUUID(), "user@example.com", "hash", "ADMIN");
         credential.inactivate();
-        when(credentialRepository.findByEmail("user@example.com")).thenReturn(Optional.of(credential));
+        when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.of(credential));
 
         assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "secret123")))
                 .isInstanceOf(InvalidCredentialsException.class);

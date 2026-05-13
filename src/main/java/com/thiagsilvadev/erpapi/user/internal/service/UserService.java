@@ -33,6 +33,6 @@ public class UserService implements UserFacade {
     @Transactional(readOnly = true)
     public Optional<UserSnapshot> findByEmail(String email) {
         Contact contact = Contact.create(email, null);
-        return userRepository.findByContactEmail(contact.getEmail()).map(userMapper::toSnapshot);
+        return userRepository.findByContactEmailValue(contact.getEmail()).map(userMapper::toSnapshot);
     }
 }

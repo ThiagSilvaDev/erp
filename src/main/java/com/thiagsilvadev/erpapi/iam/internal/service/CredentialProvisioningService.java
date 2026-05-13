@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.model.Email;
 import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningFacade;
 import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.iam.internal.exception.CredentialAlreadyExistsException;
@@ -25,13 +26,13 @@ public class CredentialProvisioningService implements CredentialProvisioningFaca
     @Override
     @Transactional
     public void provision(CredentialProvisioningRequest request) {
-        String normalizedEmail = IamCredential.normalizeEmail(request.email());
+        String normalizedEmail = Email.create(request.email()).getValue();
 
         if (credentialRepository.existsByUserId(request.userId())) {
             throw new CredentialAlreadyExistsException("userId", request.userId());
         }
 
-        if (credentialRepository.existsByEmail(normalizedEmail)) {
+        if (credentialRepository.existsByEmailValue(normalizedEmail)) {
             throw new CredentialAlreadyExistsException("email", normalizedEmail);
         }
 

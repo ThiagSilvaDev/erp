@@ -32,7 +32,7 @@ public class User extends AbstractBaseEntity {
 
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name = "email", column = @Column(name = "email", nullable = false, length = 255)),
+        @AttributeOverride(name = "email.value", column = @Column(name = "email", nullable = false, length = 255)),
         @AttributeOverride(name = "phone", column = @Column(name = "phone", length = 11))
     })
     private Contact contact;

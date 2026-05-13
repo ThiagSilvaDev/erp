@@ -3,7 +3,9 @@ package com.thiagsilvadev.erpapi.iam.internal.model;
 import java.util.Locale;
 import java.util.UUID;
 
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.model.Email;
 
 @Entity
 @Table(
@@ -24,8 +27,11 @@ public class IamCredential extends AbstractBaseEntity {
     @Column(name = "user_id", nullable = false, updatable = false)
     private UUID userId;
 
-    @Column(nullable = false, updatable = false, length = 255)
-    private String email;
+    @Embedded
+    @AttributeOverride(
+            name = "value",
+            column = @Column(name = "email", nullable = false, updatable = false, length = 255))
+    private Email email;
 
     @Column(nullable = false, length = 120)
     private String passwordHash;
@@ -41,7 +47,7 @@ public class IamCredential extends AbstractBaseEntity {
 
     private IamCredential(UUID userId, String email, String passwordHash, String role) {
         this.userId = requireUserId(userId);
-        this.email = normalizeEmail(email);
+        this.email = Email.create(email);
         this.passwordHash = requireText(passwordHash, "Password hash cannot be blank");
         this.role = requireText(role, "Role cannot be blank").toUpperCase(Locale.ROOT);
     }
@@ -67,7 +73,7 @@ public class IamCredential extends AbstractBaseEntity {
     }
 
     public String getEmail() {
-        return email;
+        return email.getValue();
     }
 
     public String getPasswordHash() {
@@ -80,10 +86,6 @@ public class IamCredential extends AbstractBaseEntity {
 
     public CredentialStatus getStatus() {
         return status;
-    }
-
-    public static String normalizeEmail(String email) {
-        return requireText(email, "Credential email cannot be blank").toLowerCase(Locale.ROOT);
     }
 
     private static UUID requireUserId(UUID userId) {

@@ -38,7 +38,7 @@ class CredentialProvisioningServiceTest {
     void shouldCreateCredentialWithHashedPassword() {
         UUID userId = UUID.randomUUID();
         when(credentialRepository.existsByUserId(userId)).thenReturn(false);
-        when(credentialRepository.existsByEmail("user@example.com")).thenReturn(false);
+        when(credentialRepository.existsByEmailValue("user@example.com")).thenReturn(false);
         when(passwordEncoder.encode("secret123")).thenReturn("encoded-password");
 
         service.provision(new CredentialProvisioningRequest(userId, " User@Example.com ", "secret123", "admin"));
@@ -67,7 +67,7 @@ class CredentialProvisioningServiceTest {
     void shouldRejectDuplicatedEmailCredential() {
         UUID userId = UUID.randomUUID();
         when(credentialRepository.existsByUserId(userId)).thenReturn(false);
-        when(credentialRepository.existsByEmail("user@example.com")).thenReturn(true);
+        when(credentialRepository.existsByEmailValue("user@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> service.provision(
                         new CredentialProvisioningRequest(userId, "user@example.com", "secret123", "ADMIN")))

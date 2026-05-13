@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 
+import com.thiagsilvadev.erpapi.common.model.Email;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserSearchCriteria;
@@ -26,7 +27,7 @@ public class UserSpecification {
             if (email == null || email.isBlank()) {
                 return null;
             }
-            return cb.equal(root.get("contact").get("email"), normalizeEmail(email));
+            return cb.equal(root.get("contact").get("email").get("value"), normalizeEmail(email));
         };
     }
 
@@ -55,6 +56,6 @@ public class UserSpecification {
     }
 
     public static String normalizeEmail(String email) {
-        return email.trim().toLowerCase();
+        return Email.create(email).getValue();
     }
 }

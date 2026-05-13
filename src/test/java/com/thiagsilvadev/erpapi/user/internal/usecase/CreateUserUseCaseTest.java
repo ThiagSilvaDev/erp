@@ -48,7 +48,7 @@ class CreateUserUseCaseTest {
     @Test
     void shouldRejectDuplicatedEmail() {
         CreateUserRequest request = userRequest();
-        when(userRepository.existsByContactEmail("user@example.com")).thenReturn(true);
+        when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(EmailAlreadyExistsException.class);
 
@@ -59,7 +59,7 @@ class CreateUserUseCaseTest {
     @Test
     void shouldRejectMissingCompany() {
         CreateUserRequest request = userRequest();
-        when(userRepository.existsByContactEmail("user@example.com")).thenReturn(false);
+        when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
         when(companyFacade.findById(request.companyId())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ResourceNotFoundException.class);
