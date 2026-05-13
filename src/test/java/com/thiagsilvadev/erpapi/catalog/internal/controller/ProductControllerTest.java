@@ -26,6 +26,7 @@ import com.thiagsilvadev.erpapi.catalog.api.CategoryStatus;
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.CategoryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.CreateProductRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductSearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.CreateProductUseCase;
@@ -60,12 +61,22 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(
                                 """
-                                {"sku":"sku-1","name":"Product","basePrice":10.50,"categoryId":"%s"}
+                                {
+                                  "sku": "sku-1",
+                                  "name": "Product",
+                                  "basePrice": {
+                                    "amount": 10.50,
+                                    "currencyCode": "BRL"
+                                  },
+                                  "categoryId": "%s"
+                                }
                                 """
                                         .formatted(categoryId)))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "http://localhost/api/v1/catalog/products/" + id))
                 .andExpect(jsonPath("$.sku").value("SKU-1"))
+                .andExpect(jsonPath("$.basePrice.amount").value(10.50))
+                .andExpect(jsonPath("$.basePrice.currencyCode").value("BRL"))
                 .andExpect(jsonPath("$.category.code").value("RAW"));
     }
 
@@ -99,7 +110,7 @@ class ProductControllerTest {
                 "SKU-1",
                 "Product",
                 null,
-                new BigDecimal("10.50"),
+                new MoneyResponse(new BigDecimal("10.50"), "BRL"),
                 ProductStatus.ACTIVE,
                 new CategoryResponse(categoryId, "RAW", "Raw materials", null, CategoryStatus.ACTIVE));
     }
