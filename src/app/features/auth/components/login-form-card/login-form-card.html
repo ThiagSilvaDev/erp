@@ -1,11 +1,6 @@
 <nz-card class="login-card" nzTitle="Sign in">
   @if (errorMessage()) {
-    <nz-alert
-      nzType="error"
-      [nzMessage]="errorMessage()"
-      nzShowIcon
-      class="mb-4"
-    />
+    <nz-alert nzType="error" [nzMessage]="errorMessage()" nzShowIcon class="mb-4" />
   }
 
   <form nz-form [formGroup]="form" nzLayout="vertical" (ngSubmit)="submit()">

@@ -50,7 +50,12 @@ export class DashboardOverviewFacade {
               path: '/companies',
               icon: 'apartment',
             },
-            { label: 'Users', value: result.users.totalElements ?? 0, path: '/users', icon: 'team' },
+            {
+              label: 'Users',
+              value: result.users.totalElements ?? 0,
+              path: '/users',
+              icon: 'team',
+            },
             {
               label: 'Products',
               value: result.products.totalElements ?? 0,

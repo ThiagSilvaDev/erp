@@ -8,9 +8,7 @@
   min-height: 100vh;
   place-items: center;
   padding: 32px 16px;
-  background:
-    linear-gradient(135deg, rgba(47, 128, 237, 0.14), transparent 42%),
-    #eef2f7;
+  background: linear-gradient(135deg, rgba(47, 128, 237, 0.14), transparent 42%), #eef2f7;
 }
 
 .login-panel {

@@ -24,7 +24,9 @@ interface MenuItem {
 export class DashboardShell {
   readonly state = inject(DashboardShellStateService);
 
-  readonly primaryItems: MenuItem[] = [{ label: 'Dashboard', path: '/dashboard', icon: 'dashboard' }];
+  readonly primaryItems: MenuItem[] = [
+    { label: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
+  ];
   readonly organizationItems: MenuItem[] = [
     { label: 'Companies', path: '/companies', icon: 'apartment' },
     { label: 'Users', path: '/users', icon: 'team' },

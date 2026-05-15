@@ -1,9 +1,4 @@
-<nz-table
-  nzSize="middle"
-  [nzData]="rows()"
-  [nzLoading]="isLoading()"
-  [nzFrontPagination]="false"
->
+<nz-table nzSize="middle" [nzData]="rows()" [nzLoading]="isLoading()" [nzShowPagination]="false">
   <thead>
     <tr>
       @for (column of columns(); track column.key) {

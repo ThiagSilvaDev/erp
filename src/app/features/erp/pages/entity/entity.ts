@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -139,7 +146,10 @@ export class Entity {
 
     this.config()
       .getById(id)
-      .pipe(catchError(() => of(record)), takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        catchError(() => of(record)),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe((detail) => {
         this.selectedRecord.set(detail);
         this.isDetailOpen.set(true);
@@ -181,7 +191,8 @@ export class Entity {
           this.loadRows();
           this.openDetail(record);
         },
-        error: () => this.messages.error(`Unable to create ${this.config().title.toLowerCase()} record.`),
+        error: () =>
+          this.messages.error(`Unable to create ${this.config().title.toLowerCase()} record.`),
       });
   }
 
@@ -255,7 +266,13 @@ export class Entity {
     const partyFields: EntityField[] = [
       { key: 'name', label: 'Name', required: true },
       { key: 'document', label: 'Document', required: true },
-      { key: 'companyId', label: 'Company', required: true, type: 'select', optionsKey: 'companies' },
+      {
+        key: 'companyId',
+        label: 'Company',
+        required: true,
+        type: 'select',
+        optionsKey: 'companies',
+      },
       { key: 'email', label: 'Email', type: 'email' },
       { key: 'phone', label: 'Phone' },
       { key: 'street', label: 'Street' },
@@ -311,7 +328,12 @@ export class Entity {
         list: (criteria, page, size) =>
           this.companies
             .listCompanies({ criteria, pageable: { page, size } })
-            .pipe(map((response) => ({ content: response.content ?? [], totalElements: response.totalElements ?? 0 }))),
+            .pipe(
+              map((response) => ({
+                content: response.content ?? [],
+                totalElements: response.totalElements ?? 0,
+              })),
+            ),
         create: (value) =>
           this.companies.createCompany({
             legalName: text(value['legalName']),
@@ -364,13 +386,24 @@ export class Entity {
           { key: 'phone', label: 'Phone' },
           { key: 'birthDate', label: 'Birth date' },
           { key: 'role', label: 'Role', required: true, type: 'select' },
-          { key: 'companyId', label: 'Company', required: true, type: 'select', optionsKey: 'companies' },
+          {
+            key: 'companyId',
+            label: 'Company',
+            required: true,
+            type: 'select',
+            optionsKey: 'companies',
+          },
           { key: 'password', label: 'Password', required: true, type: 'password' },
         ],
         list: (criteria, page, size) =>
           this.users
             .listUsers({ criteria, pageable: { page, size } })
-            .pipe(map((response) => ({ content: response.content ?? [], totalElements: response.totalElements ?? 0 }))),
+            .pipe(
+              map((response) => ({
+                content: response.content ?? [],
+                totalElements: response.totalElements ?? 0,
+              })),
+            ),
         create: (value) =>
           this.users.createUser({
             firstName: text(value['firstName']),
@@ -411,7 +444,12 @@ export class Entity {
         list: (criteria, page, size) =>
           this.catalog
             .listCategories({ criteria, pageable: { page, size } })
-            .pipe(map((response) => ({ content: response.content ?? [], totalElements: response.totalElements ?? 0 }))),
+            .pipe(
+              map((response) => ({
+                content: response.content ?? [],
+                totalElements: response.totalElements ?? 0,
+              })),
+            ),
         create: (value) =>
           this.catalog.createCategory({
             code: text(value['code']),
@@ -450,12 +488,23 @@ export class Entity {
           { key: 'description', label: 'Description' },
           { key: 'amount', label: 'Base price', required: true, type: 'number' },
           { key: 'currencyCode', label: 'Currency', required: true },
-          { key: 'categoryId', label: 'Category', required: true, type: 'select', optionsKey: 'categories' },
+          {
+            key: 'categoryId',
+            label: 'Category',
+            required: true,
+            type: 'select',
+            optionsKey: 'categories',
+          },
         ],
         list: (criteria, page, size) =>
           this.catalog
             .listProducts({ criteria, pageable: { page, size } })
-            .pipe(map((response) => ({ content: response.content ?? [], totalElements: response.totalElements ?? 0 }))),
+            .pipe(
+              map((response) => ({
+                content: response.content ?? [],
+                totalElements: response.totalElements ?? 0,
+              })),
+            ),
         create: (value) =>
           this.catalog.createProduct({
             sku: text(value['sku']),
@@ -492,7 +541,12 @@ export class Entity {
         list: (criteria, page, size) =>
           this.customers
             .listCustomers({ criteria, pageable: { page, size } })
-            .pipe(map((response) => ({ content: response.content ?? [], totalElements: response.totalElements ?? 0 }))),
+            .pipe(
+              map((response) => ({
+                content: response.content ?? [],
+                totalElements: response.totalElements ?? 0,
+              })),
+            ),
         create: (value) =>
           this.customers.createCustomer({
             name: text(value['name']),
@@ -501,17 +555,18 @@ export class Entity {
             contact: text(value['email'])
               ? { email: text(value['email']), phone: text(value['phone']) || undefined }
               : undefined,
-            address: text(value['street']) || text(value['city']) || text(value['country'])
-              ? {
-                  street: text(value['street']),
-                  number: text(value['number']),
-                  district: text(value['district']),
-                  city: text(value['city']),
-                  region: text(value['region']),
-                  country: text(value['country']),
-                  postalCode: text(value['postalCode']),
-                }
-              : undefined,
+            address:
+              text(value['street']) || text(value['city']) || text(value['country'])
+                ? {
+                    street: text(value['street']),
+                    number: text(value['number']),
+                    district: text(value['district']),
+                    city: text(value['city']),
+                    region: text(value['region']),
+                    country: text(value['country']),
+                    postalCode: text(value['postalCode']),
+                  }
+                : undefined,
           }),
         getById: (id) => this.customers.getCustomerById(id),
       },
@@ -538,7 +593,12 @@ export class Entity {
         list: (criteria, page, size) =>
           this.suppliers
             .listSuppliers({ criteria, pageable: { page, size } })
-            .pipe(map((response) => ({ content: response.content ?? [], totalElements: response.totalElements ?? 0 }))),
+            .pipe(
+              map((response) => ({
+                content: response.content ?? [],
+                totalElements: response.totalElements ?? 0,
+              })),
+            ),
         create: (value) =>
           this.suppliers.createSupplier({
             name: text(value['name']),
@@ -547,17 +607,18 @@ export class Entity {
             contact: text(value['email'])
               ? { email: text(value['email']), phone: text(value['phone']) || undefined }
               : undefined,
-            address: text(value['street']) || text(value['city']) || text(value['country'])
-              ? {
-                  street: text(value['street']),
-                  number: text(value['number']),
-                  district: text(value['district']),
-                  city: text(value['city']),
-                  region: text(value['region']),
-                  country: text(value['country']),
-                  postalCode: text(value['postalCode']),
-                }
-              : undefined,
+            address:
+              text(value['street']) || text(value['city']) || text(value['country'])
+                ? {
+                    street: text(value['street']),
+                    number: text(value['number']),
+                    district: text(value['district']),
+                    city: text(value['city']),
+                    region: text(value['region']),
+                    country: text(value['country']),
+                    postalCode: text(value['postalCode']),
+                  }
+                : undefined,
           }),
         getById: (id) => this.suppliers.getSupplierById(id),
       },
@@ -579,14 +640,25 @@ export class Entity {
         searchFields: [],
         createFields: [
           { key: 'name', label: 'Name', required: true },
-          { key: 'customerId', label: 'Customer', required: true, type: 'select', optionsKey: 'customers' },
+          {
+            key: 'customerId',
+            label: 'Customer',
+            required: true,
+            type: 'select',
+            optionsKey: 'customers',
+          },
           { key: 'email', label: 'Email', required: true, type: 'email' },
           { key: 'phone', label: 'Phone' },
         ],
         list: (_criteria, page, size) =>
           this.contactPersons
             .listContactPersons({ pageable: { page, size } })
-            .pipe(map((response) => ({ content: response.content ?? [], totalElements: response.totalElements ?? 0 }))),
+            .pipe(
+              map((response) => ({
+                content: response.content ?? [],
+                totalElements: response.totalElements ?? 0,
+              })),
+            ),
         create: (value) =>
           this.contactPersons.createContactPerson({
             name: text(value['name']),

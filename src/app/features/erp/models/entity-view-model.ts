@@ -60,7 +60,11 @@ export interface EntityConfig {
   detailFields: EntityColumn[];
   searchFields: EntityField[];
   createFields: EntityField[];
-  list: (criteria: Record<string, string>, page: number, size: number) => Observable<EntityPageData>;
+  list: (
+    criteria: Record<string, string>,
+    page: number,
+    size: number,
+  ) => Observable<EntityPageData>;
   create: (value: Record<string, EntityFormValue>) => Observable<EntityRecord>;
   getById: (id: string) => Observable<EntityRecord>;
 }

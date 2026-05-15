@@ -3,7 +3,7 @@
     nzSize="middle"
     [nzData]="records()"
     [nzLoading]="isLoading()"
-    [nzFrontPagination]="false"
+    [nzShowPagination]="false"
   >
     <thead>
       <tr>
@@ -15,7 +15,9 @@
     <tbody>
       @for (record of records(); track record.module + record.name + record.detail) {
         <tr>
-          <td><a [routerLink]="record.path">{{ record.module }}</a></td>
+          <td>
+            <a [routerLink]="record.path">{{ record.module }}</a>
+          </td>
           <td>{{ record.name }}</td>
           <td>{{ record.detail || '-' }}</td>
         </tr>

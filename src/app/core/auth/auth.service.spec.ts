@@ -66,7 +66,9 @@ describe('AuthStateService', () => {
     const router = TestBed.inject(Router);
     const auth = TestBed.inject(AuthStateService);
 
-    const unauthenticated = TestBed.runInInjectionContext(() => authGuard({} as never, {} as never));
+    const unauthenticated = TestBed.runInInjectionContext(() =>
+      authGuard({} as never, {} as never),
+    );
     expect(unauthenticated.toString()).toBe(router.createUrlTree(['/login']).toString());
 
     auth.login({ email: 'admin@example.com', password: 'password123' }).subscribe();
