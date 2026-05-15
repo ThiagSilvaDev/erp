@@ -1,27 +1,28 @@
 import { Routes } from '@angular/router';
 
 import { authGuard, guestGuard } from './core/auth/auth.guard';
-import { AppShell } from './layouts/app-shell/app-shell';
+import { DashboardShell } from './features/dashboard/layout/dashboard-shell';
 
 export const routes: Routes = [
   {
     path: 'login',
     canActivate: [guestGuard],
-    loadComponent: () => import('./pages/login/login').then((m) => m.Login),
+    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
   {
     path: '',
-    component: AppShell,
+    component: DashboardShell,
     canActivate: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
-        loadComponent: () => import('./pages/dashboard/dashboard').then((m) => m.Dashboard),
+        loadChildren: () =>
+          import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
       },
       {
         path: ':entity',
-        loadComponent: () => import('./pages/entity/entity-page').then((m) => m.EntityPage),
+        loadChildren: () => import('./features/erp/erp.routes').then((m) => m.ERP_ROUTES),
       },
     ],
   },

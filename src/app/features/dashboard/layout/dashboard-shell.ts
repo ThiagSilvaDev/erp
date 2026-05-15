@@ -5,7 +5,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 
-import { AuthStateService } from '../../core/auth/auth.service';
+import { AuthStateService } from '../../../core/auth/auth.service';
 
 interface MenuItem {
   label: string;
@@ -16,11 +16,11 @@ interface MenuItem {
 @Component({
   selector: 'app-shell',
   imports: [RouterLink, RouterOutlet, NzButtonModule, NzIconModule, NzLayoutModule, NzMenuModule],
-  templateUrl: './app-shell.html',
-  styleUrl: './app-shell.css',
+  templateUrl: './dashboard-shell.html',
+  styleUrl: './dashboard-shell.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppShell {
+export class DashboardShell {
   private readonly auth = inject(AuthStateService);
 
   readonly isCollapsed = signal(false);

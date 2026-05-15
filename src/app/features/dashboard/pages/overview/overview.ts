@@ -6,12 +6,12 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTableModule } from 'ng-zorro-antd/table';
 
-import { CatalogService } from '../../api/modules/catalog/catalog.service';
-import { CompaniesService } from '../../api/modules/companies/companies.service';
-import { ContactPersonsService } from '../../api/modules/contact-persons/contact-persons.service';
-import { CustomersService } from '../../api/modules/customers/customers.service';
-import { SuppliersService } from '../../api/modules/suppliers/suppliers.service';
-import { UsersService } from '../../api/modules/users/users.service';
+import { CatalogService } from '../../../../api/modules/catalog/catalog.service';
+import { CompaniesService } from '../../../../api/modules/companies/companies.service';
+import { ContactPersonsService } from '../../../../api/modules/contact-persons/contact-persons.service';
+import { CustomersService } from '../../../../api/modules/customers/customers.service';
+import { SuppliersService } from '../../../../api/modules/suppliers/suppliers.service';
+import { UsersService } from '../../../../api/modules/users/users.service';
 
 interface SummaryCard {
   label: string;
@@ -28,12 +28,12 @@ interface RecentRecord {
 }
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-overview',
   imports: [RouterLink, NzCardModule, NzIconModule, NzTableModule],
-  templateUrl: './dashboard.html',
+  templateUrl: './overview.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Dashboard {
+export class Overview {
   private readonly catalog = inject(CatalogService);
   private readonly companies = inject(CompaniesService);
   private readonly contactPersons = inject(ContactPersonsService);

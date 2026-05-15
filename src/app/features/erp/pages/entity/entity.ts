@@ -15,18 +15,18 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 
-import { CatalogService } from '../../api/modules/catalog/catalog.service';
-import { CategoryResponse, ProductResponse } from '../../api/modules/catalog/dtos';
-import { CompaniesService } from '../../api/modules/companies/companies.service';
-import { CompanyResponse } from '../../api/modules/companies/dtos';
-import { ContactPersonsService } from '../../api/modules/contact-persons/contact-persons.service';
-import { ContactPersonResponse } from '../../api/modules/contact-persons/dtos';
-import { CustomersService } from '../../api/modules/customers/customers.service';
-import { CustomerResponse } from '../../api/modules/customers/dtos';
-import { SuppliersService } from '../../api/modules/suppliers/suppliers.service';
-import { SupplierResponse } from '../../api/modules/suppliers/dtos';
-import { UsersService } from '../../api/modules/users/users.service';
-import { UserResponse } from '../../api/modules/users/dtos';
+import { CatalogService } from '../../../../api/modules/catalog/catalog.service';
+import { CategoryResponse, ProductResponse } from '../../../../api/modules/catalog/dtos';
+import { CompaniesService } from '../../../../api/modules/companies/companies.service';
+import { CompanyResponse } from '../../../../api/modules/companies/dtos';
+import { ContactPersonsService } from '../../../../api/modules/contact-persons/contact-persons.service';
+import { ContactPersonResponse } from '../../../../api/modules/contact-persons/dtos';
+import { CustomersService } from '../../../../api/modules/customers/customers.service';
+import { CustomerResponse } from '../../../../api/modules/customers/dtos';
+import { SuppliersService } from '../../../../api/modules/suppliers/suppliers.service';
+import { SupplierResponse } from '../../../../api/modules/suppliers/dtos';
+import { UsersService } from '../../../../api/modules/users/users.service';
+import { UserResponse } from '../../../../api/modules/users/dtos';
 
 type EntityKey =
   | 'categories'
@@ -104,7 +104,7 @@ function getValue(record: EntityRecord, key: string): string {
 }
 
 @Component({
-  selector: 'app-entity-page',
+  selector: 'app-entity',
   imports: [
     ReactiveFormsModule,
     NzAlertModule,
@@ -118,11 +118,11 @@ function getValue(record: EntityRecord, key: string): string {
     NzSelectModule,
     NzTableModule,
   ],
-  templateUrl: './entity-page.html',
-  styleUrl: './entity-page.css',
+  templateUrl: './entity.html',
+  styleUrl: './entity.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EntityPage {
+export class Entity {
   private readonly catalog = inject(CatalogService);
   private readonly companies = inject(CompaniesService);
   private readonly contactPersons = inject(ContactPersonsService);

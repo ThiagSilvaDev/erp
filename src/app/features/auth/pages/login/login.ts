@@ -8,7 +8,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 
-import { AuthStateService } from '../../core/auth/auth.service';
+import { AuthStateService } from '../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
