@@ -4,17 +4,17 @@
     nzCollapsible
     nzWidth="248px"
     nzBreakpoint="md"
-    [nzCollapsed]="isCollapsed()"
+    [nzCollapsed]="state.isCollapsed()"
     [nzTrigger]="null"
   >
     <div class="brand">
       <span class="brand-mark">E</span>
-      @if (!isCollapsed()) {
+      @if (!state.isCollapsed()) {
         <span class="brand-name">ERP Web</span>
       }
     </div>
 
-    <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed()">
+    <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="state.isCollapsed()">
       @for (item of primaryItems; track item.path) {
         <li nz-menu-item nzMatchRouter>
           <a [routerLink]="item.path">
@@ -66,11 +66,11 @@
         aria-label="Toggle navigation"
         (click)="toggleSidebar()"
       >
-        <nz-icon [nzType]="isCollapsed() ? 'menu-unfold' : 'menu-fold'" />
+        <nz-icon [nzType]="state.isCollapsed() ? 'menu-unfold' : 'menu-fold'" />
       </button>
 
       <div class="header-user">
-        <span>{{ userLabel() }}</span>
+        <span>{{ state.userLabel() }}</span>
         <button nz-button nzType="default" type="button" (click)="logout()">
           <nz-icon nzType="logout" />
           <span>Logout</span>

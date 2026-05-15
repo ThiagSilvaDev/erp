@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 
-import { AuthStateService } from '../../../core/auth/auth.service';
+import { DashboardShellStateService } from './dashboard-shell-state.service';
 
 interface MenuItem {
   label: string;
@@ -18,13 +18,11 @@ interface MenuItem {
   imports: [RouterLink, RouterOutlet, NzButtonModule, NzIconModule, NzLayoutModule, NzMenuModule],
   templateUrl: './dashboard-shell.html',
   styleUrl: './dashboard-shell.css',
+  providers: [DashboardShellStateService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardShell {
-  private readonly auth = inject(AuthStateService);
-
-  readonly isCollapsed = signal(false);
-  readonly userLabel = computed(() => this.auth.session()?.user?.email ?? 'ERP user');
+  readonly state = inject(DashboardShellStateService);
 
   readonly primaryItems: MenuItem[] = [{ label: 'Dashboard', path: '/dashboard', icon: 'dashboard' }];
   readonly organizationItems: MenuItem[] = [
@@ -42,10 +40,10 @@ export class DashboardShell {
   ];
 
   toggleSidebar(): void {
-    this.isCollapsed.update((value) => !value);
+    this.state.toggleSidebar();
   }
 
   logout(): void {
-    this.auth.logout();
+    this.state.logout();
   }
 }
