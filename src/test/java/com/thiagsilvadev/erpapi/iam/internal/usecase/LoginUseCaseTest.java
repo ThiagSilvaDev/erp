@@ -8,9 +8,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -52,7 +52,8 @@ class LoginUseCaseTest {
         IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", "ADMIN", true);
         UsernamePasswordAuthenticationToken authentication =
                 UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities());
-        when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken("User@Example.com", "secret123")))
+        when(authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken("User@Example.com", "secret123")))
                 .thenReturn(authentication);
         when(jwtTokenService.issue(principal)).thenReturn(new IssuedToken("jwt-token", 3600));
 
@@ -68,7 +69,8 @@ class LoginUseCaseTest {
 
     @Test
     void shouldRejectUnknownEmail() {
-        when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
+        when(authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
                 .thenThrow(new BadCredentialsException("Bad credentials"));
 
         assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "secret123")))
@@ -90,7 +92,8 @@ class LoginUseCaseTest {
 
     @Test
     void shouldRejectInactiveCredential() {
-        when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
+        when(authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
                 .thenThrow(new DisabledException("User is disabled"));
 
         assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "secret123")))

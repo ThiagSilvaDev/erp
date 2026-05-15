@@ -52,8 +52,8 @@ class CreateUserUseCaseTest {
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(EmailAlreadyExistsException.class);
 
         verify(userRepository, never()).save(org.mockito.ArgumentMatchers.any());
-        verify(eventPublisher, never()).userCreated(
-                org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
+        verify(eventPublisher, never())
+                .userCreated(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test
@@ -65,8 +65,8 @@ class CreateUserUseCaseTest {
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ResourceNotFoundException.class);
 
         verify(userRepository, never()).save(org.mockito.ArgumentMatchers.any());
-        verify(eventPublisher, never()).userCreated(
-                org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
+        verify(eventPublisher, never())
+                .userCreated(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test
@@ -82,8 +82,10 @@ class CreateUserUseCaseTest {
         User savedUser = user;
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
         when(companyFacade.findById(request.companyId()))
-                .thenReturn(Optional.of(org.mockito.Mockito.mock(com.thiagsilvadev.erpapi.company.api.CompanySnapshot.class)));
-        when(userMapper.toEntity(org.mockito.ArgumentMatchers.eq(request), org.mockito.ArgumentMatchers.any(Contact.class)))
+                .thenReturn(Optional.of(
+                        org.mockito.Mockito.mock(com.thiagsilvadev.erpapi.company.api.CompanySnapshot.class)));
+        when(userMapper.toEntity(
+                        org.mockito.ArgumentMatchers.eq(request), org.mockito.ArgumentMatchers.any(Contact.class)))
                 .thenReturn(user);
         when(userRepository.save(user)).thenReturn(savedUser);
 

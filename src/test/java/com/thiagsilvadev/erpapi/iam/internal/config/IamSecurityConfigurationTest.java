@@ -92,15 +92,13 @@ class IamSecurityConfigurationTest {
 
     @Test
     void shouldAllowAdminApiWritesWithIssuedBearerTokenRoleClaim() throws Exception {
-        mockMvc.perform(post("/api/v1/security-test")
-                        .header("Authorization", "Bearer " + tokenWithRole("ADMIN")))
+        mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + tokenWithRole("ADMIN")))
                 .andExpect(status().isOk());
     }
 
     @Test
     void shouldRejectNonAdminApiWritesWithIssuedBearerTokenRoleClaim() throws Exception {
-        mockMvc.perform(post("/api/v1/security-test")
-                        .header("Authorization", "Bearer " + tokenWithRole("MANAGER")))
+        mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + tokenWithRole("MANAGER")))
                 .andExpect(status().isForbidden());
     }
 
@@ -114,7 +112,9 @@ class IamSecurityConfigurationTest {
                 .claim("email", "user@example.com")
                 .claim("role", role)
                 .build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
+        return jwtEncoder
+                .encode(JwtEncoderParameters.from(
+                        JwsHeader.with(MacAlgorithm.HS256).build(), claims))
                 .getTokenValue();
     }
 

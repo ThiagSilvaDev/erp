@@ -18,10 +18,7 @@ public class ProvisionCredentialListener {
 
     @ApplicationModuleListener
     public void on(UserCreatedEvent event) {
-        credentialProvisioningService.provision(new CredentialProvisioningRequest(
-                event.userId(),
-                event.email(),
-                event.rawPassword(),
-                event.role()));
+        credentialProvisioningService.provision(
+                new CredentialProvisioningRequest(event.userId(), event.email(), event.rawPassword(), event.role()));
     }
 }

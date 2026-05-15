@@ -10,11 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -26,9 +23,8 @@ import com.thiagsilvadev.erpapi.catalog.internal.usecase.GetProductByIdUseCase;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.ListProductsUseCase;
 
 @RestController
-@RequestMapping("/api/v1/catalog/products")
 @Validated
-class ProductController {
+class ProductController implements ProductApi {
 
     private final CreateProductUseCase createProductUseCase;
     private final GetProductByIdUseCase getProductByIdUseCase;
@@ -43,7 +39,7 @@ class ProductController {
         this.listProductsUseCase = listProductsUseCase;
     }
 
-    @PostMapping
+    @Override
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest request) {
         ProductResponse response = createProductUseCase.execute(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -54,12 +50,12 @@ class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).location(location).body(response);
     }
 
-    @GetMapping("/{id}")
+    @Override
     public ResponseEntity<ProductResponse> getProductById(@PathVariable UUID id) {
         return ResponseEntity.ok(getProductByIdUseCase.execute(id));
     }
 
-    @GetMapping
+    @Override
     public ResponseEntity<Page<ProductResponse>> listProducts(ProductSearchCriteria criteria, Pageable pageable) {
         return ResponseEntity.ok(listProductsUseCase.execute(criteria, pageable));
     }

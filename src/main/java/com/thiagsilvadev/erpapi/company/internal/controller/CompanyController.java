@@ -21,9 +21,8 @@ import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyByIdUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.ListCompaniesUseCase;
 
 @RestController
-@RequestMapping("/api/v1/company")
 @Validated
-class CompanyController {
+class CompanyController implements CompanyApi {
 
     private final CreateCompanyUseCase createCompanyUseCase;
     private final GetCompanyByIdUseCase getCompanyByIdUseCase;
@@ -38,7 +37,7 @@ class CompanyController {
         this.listCompaniesUseCase = listCompaniesUseCase;
     }
 
-    @PostMapping
+    @Override
     public ResponseEntity<CompanyResponse> createCompany(@Valid @RequestBody CreateCompanyRequest request) {
         CompanyResponse response = createCompanyUseCase.execute(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -49,12 +48,12 @@ class CompanyController {
         return ResponseEntity.status(HttpStatus.CREATED).location(location).body(response);
     }
 
-    @GetMapping("/{id}")
+    @Override
     public ResponseEntity<CompanyResponse> getCompanyById(@PathVariable UUID id) {
         return ResponseEntity.ok(getCompanyByIdUseCase.execute(id));
     }
 
-    @GetMapping
+    @Override
     public ResponseEntity<Page<CompanyResponse>> listCompanies(CompanySearchCriteria criteria, Pageable pageable) {
         return ResponseEntity.ok(listCompaniesUseCase.execute(criteria, pageable));
     }

@@ -26,8 +26,7 @@ class JwtTokenServiceTest {
         IamJwtProperties properties = new IamJwtProperties();
         properties.setIssuer("erp-api-test");
         properties.setExpiration(Duration.ofMinutes(15));
-        JwtTokenService tokenService =
-                new JwtTokenService(jwtEncoder, properties, Clock.fixed(now, ZoneOffset.UTC));
+        JwtTokenService tokenService = new JwtTokenService(jwtEncoder, properties, Clock.fixed(now, ZoneOffset.UTC));
         UUID userId = UUID.randomUUID();
         IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", "ADMIN", true);
 

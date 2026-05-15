@@ -10,11 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -26,9 +23,8 @@ import com.thiagsilvadev.erpapi.user.internal.usecase.GetUserByIdUseCase;
 import com.thiagsilvadev.erpapi.user.internal.usecase.ListUsersUseCase;
 
 @RestController
-@RequestMapping("/api/v1/users")
 @Validated
-class UserController {
+class UserController implements UserApi {
 
     private final CreateUserUseCase createUserUseCase;
     private final GetUserByIdUseCase getUserByIdUseCase;
@@ -43,7 +39,7 @@ class UserController {
         this.listUsersUseCase = listUsersUseCase;
     }
 
-    @PostMapping
+    @Override
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
         UserResponse response = createUserUseCase.execute(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -54,12 +50,12 @@ class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).location(location).body(response);
     }
 
-    @GetMapping("/{id}")
+    @Override
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(getUserByIdUseCase.execute(id));
     }
 
-    @GetMapping
+    @Override
     public ResponseEntity<Page<UserResponse>> listUsers(UserSearchCriteria criteria, Pageable pageable) {
         return ResponseEntity.ok(listUsersUseCase.execute(criteria, pageable));
     }

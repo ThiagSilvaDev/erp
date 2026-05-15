@@ -76,8 +76,8 @@ class UserDevSeederTest {
 
         verify(companyFacade, never()).findByCnpj(org.mockito.ArgumentMatchers.anyString());
         verify(userRepository, never()).save(org.mockito.ArgumentMatchers.any());
-        verify(eventPublisher, never()).userCreated(
-                org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
+        verify(eventPublisher, never())
+                .userCreated(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
     }
 
     private static User savedUser(User user, UUID id) {

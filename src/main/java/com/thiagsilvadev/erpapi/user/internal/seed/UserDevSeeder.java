@@ -30,10 +30,7 @@ class UserDevSeeder implements ApplicationRunner {
     private final CompanyFacade companyFacade;
     private final UserEventPublisher eventPublisher;
 
-    UserDevSeeder(
-            UserRepository userRepository,
-            CompanyFacade companyFacade,
-            UserEventPublisher eventPublisher) {
+    UserDevSeeder(UserRepository userRepository, CompanyFacade companyFacade, UserEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.companyFacade = companyFacade;
         this.eventPublisher = eventPublisher;
