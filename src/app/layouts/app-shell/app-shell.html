@@ -1,0 +1,85 @@
+<nz-layout class="app-layout">
+  <nz-sider
+    class="menu-sidebar"
+    nzCollapsible
+    nzWidth="248px"
+    nzBreakpoint="md"
+    [nzCollapsed]="isCollapsed()"
+    [nzTrigger]="null"
+  >
+    <div class="brand">
+      <span class="brand-mark">E</span>
+      @if (!isCollapsed()) {
+        <span class="brand-name">ERP Web</span>
+      }
+    </div>
+
+    <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed()">
+      @for (item of primaryItems; track item.path) {
+        <li nz-menu-item nzMatchRouter>
+          <a [routerLink]="item.path">
+            <nz-icon [nzType]="item.icon" />
+            <span>{{ item.label }}</span>
+          </a>
+        </li>
+      }
+
+      <li nz-submenu nzOpen nzTitle="Organization" nzIcon="apartment">
+        <ul>
+          @for (item of organizationItems; track item.path) {
+            <li nz-menu-item nzMatchRouter>
+              <a [routerLink]="item.path">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </li>
+
+      <li nz-submenu nzOpen nzTitle="Catalog" nzIcon="appstore">
+        <ul>
+          @for (item of catalogItems; track item.path) {
+            <li nz-menu-item nzMatchRouter>
+              <a [routerLink]="item.path">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </li>
+
+      <li nz-submenu nzOpen nzTitle="Contacts" nzIcon="contacts">
+        <ul>
+          @for (item of contactItems; track item.path) {
+            <li nz-menu-item nzMatchRouter>
+              <a [routerLink]="item.path">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </li>
+    </ul>
+  </nz-sider>
+
+  <nz-layout>
+    <nz-header class="app-header">
+      <button
+        nz-button
+        nzType="text"
+        type="button"
+        class="trigger-button"
+        aria-label="Toggle navigation"
+        (click)="toggleSidebar()"
+      >
+        <nz-icon [nzType]="isCollapsed() ? 'menu-unfold' : 'menu-fold'" />
+      </button>
+
+      <div class="header-user">
+        <span>{{ userLabel() }}</span>
+        <button nz-button nzType="default" type="button" (click)="logout()">
+          <nz-icon nzType="logout" />
+          <span>Logout</span>
+        </button>
+      </div>
+    </nz-header>
+
+    <nz-content class="app-content">
+      <router-outlet />
+    </nz-content>
+  </nz-layout>
+</nz-layout>

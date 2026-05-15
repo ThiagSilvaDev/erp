@@ -1,0 +1,7 @@
+:host {
+  display: block;
+}
+
+:host ::ng-deep .ant-table {
+  min-width: 720px;
+}
