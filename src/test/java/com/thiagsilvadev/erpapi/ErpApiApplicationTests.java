@@ -11,7 +11,18 @@ import org.springframework.test.context.ActiveProfiles;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
+import com.thiagsilvadev.erpapi.customer.internal.repository.ContactPersonRepository;
+import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
+import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
+import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
+import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryReservationRepository;
+import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
+import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
+import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
 @SpringBootTest(
@@ -56,6 +67,61 @@ class ErpApiApplicationTests {
         @Bean
         IamCredentialRepository iamCredentialRepository() {
             return mock(IamCredentialRepository.class);
+        }
+
+        @Bean
+        CustomerRepository customerRepository() {
+            return mock(CustomerRepository.class);
+        }
+
+        @Bean
+        SupplierRepository supplierRepository() {
+            return mock(SupplierRepository.class);
+        }
+
+        @Bean
+        ContactPersonRepository contactPersonRepository() {
+            return mock(ContactPersonRepository.class);
+        }
+
+        @Bean
+        WarehouseRepository warehouseRepository() {
+            return mock(WarehouseRepository.class);
+        }
+
+        @Bean
+        InventoryItemRepository inventoryItemRepository() {
+            return mock(InventoryItemRepository.class);
+        }
+
+        @Bean
+        StockMovementRepository stockMovementRepository() {
+            return mock(StockMovementRepository.class);
+        }
+
+        @Bean
+        InventoryReservationRepository inventoryReservationRepository() {
+            return mock(InventoryReservationRepository.class);
+        }
+
+        @Bean
+        SalesOrderRepository salesOrderRepository() {
+            return mock(SalesOrderRepository.class);
+        }
+
+        @Bean
+        InvoiceRepository invoiceRepository() {
+            return mock(InvoiceRepository.class);
+        }
+
+        @Bean
+        PaymentRepository paymentRepository() {
+            return mock(PaymentRepository.class);
+        }
+
+        @Bean
+        FinancialEntryRepository financialEntryRepository() {
+            return mock(FinancialEntryRepository.class);
         }
     }
 }
