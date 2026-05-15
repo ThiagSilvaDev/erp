@@ -9,7 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.thiagsilvadev.erpapi.common.exception.ResourceNotFoundException;
@@ -21,8 +23,7 @@ import com.thiagsilvadev.erpapi.financial.internal.repository.*;
 import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
 
 @RestController
-@RequestMapping(value = "/api/v1/financial", produces = MediaType.APPLICATION_JSON_VALUE)
-class FinancialController {
+class FinancialController implements FinancialApi {
 
     private final InvoiceRepository invoiceRepository;
     private final PaymentRepository paymentRepository;
@@ -46,9 +47,9 @@ class FinancialController {
         this.mapper = mapper;
     }
 
-    @PostMapping("/invoices")
+    @Override
     @Transactional
-    ResponseEntity<InvoiceResponse> createInvoice(@Valid @RequestBody CreateInvoiceRequest request) {
+    public ResponseEntity<InvoiceResponse> createInvoice(@Valid @RequestBody CreateInvoiceRequest request) {
         customerFacade
                 .findCustomerById(request.customerId())
                 .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.customerId()));
@@ -68,22 +69,22 @@ class FinancialController {
         return created(invoice.getId(), mapper.toResponse(invoice));
     }
 
-    @GetMapping("/invoices/{id}")
+    @Override
     @Transactional(readOnly = true)
-    InvoiceResponse getInvoice(@PathVariable UUID id) {
+    public InvoiceResponse getInvoice(@PathVariable UUID id) {
         return mapper.toResponse(
                 invoiceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Invoice.class, id)));
     }
 
-    @GetMapping("/invoices")
+    @Override
     @Transactional(readOnly = true)
-    Page<InvoiceResponse> listInvoices(Pageable pageable) {
+    public Page<InvoiceResponse> listInvoices(Pageable pageable) {
         return invoiceRepository.findAll(pageable).map(mapper::toResponse);
     }
 
-    @PostMapping("/payments")
+    @Override
     @Transactional
-    ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody CreatePaymentRequest request) {
+    public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody CreatePaymentRequest request) {
         Invoice invoice = invoiceRepository
                 .findById(request.invoiceId())
                 .orElseThrow(() -> new ResourceNotFoundException(Invoice.class, request.invoiceId()));
@@ -96,30 +97,30 @@ class FinancialController {
         return created(payment.getId(), mapper.toResponse(payment));
     }
 
-    @GetMapping("/payments/{id}")
+    @Override
     @Transactional(readOnly = true)
-    PaymentResponse getPayment(@PathVariable UUID id) {
+    public PaymentResponse getPayment(@PathVariable UUID id) {
         return mapper.toResponse(
                 paymentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Payment.class, id)));
     }
 
-    @GetMapping("/payments")
+    @Override
     @Transactional(readOnly = true)
-    Page<PaymentResponse> listPayments(Pageable pageable) {
+    public Page<PaymentResponse> listPayments(Pageable pageable) {
         return paymentRepository.findAll(pageable).map(mapper::toResponse);
     }
 
-    @GetMapping("/entries/{id}")
+    @Override
     @Transactional(readOnly = true)
-    FinancialEntryResponse getEntry(@PathVariable UUID id) {
+    public FinancialEntryResponse getEntry(@PathVariable UUID id) {
         return mapper.toResponse(entryRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(FinancialEntry.class, id)));
     }
 
-    @GetMapping("/entries")
+    @Override
     @Transactional(readOnly = true)
-    Page<FinancialEntryResponse> listEntries(Pageable pageable) {
+    public Page<FinancialEntryResponse> listEntries(Pageable pageable) {
         return entryRepository.findAll(pageable).map(mapper::toResponse);
     }
 

@@ -9,7 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
@@ -23,8 +25,7 @@ import com.thiagsilvadev.erpapi.sales.internal.model.*;
 import com.thiagsilvadev.erpapi.sales.internal.repository.*;
 
 @RestController
-@RequestMapping(value = "/api/v1/sales/orders", produces = MediaType.APPLICATION_JSON_VALUE)
-class SalesOrderController implements SalesFacade {
+class SalesOrderController implements SalesOrderApi, SalesFacade {
 
     private final SalesOrderRepository orderRepository;
     private final CustomerFacade customerFacade;
@@ -45,9 +46,9 @@ class SalesOrderController implements SalesFacade {
         this.mapper = mapper;
     }
 
-    @PostMapping
+    @Override
     @Transactional
-    ResponseEntity<SalesOrderResponse> createOrder(@Valid @RequestBody CreateSalesOrderRequest request) {
+    public ResponseEntity<SalesOrderResponse> createOrder(@Valid @RequestBody CreateSalesOrderRequest request) {
         customerFacade
                 .findCustomerById(request.customerId())
                 .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.customerId()));
@@ -75,24 +76,24 @@ class SalesOrderController implements SalesFacade {
         return ResponseEntity.status(HttpStatus.CREATED).location(location).body(response);
     }
 
-    @GetMapping("/{id}")
+    @Override
     @Transactional(readOnly = true)
-    SalesOrderResponse getOrder(@PathVariable UUID id) {
+    public SalesOrderResponse getOrder(@PathVariable UUID id) {
         return mapper.toResponse(
                 orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id)));
     }
 
-    @GetMapping
+    @Override
     @Transactional(readOnly = true)
-    Page<SalesOrderResponse> listOrders(SalesOrderSearchCriteria criteria, Pageable pageable) {
+    public Page<SalesOrderResponse> listOrders(SalesOrderSearchCriteria criteria, Pageable pageable) {
         return orderRepository
                 .findAll(SalesOrderSpecification.withCriteria(criteria), pageable)
                 .map(mapper::toResponse);
     }
 
-    @PostMapping("/{id}/confirm")
+    @Override
     @Transactional
-    SalesOrderResponse confirmOrder(@PathVariable UUID id) {
+    public SalesOrderResponse confirmOrder(@PathVariable UUID id) {
         SalesOrder order =
                 orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
         order.confirm();
@@ -102,9 +103,9 @@ class SalesOrderController implements SalesFacade {
         return mapper.toResponse(order);
     }
 
-    @PostMapping("/{id}/cancel")
+    @Override
     @Transactional
-    SalesOrderResponse cancelOrder(@PathVariable UUID id) {
+    public SalesOrderResponse cancelOrder(@PathVariable UUID id) {
         SalesOrder order =
                 orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
         order.cancel();

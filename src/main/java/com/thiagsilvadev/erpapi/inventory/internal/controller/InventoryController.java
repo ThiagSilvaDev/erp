@@ -9,7 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.thiagsilvadev.erpapi.common.exception.ConflictException;
@@ -20,8 +22,7 @@ import com.thiagsilvadev.erpapi.inventory.internal.model.*;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.*;
 
 @RestController
-@RequestMapping(value = "/api/v1/inventory", produces = MediaType.APPLICATION_JSON_VALUE)
-class InventoryController {
+class InventoryController implements InventoryApi {
 
     private final WarehouseRepository warehouseRepository;
     private final InventoryItemRepository itemRepository;
@@ -45,9 +46,9 @@ class InventoryController {
         this.mapper = mapper;
     }
 
-    @PostMapping("/warehouses")
+    @Override
     @Transactional
-    ResponseEntity<WarehouseResponse> createWarehouse(@Valid @RequestBody CreateWarehouseRequest request) {
+    public ResponseEntity<WarehouseResponse> createWarehouse(@Valid @RequestBody CreateWarehouseRequest request) {
         String code = Warehouse.normalizeCode(request.code());
         if (warehouseRepository.existsByCode(code)) {
             throw new ConflictException("Warehouse with this code already exists.", java.util.Map.of("code", code));
@@ -57,22 +58,23 @@ class InventoryController {
         return created(response.id(), response);
     }
 
-    @GetMapping("/warehouses/{id}")
+    @Override
     @Transactional(readOnly = true)
-    WarehouseResponse getWarehouse(@PathVariable UUID id) {
+    public WarehouseResponse getWarehouse(@PathVariable UUID id) {
         return mapper.toResponse(
                 warehouseRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, id)));
     }
 
-    @GetMapping("/warehouses")
+    @Override
     @Transactional(readOnly = true)
-    Page<WarehouseResponse> listWarehouses(Pageable pageable) {
+    public Page<WarehouseResponse> listWarehouses(Pageable pageable) {
         return warehouseRepository.findAll(pageable).map(mapper::toResponse);
     }
 
-    @PostMapping("/stock-movements")
+    @Override
     @Transactional
-    ResponseEntity<StockMovementResponse> createMovement(@Valid @RequestBody CreateStockMovementRequest request) {
+    public ResponseEntity<StockMovementResponse> createMovement(
+            @Valid @RequestBody CreateStockMovementRequest request) {
         InventoryItem item =
                 inventoryService.applyMovement(request.productId(), request.warehouseId(), request.quantity());
         StockMovement movement = movementRepository.save(StockMovement.create(
@@ -80,35 +82,35 @@ class InventoryController {
         return created(movement.getId(), mapper.toResponse(movement));
     }
 
-    @GetMapping("/stock-movements/{id}")
+    @Override
     @Transactional(readOnly = true)
-    StockMovementResponse getMovement(@PathVariable UUID id) {
+    public StockMovementResponse getMovement(@PathVariable UUID id) {
         return mapper.toResponse(movementRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(StockMovement.class, id)));
     }
 
-    @GetMapping("/stock-movements")
+    @Override
     @Transactional(readOnly = true)
-    Page<StockMovementResponse> listMovements(Pageable pageable) {
+    public Page<StockMovementResponse> listMovements(Pageable pageable) {
         return movementRepository.findAll(pageable).map(mapper::toResponse);
     }
 
-    @GetMapping("/items")
+    @Override
     @Transactional(readOnly = true)
-    Page<InventoryItemResponse> listItems(Pageable pageable) {
+    public Page<InventoryItemResponse> listItems(Pageable pageable) {
         return itemRepository.findAll(pageable).map(mapper::toResponse);
     }
 
-    @GetMapping("/items/{id}")
+    @Override
     @Transactional(readOnly = true)
-    InventoryItemResponse getItem(@PathVariable UUID id) {
+    public InventoryItemResponse getItem(@PathVariable UUID id) {
         return mapper.toResponse(
                 itemRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, id)));
     }
 
-    @PostMapping("/reservations")
-    ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody CreateReservationRequest request) {
+    @Override
+    public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody CreateReservationRequest request) {
         var reservation = inventoryService.reserve(
                 request.productId(), request.warehouseId(), request.quantity(), request.salesOrderId());
         return created(
@@ -121,17 +123,17 @@ class InventoryController {
                         reservation.salesOrderId()));
     }
 
-    @GetMapping("/reservations/{id}")
+    @Override
     @Transactional(readOnly = true)
-    ReservationResponse getReservation(@PathVariable UUID id) {
+    public ReservationResponse getReservation(@PathVariable UUID id) {
         return mapper.toResponse(reservationRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(InventoryReservation.class, id)));
     }
 
-    @GetMapping("/reservations")
+    @Override
     @Transactional(readOnly = true)
-    Page<ReservationResponse> listReservations(Pageable pageable) {
+    public Page<ReservationResponse> listReservations(Pageable pageable) {
         return reservationRepository.findAll(pageable).map(mapper::toResponse);
     }
 
