@@ -1,0 +1,3 @@
+meta { name: List Reservations type: http seq: 1 }
+get { url: {{baseUrl}}/api/v1/inventory/reservations body: none auth: bearer }
+auth:bearer { token: {{accessToken}} }

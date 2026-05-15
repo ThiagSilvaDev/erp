@@ -1,0 +1,3 @@
+meta { name: List Stock Movements type: http seq: 2 }
+get { url: {{baseUrl}}/api/v1/inventory/stock-movements body: none auth: bearer }
+auth:bearer { token: {{accessToken}} }

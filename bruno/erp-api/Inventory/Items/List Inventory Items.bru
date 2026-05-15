@@ -1,0 +1,3 @@
+meta { name: List Inventory Items type: http seq: 1 }
+get { url: {{baseUrl}}/api/v1/inventory/items body: none auth: bearer }
+auth:bearer { token: {{accessToken}} }
