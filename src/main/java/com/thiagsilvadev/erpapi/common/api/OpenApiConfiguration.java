@@ -59,7 +59,8 @@ public class OpenApiConfiguration {
                         new Tag().name("suppliers").description("Supplier management endpoints"),
                         new Tag().name("contact-persons").description("Contact person management endpoints"),
                         new Tag().name("inventory").description("Inventory and stock management endpoints"),
-                        new Tag().name("sales").description("Sales order management endpoints")));
+                        new Tag().name("sales").description("Sales order management endpoints"),
+                        new Tag().name("financial").description("Operational finance endpoints")));
     }
 
     private ApiResponse problemResponse(String description) {

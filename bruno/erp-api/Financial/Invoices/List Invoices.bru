@@ -1,0 +1,3 @@
+meta { name: List Invoices type: http seq: 2 }
+get { url: {{baseUrl}}/api/v1/financial/invoices body: none auth: bearer }
+auth:bearer { token: {{accessToken}} }
