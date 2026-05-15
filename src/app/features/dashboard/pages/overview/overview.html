@@ -4,47 +4,7 @@
     <p class="mt-1 text-sm text-slate-500">Operational overview from the ERP API.</p>
   </div>
 
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-    @for (card of cards(); track card.path) {
-      <a [routerLink]="card.path" class="block">
-        <nz-card class="h-full">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <div class="text-sm text-slate-500">{{ card.label }}</div>
-              <div class="mt-2 text-3xl font-semibold text-slate-900">{{ card.value }}</div>
-            </div>
-            <span class="inline-flex h-12 w-12 items-center justify-center rounded bg-blue-50 text-xl text-blue-600">
-              <nz-icon [nzType]="card.icon" />
-            </span>
-          </div>
-        </nz-card>
-      </a>
-    }
-  </div>
+  <app-dashboard-summary-cards [cards]="cards()" />
 
-  <nz-card nzTitle="Recent records">
-    <nz-table
-      nzSize="middle"
-      [nzData]="recentRecords()"
-      [nzLoading]="isLoading()"
-      [nzFrontPagination]="false"
-    >
-      <thead>
-        <tr>
-          <th>Module</th>
-          <th>Name</th>
-          <th>Detail</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (record of recentRecords(); track record.module + record.name + record.detail) {
-          <tr>
-            <td><a [routerLink]="record.path">{{ record.module }}</a></td>
-            <td>{{ record.name }}</td>
-            <td>{{ record.detail || '-' }}</td>
-          </tr>
-        }
-      </tbody>
-    </nz-table>
-  </nz-card>
+  <app-recent-records-table [records]="recentRecords()" [isLoading]="isLoading()" />
 </section>
