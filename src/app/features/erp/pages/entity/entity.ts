@@ -13,77 +13,25 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 
 import { CatalogService } from '../../../../api/modules/catalog/catalog.service';
-import { CategoryResponse, ProductResponse } from '../../../../api/modules/catalog/dtos';
 import { CompaniesService } from '../../../../api/modules/companies/companies.service';
-import { CompanyResponse } from '../../../../api/modules/companies/dtos';
 import { ContactPersonsService } from '../../../../api/modules/contact-persons/contact-persons.service';
-import { ContactPersonResponse } from '../../../../api/modules/contact-persons/dtos';
 import { CustomersService } from '../../../../api/modules/customers/customers.service';
-import { CustomerResponse } from '../../../../api/modules/customers/dtos';
 import { SuppliersService } from '../../../../api/modules/suppliers/suppliers.service';
-import { SupplierResponse } from '../../../../api/modules/suppliers/dtos';
 import { UsersService } from '../../../../api/modules/users/users.service';
-import { UserResponse } from '../../../../api/modules/users/dtos';
-
-type EntityKey =
-  | 'categories'
-  | 'companies'
-  | 'contact-persons'
-  | 'customers'
-  | 'products'
-  | 'suppliers'
-  | 'users';
-
-type EntityRecord =
-  | CategoryResponse
-  | CompanyResponse
-  | ContactPersonResponse
-  | CustomerResponse
-  | ProductResponse
-  | SupplierResponse
-  | UserResponse;
-
-type FormValue = string | number;
-type EntityForm = FormGroup<Record<string, FormControl<FormValue>>>;
-
-interface EntityPageData {
-  content: EntityRecord[];
-  totalElements: number;
-}
-
-interface SelectOption {
-  label: string;
-  value: string;
-}
-
-interface EntityField {
-  key: string;
-  label: string;
-  required?: boolean;
-  type?: 'email' | 'number' | 'password' | 'select';
-  optionsKey?: 'categories' | 'companies' | 'customers';
-}
-
-interface EntityColumn {
-  key: string;
-  label: string;
-}
-
-interface EntityConfig {
-  key: EntityKey;
-  title: string;
-  description: string;
-  columns: EntityColumn[];
-  detailFields: EntityColumn[];
-  searchFields: EntityField[];
-  createFields: EntityField[];
-  list: (criteria: Record<string, string>, page: number, size: number) => import('rxjs').Observable<EntityPageData>;
-  create: (value: Record<string, FormValue>) => import('rxjs').Observable<EntityRecord>;
-  getById: (id: string) => import('rxjs').Observable<EntityRecord>;
-}
+import { EntityDataTable } from '../../components/entity-data-table/entity-data-table';
+import { EntityOptionsFacade } from '../../data-access/entity-options.facade';
+import {
+  EntityConfig,
+  EntityField,
+  EntityForm,
+  EntityFormValue,
+  EntityKey,
+  EntityRecord,
+  EntitySelectOption,
+  EntitySelectOptions,
+} from '../../models/entity-view-model';
 
 function text(value: unknown): string {
   if (typeof value === 'string' || typeof value === 'number') {
@@ -116,7 +64,7 @@ function getValue(record: EntityRecord, key: string): string {
     NzInputModule,
     NzPaginationModule,
     NzSelectModule,
-    NzTableModule,
+    EntityDataTable,
   ],
   templateUrl: './entity.html',
   styleUrl: './entity.css',
@@ -129,6 +77,7 @@ export class Entity {
   private readonly customers = inject(CustomersService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly messages = inject(NzMessageService);
+  private readonly optionsFacade = inject(EntityOptionsFacade);
   private readonly route = inject(ActivatedRoute);
   private readonly suppliers = inject(SuppliersService);
   private readonly users = inject(UsersService);
@@ -144,7 +93,7 @@ export class Entity {
   readonly isCreateOpen = signal(false);
   readonly isDetailOpen = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  readonly selectOptions = signal<Record<string, SelectOption[]>>({});
+  readonly selectOptions = signal<EntitySelectOptions>({});
 
   readonly configs = this.createConfigs();
   readonly config = computed(() => this.configs[this.entityKey()]);
@@ -167,7 +116,7 @@ export class Entity {
     return getValue(record, key);
   }
 
-  optionsFor(field: EntityField): SelectOption[] {
+  optionsFor(field: EntityField): EntitySelectOption[] {
     return field.optionsKey ? this.selectOptions()[field.optionsKey] : [];
   }
 
@@ -265,61 +214,16 @@ export class Entity {
   }
 
   private loadSelectOptions(): void {
-    const pageable = { page: 0, size: 50 };
-
-    this.companies
-      .listCompanies({ criteria: {}, pageable })
-      .pipe(
-        map((page) => ({
-          companies: (page.content ?? []).map((item) => ({
-            value: item.id ?? '',
-            label: item.tradeName || item.legalName || item.id || 'Company',
-          })),
-        })),
-        catchError(() => of({ companies: [] })),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((options) =>
-        this.selectOptions.update((current) => ({ ...current, companies: options.companies })),
-      );
-
-    this.catalog
-      .listCategories({ criteria: {}, pageable })
-      .pipe(
-        map((page) => ({
-          categories: (page.content ?? []).map((item) => ({
-            value: item.id ?? '',
-            label: item.name || item.code || item.id || 'Category',
-          })),
-        })),
-        catchError(() => of({ categories: [] })),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((options) =>
-        this.selectOptions.update((current) => ({ ...current, categories: options.categories })),
-      );
-
-    this.customers
-      .listCustomers({ criteria: {}, pageable })
-      .pipe(
-        map((page) => ({
-          customers: (page.content ?? []).map((item) => ({
-            value: item.id ?? '',
-            label: item.name || item.document || item.id || 'Customer',
-          })),
-        })),
-        catchError(() => of({ customers: [] })),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((options) =>
-        this.selectOptions.update((current) => ({ ...current, customers: options.customers })),
-      );
+    this.optionsFacade
+      .loadOptions()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((options) => this.selectOptions.set(options));
   }
 
   private buildForm(fields: EntityField[]): EntityForm {
-    const controls: Record<string, FormControl<FormValue>> = {};
+    const controls: Record<string, FormControl<EntityFormValue>> = {};
     for (const field of fields) {
-      controls[field.key] = new FormControl<FormValue>('', {
+      controls[field.key] = new FormControl<EntityFormValue>('', {
         nonNullable: true,
         validators: field.required ? [Validators.required] : [],
       });

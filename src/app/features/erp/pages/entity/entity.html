@@ -46,33 +46,12 @@
   }
 
   <div class="rounded bg-white shadow-sm">
-    <nz-table
-      nzSize="middle"
-      [nzData]="rows()"
-      [nzLoading]="isLoading()"
-      [nzFrontPagination]="false"
-    >
-      <thead>
-        <tr>
-          @for (column of config().columns; track column.key) {
-            <th>{{ column.label }}</th>
-          }
-          <th class="w-28">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows(); track valueFor(row, 'id')) {
-          <tr>
-            @for (column of config().columns; track column.key) {
-              <td>{{ valueFor(row, column.key) }}</td>
-            }
-            <td>
-              <button nz-button nzType="link" type="button" (click)="openDetail(row)">View</button>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </nz-table>
+    <app-entity-data-table
+      [columns]="config().columns"
+      [rows]="rows()"
+      [isLoading]="isLoading()"
+      (viewRecord)="openDetail($event)"
+    />
     <div class="flex justify-end p-4">
       <nz-pagination
         [nzPageIndex]="pageIndex()"

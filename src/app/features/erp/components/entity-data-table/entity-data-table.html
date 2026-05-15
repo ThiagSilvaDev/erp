@@ -1,0 +1,27 @@
+<nz-table
+  nzSize="middle"
+  [nzData]="rows()"
+  [nzLoading]="isLoading()"
+  [nzFrontPagination]="false"
+>
+  <thead>
+    <tr>
+      @for (column of columns(); track column.key) {
+        <th>{{ column.label }}</th>
+      }
+      <th class="w-28">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track valueFor(row, 'id')) {
+      <tr>
+        @for (column of columns(); track column.key) {
+          <td>{{ valueFor(row, column.key) }}</td>
+        }
+        <td>
+          <button nz-button nzType="link" type="button" (click)="viewRecord.emit(row)">View</button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</nz-table>
