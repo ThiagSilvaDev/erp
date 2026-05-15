@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.user.internal.seed;
 
 import java.time.LocalDate;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -24,7 +25,7 @@ class UserDevSeeder implements ApplicationRunner {
 
     static final String ADMIN_EMAIL = "admin@acme.example";
     static final String ADMIN_PASSWORD = "ChangeMe123!";
-    private static final String ACME_CNPJ = "11.222.333/0001-81";
+    private static final String ACME_CNPJ = "97.986.234/0001-91";
 
     private final UserRepository userRepository;
     private final CompanyFacade companyFacade;
@@ -38,7 +39,7 @@ class UserDevSeeder implements ApplicationRunner {
 
     @Override
     @Transactional
-    public void run(ApplicationArguments args) {
+    public void run(@NonNull ApplicationArguments args) {
         Contact contact = Contact.create(ADMIN_EMAIL, "11987654321");
         if (userRepository.existsByContactEmailValue(contact.getEmail())) {
             return;
