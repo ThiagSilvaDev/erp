@@ -44,6 +44,12 @@ public class InventoryService implements InventoryFacade {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<WarehouseSnapshot> findWarehouseByCode(String code) {
+        return warehouseRepository.findByCode(Warehouse.normalizeCode(code)).map(mapper::toSnapshot);
+    }
+
+    @Override
     @Transactional
     public InventoryReservationSnapshot reserve(UUID productId, UUID warehouseId, int quantity, UUID salesOrderId) {
         InventoryItem item = itemRepository

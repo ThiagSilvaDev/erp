@@ -84,6 +84,14 @@ class CustomerController implements CustomerApi, CustomerFacade {
 
     @Override
     @Transactional(readOnly = true)
+    public java.util.Optional<CustomerSnapshot> findCustomerByDocument(String document) {
+        return customerRepository
+                .findByDocument(Customer.normalizeDocument(document))
+                .map(mapper::toSnapshot);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public java.util.Optional<SupplierSnapshot> findSupplierById(UUID id) {
         return supplierRepository.findById(id).map(mapper::toSnapshot);
     }

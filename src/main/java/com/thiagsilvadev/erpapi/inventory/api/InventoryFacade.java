@@ -7,6 +7,8 @@ public interface InventoryFacade {
 
     Optional<InventoryItemSnapshot> findItem(UUID productId, UUID warehouseId);
 
+    Optional<WarehouseSnapshot> findWarehouseByCode(String code);
+
     InventoryReservationSnapshot reserve(UUID productId, UUID warehouseId, int quantity, UUID salesOrderId);
 
     void releaseBySalesOrderId(UUID salesOrderId);

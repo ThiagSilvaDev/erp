@@ -1,0 +1,3 @@
+meta { name: Cancel Sales Order type: http seq: 5 }
+post { url: {{baseUrl}}/api/v1/sales/orders/{{salesOrderId}}/cancel body: none auth: bearer }
+auth:bearer { token: {{accessToken}} }

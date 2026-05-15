@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.inventory.api.InventoryItemSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
+import com.thiagsilvadev.erpapi.inventory.api.WarehouseSnapshot;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.*;
 import com.thiagsilvadev.erpapi.inventory.internal.model.*;
 
@@ -49,6 +50,10 @@ public class InventoryMapper {
                 item.getWarehouse().getId(),
                 item.getQuantityOnHand(),
                 item.getReservedQuantity());
+    }
+
+    public WarehouseSnapshot toSnapshot(Warehouse warehouse) {
+        return new WarehouseSnapshot(warehouse.getId(), warehouse.getCode(), warehouse.getName());
     }
 
     public InventoryReservationSnapshot toSnapshot(InventoryReservation reservation) {
