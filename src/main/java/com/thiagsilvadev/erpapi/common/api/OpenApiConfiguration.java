@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.common.api;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,18 +19,16 @@ import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
-import io.swagger.v3.oas.models.tags.Tag; // <-- Importante adicionar este import
-
-import java.util.List;
+import io.swagger.v3.oas.models.tags.Tag;
 
 @Configuration
 @OpenAPIDefinition(
         info =
-        @Info(
-                title = "ERP API",
-                version = "1.0",
-                description = "REST API for ERP system with JWT authentication and role-based authorization",
-                contact = @Contact(name = "ThiagSilvaDev")))
+                @Info(
+                        title = "ERP API",
+                        version = "1.0",
+                        description = "REST API for ERP system with JWT authentication and role-based authorization",
+                        contact = @Contact(name = "ThiagSilvaDev")))
 @SecurityScheme(
         name = "bearerAuth",
         type = SecuritySchemeType.HTTP,
@@ -54,8 +54,10 @@ public class OpenApiConfiguration {
                         new Tag().name("catalog").description("Product and Category management"),
                         new Tag().name("authentication").description("Identity and Access Management"),
                         new Tag().name("user").description("User profile management"),
-                        new Tag().name("company").description("Company management endpoints")
-                ));
+                        new Tag().name("company").description("Company management endpoints"),
+                        new Tag().name("customers").description("Customer management endpoints"),
+                        new Tag().name("suppliers").description("Supplier management endpoints"),
+                        new Tag().name("contact-persons").description("Contact person management endpoints")));
     }
 
     private ApiResponse problemResponse(String description) {

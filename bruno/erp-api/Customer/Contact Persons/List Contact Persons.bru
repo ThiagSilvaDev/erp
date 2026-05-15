@@ -1,0 +1,15 @@
+meta {
+  name: List Contact Persons
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/contact-persons
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
