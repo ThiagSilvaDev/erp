@@ -1,38 +1,23 @@
 package com.thiagsilvadev.erpapi.sales.internal.dto;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesDtos.*;
 import com.thiagsilvadev.erpapi.sales.internal.model.*;
 
-@Component
-public class SalesMapper {
+@Mapper(componentModel = "spring")
+public interface SalesMapper {
 
-    public SalesOrderResponse toResponse(SalesOrder order) {
-        return new SalesOrderResponse(
-                order.getId(),
-                order.getCustomerId(),
-                order.getStatus(),
-                order.totalAmount(),
-                order.currencyCode(),
-                order.getItems().stream().map(this::toResponse).toList());
-    }
+    @Mapping(target = "totalAmount", expression = "java(order.totalAmount())")
+    @Mapping(target = "currencyCode", expression = "java(order.currencyCode())")
+    SalesOrderResponse toResponse(SalesOrder order);
 
-    public SalesOrderItemResponse toResponse(SalesOrderItem item) {
-        return new SalesOrderItemResponse(
-                item.getProductId(),
-                item.getWarehouseId(),
-                item.getProductSku(),
-                item.getProductName(),
-                item.getQuantity(),
-                item.getUnitPriceAmount(),
-                item.getCurrencyCode(),
-                item.lineTotal());
-    }
+    @Mapping(target = "lineTotal", expression = "java(item.lineTotal())")
+    SalesOrderItemResponse toResponse(SalesOrderItem item);
 
-    public SalesOrderSnapshot toSnapshot(SalesOrder order) {
-        return new SalesOrderSnapshot(
-                order.getId(), order.getCustomerId(), order.getStatus(), order.totalAmount(), order.currencyCode());
-    }
+    @Mapping(target = "totalAmount", expression = "java(order.totalAmount())")
+    @Mapping(target = "currencyCode", expression = "java(order.currencyCode())")
+    SalesOrderSnapshot toSnapshot(SalesOrder order);
 }

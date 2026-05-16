@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.customer.internal.dto;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
@@ -11,10 +12,13 @@ import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;
 import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
 import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;
 
-@Component
-public class CustomerMapper {
+@Mapper(componentModel = "spring")
+public interface CustomerMapper {
 
-    public Customer toCustomer(CreateCustomerRequest request) {
+    default Customer toCustomer(CreateCustomerRequest request) {
+        if (request == null) {
+            return null;
+        }
         return Customer.create(
                 request.name(),
                 request.document(),
@@ -23,7 +27,10 @@ public class CustomerMapper {
                 toAddress(request.address()));
     }
 
-    public Supplier toSupplier(CreateSupplierRequest request) {
+    default Supplier toSupplier(CreateSupplierRequest request) {
+        if (request == null) {
+            return null;
+        }
         return Supplier.create(
                 request.name(),
                 request.document(),
@@ -32,53 +39,28 @@ public class CustomerMapper {
                 toAddress(request.address()));
     }
 
-    public ContactPerson toContactPerson(CreateContactPersonRequest request) {
+    default ContactPerson toContactPerson(CreateContactPersonRequest request) {
+        if (request == null) {
+            return null;
+        }
         return ContactPerson.create(request.name(), request.customerId(), toContact(request.contact()));
     }
 
-    public CustomerResponse toResponse(Customer customer) {
-        return new CustomerResponse(
-                customer.getId(),
-                customer.getName(),
-                customer.getDocument(),
-                customer.getCompanyId(),
-                toResponse(customer.getContact()),
-                toResponse(customer.getAddress()));
-    }
+    CustomerResponse toResponse(Customer customer);
 
-    public SupplierResponse toResponse(Supplier supplier) {
-        return new SupplierResponse(
-                supplier.getId(),
-                supplier.getName(),
-                supplier.getDocument(),
-                supplier.getCompanyId(),
-                toResponse(supplier.getContact()),
-                toResponse(supplier.getAddress()));
-    }
+    SupplierResponse toResponse(Supplier supplier);
 
-    public ContactPersonResponse toResponse(ContactPerson contactPerson) {
-        return new ContactPersonResponse(
-                contactPerson.getId(),
-                contactPerson.getName(),
-                contactPerson.getCustomerId(),
-                toResponse(contactPerson.getContact()));
-    }
+    ContactPersonResponse toResponse(ContactPerson contactPerson);
 
-    public CustomerSnapshot toSnapshot(Customer customer) {
-        return new CustomerSnapshot(
-                customer.getId(), customer.getName(), customer.getDocument(), customer.getCompanyId());
-    }
+    CustomerSnapshot toSnapshot(Customer customer);
 
-    public SupplierSnapshot toSnapshot(Supplier supplier) {
-        return new SupplierSnapshot(
-                supplier.getId(), supplier.getName(), supplier.getDocument(), supplier.getCompanyId());
-    }
+    SupplierSnapshot toSnapshot(Supplier supplier);
 
-    private Contact toContact(ContactRequest request) {
+    default Contact toContact(ContactRequest request) {
         return request == null ? null : Contact.create(request.email(), request.phone());
     }
 
-    private Address toAddress(AddressRequest request) {
+    default Address toAddress(AddressRequest request) {
         if (request == null) {
             return null;
         }
@@ -94,21 +76,8 @@ public class CustomerMapper {
                 .build();
     }
 
-    private ContactResponse toResponse(Contact contact) {
-        return contact == null ? null : new ContactResponse(contact.getEmail(), contact.getPhone());
-    }
+    ContactResponse toResponse(Contact contact);
 
-    private AddressResponse toResponse(Address address) {
-        return address == null
-                ? null
-                : new AddressResponse(
-                        address.getPostalCode(),
-                        address.getStreet(),
-                        address.getNumber(),
-                        address.getComplement(),
-                        address.getDistrict(),
-                        address.getCity(),
-                        address.getRegion(),
-                        address.getCountry().name());
-    }
+    @Mapping(target = "country", source = "country.name")
+    AddressResponse toResponse(Address address);
 }
