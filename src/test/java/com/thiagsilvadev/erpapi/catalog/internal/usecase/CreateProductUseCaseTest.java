@@ -21,7 +21,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.exception.SkuAlreadyExistsExcep
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
-import com.thiagsilvadev.erpapi.common.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class CreateProductUseCaseTest {

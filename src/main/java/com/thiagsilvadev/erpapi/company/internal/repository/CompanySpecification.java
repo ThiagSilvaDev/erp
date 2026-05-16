@@ -2,7 +2,7 @@ package com.thiagsilvadev.erpapi.company.internal.repository;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.thiagsilvadev.erpapi.common.model.Cnpj;
+import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;

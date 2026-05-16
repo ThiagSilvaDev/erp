@@ -2,9 +2,9 @@ package com.thiagsilvadev.erpapi.customer.internal.dto;
 
 import org.springframework.stereotype.Component;
 
-import com.thiagsilvadev.erpapi.common.model.Contact;
-import com.thiagsilvadev.erpapi.common.model.address.Address;
-import com.thiagsilvadev.erpapi.common.model.address.Country;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
 import com.thiagsilvadev.erpapi.customer.api.SupplierSnapshot;
 import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;

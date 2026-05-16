@@ -2,10 +2,10 @@ package com.thiagsilvadev.erpapi.company.internal.model;
 
 import jakarta.persistence.*;
 
-import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
-import com.thiagsilvadev.erpapi.common.model.Cnpj;
-import com.thiagsilvadev.erpapi.common.model.Contact;
-import com.thiagsilvadev.erpapi.common.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 

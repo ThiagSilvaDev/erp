@@ -12,8 +12,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
-import com.thiagsilvadev.erpapi.common.model.Email;
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.Email;
 
 @Entity
 @Table(

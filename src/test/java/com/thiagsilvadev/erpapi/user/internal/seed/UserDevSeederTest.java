@@ -15,10 +15,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.thiagsilvadev.erpapi.common.model.Cnpj;
-import com.thiagsilvadev.erpapi.common.model.Contact;
-import com.thiagsilvadev.erpapi.common.model.address.Address;
-import com.thiagsilvadev.erpapi.common.model.address.Country;
+import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
@@ -46,7 +46,7 @@ class UserDevSeederTest {
         UUID userId = UUID.randomUUID();
         when(userRepository.existsByContactEmailValue(UserDevSeeder.ADMIN_EMAIL))
                 .thenReturn(false);
-        when(companyFacade.findByCnpj("11.222.333/0001-81")).thenReturn(Optional.of(company(companyId)));
+        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(companyId)));
         when(userRepository.save(org.mockito.ArgumentMatchers.any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             ReflectionTestUtils.setField(user, "id", userId);

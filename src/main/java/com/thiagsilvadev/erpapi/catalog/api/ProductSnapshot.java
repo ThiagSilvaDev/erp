@@ -2,7 +2,7 @@ package com.thiagsilvadev.erpapi.catalog.api;
 
 import java.util.UUID;
 
-import com.thiagsilvadev.erpapi.common.model.Money;
+import com.thiagsilvadev.erpapi.common.domain.model.Money;
 
 public record ProductSnapshot(
         UUID id,

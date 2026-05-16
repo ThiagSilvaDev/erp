@@ -7,8 +7,8 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
-import com.thiagsilvadev.erpapi.common.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 
 @Entity
 @Table(name = "contact_persons")

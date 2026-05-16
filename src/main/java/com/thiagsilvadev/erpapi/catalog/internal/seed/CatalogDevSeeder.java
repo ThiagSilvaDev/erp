@@ -13,7 +13,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
-import com.thiagsilvadev.erpapi.common.model.Money;
+import com.thiagsilvadev.erpapi.common.domain.model.Money;
 
 @Component
 @Profile("dev")

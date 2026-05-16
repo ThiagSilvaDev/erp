@@ -8,9 +8,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.common.model.Contact;
-import com.thiagsilvadev.erpapi.common.model.address.Address;
-import com.thiagsilvadev.erpapi.common.model.address.Country;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;
 import com.thiagsilvadev.erpapi.customer.internal.model.Customer;

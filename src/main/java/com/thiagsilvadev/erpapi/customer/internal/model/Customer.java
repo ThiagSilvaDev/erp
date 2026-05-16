@@ -8,9 +8,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
-import com.thiagsilvadev.erpapi.common.model.Contact;
-import com.thiagsilvadev.erpapi.common.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 
 @Entity
 @Table(

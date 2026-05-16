@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import com.thiagsilvadev.erpapi.common.exception.DomainValidationException;
+import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 
 class IamCredentialTest {
 

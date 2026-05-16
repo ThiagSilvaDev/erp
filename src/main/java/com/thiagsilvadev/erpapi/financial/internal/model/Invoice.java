@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import jakarta.persistence.*;
 
-import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 
 @Entity
 @Table(name = "financial_invoices")

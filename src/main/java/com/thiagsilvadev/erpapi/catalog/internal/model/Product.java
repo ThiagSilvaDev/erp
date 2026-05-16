@@ -13,8 +13,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
-import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
-import com.thiagsilvadev.erpapi.common.model.Money;
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.Money;
 
 @Entity
 @Table(

@@ -4,7 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.common.model.Email;
+import com.thiagsilvadev.erpapi.common.domain.model.Email;
 import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningFacade;
 import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.iam.internal.exception.CredentialAlreadyExistsException;

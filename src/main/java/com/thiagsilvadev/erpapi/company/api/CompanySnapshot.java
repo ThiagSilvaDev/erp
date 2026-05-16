@@ -2,9 +2,9 @@ package com.thiagsilvadev.erpapi.company.api;
 
 import java.util.UUID;
 
-import com.thiagsilvadev.erpapi.common.model.Cnpj;
-import com.thiagsilvadev.erpapi.common.model.Contact;
-import com.thiagsilvadev.erpapi.common.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 
 public record CompanySnapshot(
         UUID id,

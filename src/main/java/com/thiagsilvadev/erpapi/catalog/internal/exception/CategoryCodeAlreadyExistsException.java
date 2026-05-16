@@ -3,7 +3,7 @@ package com.thiagsilvadev.erpapi.catalog.internal.exception;
 import java.io.Serial;
 import java.util.Map;
 
-import com.thiagsilvadev.erpapi.common.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 
 public class CategoryCodeAlreadyExistsException extends ConflictException {
 

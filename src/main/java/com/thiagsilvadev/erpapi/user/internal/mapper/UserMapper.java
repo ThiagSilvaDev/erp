@@ -3,7 +3,7 @@ package com.thiagsilvadev.erpapi.user.internal.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.thiagsilvadev.erpapi.common.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserResponse;

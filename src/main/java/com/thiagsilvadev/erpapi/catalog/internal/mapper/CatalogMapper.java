@@ -12,7 +12,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
-import com.thiagsilvadev.erpapi.common.model.Money;
+import com.thiagsilvadev.erpapi.common.domain.model.Money;
 
 @Mapper(componentModel = "spring")
 public interface CatalogMapper {

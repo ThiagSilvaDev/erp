@@ -8,10 +8,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.common.model.Cnpj;
-import com.thiagsilvadev.erpapi.common.model.Contact;
-import com.thiagsilvadev.erpapi.common.model.address.Address;
-import com.thiagsilvadev.erpapi.common.model.address.Country;
+import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.company.internal.model.Company;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
@@ -63,6 +63,7 @@ class CompanyDevSeeder implements ApplicationRunner {
 
         companyRepository.save(company);
     }
+
     private void seedPartner() {
         Cnpj cnpj = Cnpj.create(PARTNER_CNPJ);
 

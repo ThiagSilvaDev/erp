@@ -1,6 +1,6 @@
 package com.thiagsilvadev.erpapi.common.format;
 
-import com.thiagsilvadev.erpapi.common.model.address.Country;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
 
 public final class AddressPostalCodeFormatter {
 

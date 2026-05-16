@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.thiagsilvadev.erpapi.common.model.Email;
+import com.thiagsilvadev.erpapi.common.domain.model.Email;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserSearchCriteria;

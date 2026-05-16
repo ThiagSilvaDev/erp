@@ -13,8 +13,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
-import com.thiagsilvadev.erpapi.common.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 
@@ -31,10 +31,8 @@ public class User extends AbstractBaseEntity {
     private String lastName;
 
     @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(name = "email.value", column = @Column(name = "email", nullable = false, length = 255)),
-        @AttributeOverride(name = "phone", column = @Column(name = "phone", length = 11))
-    })
+    @AttributeOverride(name = "email.value", column = @Column(name = "email", nullable = false, length = 255))
+    @AttributeOverride(name = "phone", column = @Column(name = "phone", length = 11))
     private Contact contact;
 
     private LocalDate birthDate;

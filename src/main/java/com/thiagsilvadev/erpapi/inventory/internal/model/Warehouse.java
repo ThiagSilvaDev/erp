@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 
 @Entity
 @Table(

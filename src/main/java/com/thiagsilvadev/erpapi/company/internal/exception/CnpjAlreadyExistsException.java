@@ -3,7 +3,7 @@ package com.thiagsilvadev.erpapi.company.internal.exception;
 import java.io.Serial;
 import java.util.Map;
 
-import com.thiagsilvadev.erpapi.common.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 
 public class CnpjAlreadyExistsException extends ConflictException {
 

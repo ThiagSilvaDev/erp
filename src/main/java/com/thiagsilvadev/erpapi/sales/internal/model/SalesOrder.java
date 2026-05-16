@@ -5,7 +5,7 @@ import java.util.*;
 
 import jakarta.persistence.*;
 
-import com.thiagsilvadev.erpapi.common.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 
 @Entity

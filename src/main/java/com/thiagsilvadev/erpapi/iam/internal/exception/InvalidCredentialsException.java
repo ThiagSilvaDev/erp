@@ -4,7 +4,7 @@ import java.io.Serial;
 
 import org.springframework.http.HttpStatus;
 
-import com.thiagsilvadev.erpapi.common.exception.BusinessRuleException;
+import com.thiagsilvadev.erpapi.common.domain.exception.BusinessRuleException;
 
 public class InvalidCredentialsException extends BusinessRuleException {
 

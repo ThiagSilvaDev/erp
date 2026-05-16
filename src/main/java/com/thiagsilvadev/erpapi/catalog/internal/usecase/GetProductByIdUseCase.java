@@ -9,7 +9,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
-import com.thiagsilvadev.erpapi.common.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 
 @Component
 public class GetProductByIdUseCase {
