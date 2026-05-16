@@ -38,11 +38,11 @@ public interface CompanyApi {
     @Operation(operationId = "getCompanyById")
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "404")
-    ResponseEntity<CompanyResponse> getCompanyById(@PathVariable UUID id);
+    CompanyResponse getCompanyById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listCompanies")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<CompanyResponse>> listCompanies(
+    Page<CompanyResponse> listCompanies(
             @ParameterObject CompanySearchCriteria criteria, @ParameterObject Pageable pageable);
 }

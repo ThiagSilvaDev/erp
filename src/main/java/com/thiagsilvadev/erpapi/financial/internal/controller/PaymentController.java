@@ -39,12 +39,12 @@ class PaymentController implements PaymentApi {
     }
 
     @Override
-    public ResponseEntity<PaymentResponse> getPayment(@PathVariable UUID id) {
-        return ResponseEntity.ok(getPaymentByIdUseCase.execute(id));
+    public PaymentResponse getPayment(@PathVariable UUID id) {
+        return getPaymentByIdUseCase.execute(id);
     }
 
     @Override
-    public ResponseEntity<Page<PaymentResponse>> listPayments(Pageable pageable) {
-        return ResponseEntity.ok(listPaymentsUseCase.execute(pageable));
+    public Page<PaymentResponse> listPayments(Pageable pageable) {
+        return listPaymentsUseCase.execute(pageable);
     }
 }

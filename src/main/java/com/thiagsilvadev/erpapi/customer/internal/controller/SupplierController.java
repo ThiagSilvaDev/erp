@@ -49,16 +49,16 @@ class SupplierController implements SupplierApi {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<SupplierResponse> getSupplierById(UUID id) {
-        return ResponseEntity.ok(mapper.toResponse(
-                supplierRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Supplier.class, id))));
+    public SupplierResponse getSupplierById(UUID id) {
+        return mapper.toResponse(
+                supplierRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Supplier.class, id)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Page<SupplierResponse>> listSuppliers(CustomerSearchCriteria criteria, Pageable pageable) {
-        return ResponseEntity.ok(supplierRepository
+    public Page<SupplierResponse> listSuppliers(CustomerSearchCriteria criteria, Pageable pageable) {
+        return supplierRepository
                 .findAll(CustomerSpecification.suppliers(criteria), pageable)
-                .map(mapper::toResponse));
+                .map(mapper::toResponse);
     }
 }

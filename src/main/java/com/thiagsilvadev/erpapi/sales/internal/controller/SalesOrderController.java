@@ -73,39 +73,39 @@ class SalesOrderController implements SalesOrderApi, SalesFacade {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<SalesOrderResponse> getOrder(@PathVariable UUID id) {
-        return ResponseEntity.ok(mapper.toResponse(
-                orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id))));
+    public SalesOrderResponse getOrder(@PathVariable UUID id) {
+        return mapper.toResponse(
+                orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Page<SalesOrderResponse>> listOrders(SalesOrderSearchCriteria criteria, Pageable pageable) {
-        return ResponseEntity.ok(orderRepository
+    public Page<SalesOrderResponse> listOrders(SalesOrderSearchCriteria criteria, Pageable pageable) {
+        return orderRepository
                 .findAll(SalesOrderSpecification.withCriteria(criteria), pageable)
-                .map(mapper::toResponse));
+                .map(mapper::toResponse);
     }
 
     @Override
     @Transactional
-    public ResponseEntity<SalesOrderResponse> confirmOrder(@PathVariable UUID id) {
+    public SalesOrderResponse confirmOrder(@PathVariable UUID id) {
         SalesOrder order =
                 orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
         order.confirm();
         for (SalesOrderItem item : order.getItems()) {
             inventoryFacade.reserve(item.getProductId(), item.getWarehouseId(), item.getQuantity(), order.getId());
         }
-        return ResponseEntity.ok(mapper.toResponse(order));
+        return mapper.toResponse(order);
     }
 
     @Override
     @Transactional
-    public ResponseEntity<SalesOrderResponse> cancelOrder(@PathVariable UUID id) {
+    public SalesOrderResponse cancelOrder(@PathVariable UUID id) {
         SalesOrder order =
                 orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
         order.cancel();
         inventoryFacade.releaseBySalesOrderId(order.getId());
-        return ResponseEntity.ok(mapper.toResponse(order));
+        return mapper.toResponse(order);
     }
 
     @Override

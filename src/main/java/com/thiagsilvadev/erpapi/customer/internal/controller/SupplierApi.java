@@ -29,11 +29,11 @@ public interface SupplierApi {
     @GetMapping("/{id}")
     @Operation(operationId = "getSupplierById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<SupplierResponse> getSupplierById(@PathVariable UUID id);
+    SupplierResponse getSupplierById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listSuppliers")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<SupplierResponse>> listSuppliers(
+    Page<SupplierResponse> listSuppliers(
             @ParameterObject CustomerSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

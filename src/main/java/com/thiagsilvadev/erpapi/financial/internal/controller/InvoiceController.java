@@ -39,12 +39,12 @@ class InvoiceController implements InvoiceApi {
     }
 
     @Override
-    public ResponseEntity<InvoiceResponse> getInvoice(@PathVariable UUID id) {
-        return ResponseEntity.ok(getInvoiceByIdUseCase.execute(id));
+    public InvoiceResponse getInvoice(@PathVariable UUID id) {
+        return getInvoiceByIdUseCase.execute(id);
     }
 
     @Override
-    public ResponseEntity<Page<InvoiceResponse>> listInvoices(Pageable pageable) {
-        return ResponseEntity.ok(listInvoicesUseCase.execute(pageable));
+    public Page<InvoiceResponse> listInvoices(Pageable pageable) {
+        return listInvoicesUseCase.execute(pageable);
     }
 }

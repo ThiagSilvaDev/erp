@@ -29,12 +29,12 @@ public interface InventoryApi {
     @GetMapping("/warehouses/{id}")
     @Operation(operationId = "getWarehouseById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<WarehouseResponse> getWarehouse(@PathVariable UUID id);
+    WarehouseResponse getWarehouse(@PathVariable UUID id);
 
     @GetMapping("/warehouses")
     @Operation(operationId = "listWarehouses")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<WarehouseResponse>> listWarehouses(@ParameterObject Pageable pageable);
+    Page<WarehouseResponse> listWarehouses(@ParameterObject Pageable pageable);
 
     @PostMapping("/stock-movements")
     @Operation(operationId = "createStockMovement")
@@ -44,22 +44,22 @@ public interface InventoryApi {
     @GetMapping("/stock-movements/{id}")
     @Operation(operationId = "getStockMovementById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<StockMovementResponse> getMovement(@PathVariable UUID id);
+    StockMovementResponse getMovement(@PathVariable UUID id);
 
     @GetMapping("/stock-movements")
     @Operation(operationId = "listStockMovements")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<StockMovementResponse>> listMovements(@ParameterObject Pageable pageable);
+    Page<StockMovementResponse> listMovements(@ParameterObject Pageable pageable);
 
     @GetMapping("/items")
     @Operation(operationId = "listInventoryItems")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<InventoryItemResponse>> listItems(@ParameterObject Pageable pageable);
+    Page<InventoryItemResponse> listItems(@ParameterObject Pageable pageable);
 
     @GetMapping("/items/{id}")
     @Operation(operationId = "getInventoryItemById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<InventoryItemResponse> getItem(@PathVariable UUID id);
+    InventoryItemResponse getItem(@PathVariable UUID id);
 
     @PostMapping(value = "/reservations", consumes = "application/json")
     @Operation(operationId = "createInventoryReservation")
@@ -69,10 +69,10 @@ public interface InventoryApi {
     @GetMapping("/reservations/{id}")
     @Operation(operationId = "getInventoryReservationById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<ReservationResponse> getReservation(@PathVariable UUID id);
+    ReservationResponse getReservation(@PathVariable UUID id);
 
     @GetMapping("/reservations")
     @Operation(operationId = "listInventoryReservations")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<ReservationResponse>> listReservations(@ParameterObject Pageable pageable);
+    Page<ReservationResponse> listReservations(@ParameterObject Pageable pageable);
 }

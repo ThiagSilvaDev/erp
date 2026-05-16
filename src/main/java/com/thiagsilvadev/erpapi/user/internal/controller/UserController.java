@@ -44,12 +44,12 @@ class UserController implements UserApi {
     }
 
     @Override
-    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
-        return ResponseEntity.ok(getUserByIdUseCase.execute(id));
+    public UserResponse getUserById(@PathVariable UUID id) {
+        return getUserByIdUseCase.execute(id);
     }
 
     @Override
-    public ResponseEntity<Page<UserResponse>> listUsers(UserSearchCriteria criteria, Pageable pageable) {
-        return ResponseEntity.ok(listUsersUseCase.execute(criteria, pageable));
+    public Page<UserResponse> listUsers(UserSearchCriteria criteria, Pageable pageable) {
+        return listUsersUseCase.execute(criteria, pageable);
     }
 }

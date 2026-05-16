@@ -44,12 +44,12 @@ class ProductController implements ProductApi {
     }
 
     @Override
-    public ResponseEntity<ProductResponse> getProductById(@PathVariable UUID id) {
-        return ResponseEntity.ok(getProductByIdUseCase.execute(id));
+    public ProductResponse getProductById(@PathVariable UUID id) {
+        return getProductByIdUseCase.execute(id);
     }
 
     @Override
-    public ResponseEntity<Page<ProductResponse>> listProducts(ProductSearchCriteria criteria, Pageable pageable) {
-        return ResponseEntity.ok(listProductsUseCase.execute(criteria, pageable));
+    public Page<ProductResponse> listProducts(ProductSearchCriteria criteria, Pageable pageable) {
+        return listProductsUseCase.execute(criteria, pageable);
     }
 }

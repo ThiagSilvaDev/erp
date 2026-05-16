@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.FinancialEntryResponse;
@@ -25,12 +24,12 @@ class FinancialEntryController implements FinancialEntryApi {
     }
 
     @Override
-    public ResponseEntity<FinancialEntryResponse> getEntry(@PathVariable UUID id) {
-        return ResponseEntity.ok(getFinancialEntryByIdUseCase.execute(id));
+    public FinancialEntryResponse getEntry(@PathVariable UUID id) {
+        return getFinancialEntryByIdUseCase.execute(id);
     }
 
     @Override
-    public ResponseEntity<Page<FinancialEntryResponse>> listEntries(Pageable pageable) {
-        return ResponseEntity.ok(listFinancialEntriesUseCase.execute(pageable));
+    public Page<FinancialEntryResponse> listEntries(Pageable pageable) {
+        return listFinancialEntriesUseCase.execute(pageable);
     }
 }

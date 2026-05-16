@@ -3,7 +3,6 @@ package com.thiagsilvadev.erpapi.iam.internal.controller;
 import jakarta.validation.Valid;
 
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,5 +23,5 @@ public interface AuthApi {
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "401")
     @ApiResponse(responseCode = "400")
-    ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request);
+    LoginResponse login(@Valid @RequestBody LoginRequest request);
 }

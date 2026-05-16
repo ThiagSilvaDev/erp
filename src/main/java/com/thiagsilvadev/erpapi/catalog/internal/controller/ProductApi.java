@@ -38,11 +38,11 @@ public interface ProductApi {
     @Operation(operationId = "getProductById")
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "404")
-    ResponseEntity<ProductResponse> getProductById(@PathVariable UUID id);
+    ProductResponse getProductById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listProducts")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<ProductResponse>> listProducts(
+    Page<ProductResponse> listProducts(
             @ParameterObject ProductSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

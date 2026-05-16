@@ -47,15 +47,15 @@ class ContactPersonController implements ContactPersonApi {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<ContactPersonResponse> getContactPersonById(UUID id) {
-        return ResponseEntity.ok(mapper.toResponse(contactPersonRepository
+    public ContactPersonResponse getContactPersonById(UUID id) {
+        return mapper.toResponse(contactPersonRepository
                 .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ContactPerson.class, id))));
+                .orElseThrow(() -> new ResourceNotFoundException(ContactPerson.class, id)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Page<ContactPersonResponse>> listContactPersons(Pageable pageable) {
-        return ResponseEntity.ok(contactPersonRepository.findAll(pageable).map(mapper::toResponse));
+    public Page<ContactPersonResponse> listContactPersons(Pageable pageable) {
+        return contactPersonRepository.findAll(pageable).map(mapper::toResponse);
     }
 }

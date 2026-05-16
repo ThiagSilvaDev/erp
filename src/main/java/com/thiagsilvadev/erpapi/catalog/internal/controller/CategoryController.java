@@ -44,12 +44,12 @@ class CategoryController implements CategoryApi {
     }
 
     @Override
-    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable UUID id) {
-        return ResponseEntity.ok(getCategoryByIdUseCase.execute(id));
+    public CategoryResponse getCategoryById(@PathVariable UUID id) {
+        return getCategoryByIdUseCase.execute(id);
     }
 
     @Override
-    public ResponseEntity<Page<CategoryResponse>> listCategories(CategorySearchCriteria criteria, Pageable pageable) {
-        return ResponseEntity.ok(listCategoriesUseCase.execute(criteria, pageable));
+    public Page<CategoryResponse> listCategories(CategorySearchCriteria criteria, Pageable pageable) {
+        return listCategoriesUseCase.execute(criteria, pageable);
     }
 }

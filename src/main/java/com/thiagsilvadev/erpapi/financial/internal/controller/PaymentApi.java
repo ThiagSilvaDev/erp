@@ -30,10 +30,10 @@ interface PaymentApi {
     @GetMapping("/{id}")
     @Operation(operationId = "getPaymentById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<PaymentResponse> getPayment(@PathVariable UUID id);
+    PaymentResponse getPayment(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listPayments")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<PaymentResponse>> listPayments(@ParameterObject Pageable pageable);
+    Page<PaymentResponse> listPayments(@ParameterObject Pageable pageable);
 }

@@ -29,10 +29,10 @@ public interface ContactPersonApi {
     @GetMapping("/{id}")
     @Operation(operationId = "getContactPersonById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<ContactPersonResponse> getContactPersonById(@PathVariable UUID id);
+    ContactPersonResponse getContactPersonById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listContactPersons")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<ContactPersonResponse>> listContactPersons(@ParameterObject Pageable pageable);
+    Page<ContactPersonResponse> listContactPersons(@ParameterObject Pageable pageable);
 }

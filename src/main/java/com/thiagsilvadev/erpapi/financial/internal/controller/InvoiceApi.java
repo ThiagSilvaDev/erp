@@ -30,10 +30,10 @@ interface InvoiceApi {
     @GetMapping("/{id}")
     @Operation(operationId = "getInvoiceById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<InvoiceResponse> getInvoice(@PathVariable UUID id);
+    InvoiceResponse getInvoice(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listInvoices")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<InvoiceResponse>> listInvoices(@ParameterObject Pageable pageable);
+    Page<InvoiceResponse> listInvoices(@ParameterObject Pageable pageable);
 }

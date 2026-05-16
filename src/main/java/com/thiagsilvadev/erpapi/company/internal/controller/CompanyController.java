@@ -42,12 +42,12 @@ class CompanyController implements CompanyApi {
     }
 
     @Override
-    public ResponseEntity<CompanyResponse> getCompanyById(@PathVariable UUID id) {
-        return ResponseEntity.ok(getCompanyByIdUseCase.execute(id));
+    public CompanyResponse getCompanyById(@PathVariable UUID id) {
+        return getCompanyByIdUseCase.execute(id);
     }
 
     @Override
-    public ResponseEntity<Page<CompanyResponse>> listCompanies(CompanySearchCriteria criteria, Pageable pageable) {
-        return ResponseEntity.ok(listCompaniesUseCase.execute(criteria, pageable));
+    public Page<CompanyResponse> listCompanies(CompanySearchCriteria criteria, Pageable pageable) {
+        return listCompaniesUseCase.execute(criteria, pageable);
     }
 }

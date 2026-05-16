@@ -29,11 +29,11 @@ public interface CustomerApi {
     @GetMapping("/{id}")
     @Operation(operationId = "getCustomerById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<CustomerResponse> getCustomerById(@PathVariable UUID id);
+    CustomerResponse getCustomerById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listCustomers")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<CustomerResponse>> listCustomers(
+    Page<CustomerResponse> listCustomers(
             @ParameterObject CustomerSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

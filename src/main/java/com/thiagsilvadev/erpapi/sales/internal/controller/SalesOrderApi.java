@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
-import org.springframework.data.domain.Page;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,20 +29,21 @@ public interface SalesOrderApi {
     @GetMapping("/{id}")
     @Operation(operationId = "getSalesOrderById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<SalesOrderResponse> getOrder(@PathVariable UUID id);
+    SalesOrderResponse getOrder(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listSalesOrders")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<SalesOrderResponse>> listOrders(@ParameterObject SalesOrderSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<SalesOrderResponse> listOrders(
+            @ParameterObject SalesOrderSearchCriteria criteria, @ParameterObject Pageable pageable);
 
     @PostMapping("/{id}/confirm")
     @Operation(operationId = "confirmSalesOrder")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<SalesOrderResponse> confirmOrder(@PathVariable UUID id);
+    SalesOrderResponse confirmOrder(@PathVariable UUID id);
 
     @PostMapping("/{id}/cancel")
     @Operation(operationId = "cancelSalesOrder")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<SalesOrderResponse> cancelOrder(@PathVariable UUID id);
+    SalesOrderResponse cancelOrder(@PathVariable UUID id);
 }

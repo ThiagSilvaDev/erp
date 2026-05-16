@@ -38,11 +38,10 @@ public interface UserApi {
     @Operation(operationId = "getUserById")
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "404")
-    ResponseEntity<UserResponse> getUserById(@PathVariable UUID id);
+    UserResponse getUserById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listUsers")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<UserResponse>> listUsers(
-            @ParameterObject UserSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<UserResponse> listUsers(@ParameterObject UserSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

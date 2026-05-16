@@ -57,17 +57,17 @@ class CustomerController implements CustomerApi, CustomerFacade {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<CustomerResponse> getCustomerById(UUID id) {
-        return ResponseEntity.ok(mapper.toResponse(
-                customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Customer.class, id))));
+    public CustomerResponse getCustomerById(UUID id) {
+        return mapper.toResponse(
+                customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Customer.class, id)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Page<CustomerResponse>> listCustomers(CustomerSearchCriteria criteria, Pageable pageable) {
-        return ResponseEntity.ok(customerRepository
+    public Page<CustomerResponse> listCustomers(CustomerSearchCriteria criteria, Pageable pageable) {
+        return customerRepository
                 .findAll(CustomerSpecification.customers(criteria), pageable)
-                .map(mapper::toResponse));
+                .map(mapper::toResponse);
     }
 
     @Override

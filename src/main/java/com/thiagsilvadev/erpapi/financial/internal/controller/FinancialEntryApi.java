@@ -6,7 +6,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.FinancialEntryResponse;
@@ -22,10 +21,10 @@ interface FinancialEntryApi {
     @GetMapping("/{id}")
     @Operation(operationId = "getFinancialEntryById")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<FinancialEntryResponse> getEntry(@PathVariable UUID id);
+    FinancialEntryResponse getEntry(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listFinancialEntries")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<FinancialEntryResponse>> listEntries(@ParameterObject Pageable pageable);
+    Page<FinancialEntryResponse> listEntries(@ParameterObject Pageable pageable);
 }

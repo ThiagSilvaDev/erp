@@ -38,11 +38,11 @@ public interface CategoryApi {
     @Operation(operationId = "getCategoryById")
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "404")
-    ResponseEntity<CategoryResponse> getCategoryById(@PathVariable UUID id);
+    CategoryResponse getCategoryById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listCategories")
     @ApiResponse(responseCode = "200")
-    ResponseEntity<Page<CategoryResponse>> listCategories(
+    Page<CategoryResponse> listCategories(
             @ParameterObject CategorySearchCriteria criteria, @ParameterObject Pageable pageable);
 }

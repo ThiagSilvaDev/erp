@@ -2,7 +2,6 @@ package com.thiagsilvadev.erpapi.iam.internal.controller;
 
 import jakarta.validation.Valid;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +21,7 @@ class AuthController implements AuthApi {
     }
 
     @Override
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(loginUseCase.execute(request));
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+        return loginUseCase.execute(request);
     }
 }
