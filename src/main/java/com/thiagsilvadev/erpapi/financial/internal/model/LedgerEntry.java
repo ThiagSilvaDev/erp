@@ -9,12 +9,12 @@ import jakarta.persistence.*;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 
 @Entity
-@Table(name = "financial_entries")
-public class FinancialEntry extends AbstractBaseEntity {
+@Table(name = "ledger_entries")
+public class LedgerEntry extends AbstractBaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private EntryType type;
+    private LedgerEntryType type;
 
     private UUID invoiceId;
 
@@ -29,11 +29,12 @@ public class FinancialEntry extends AbstractBaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private EntryStatus status = EntryStatus.OPEN;
+    private LedgerEntryStatus status = LedgerEntryStatus.OPEN;
 
-    protected FinancialEntry() {}
+    protected LedgerEntry() {}
 
-    private FinancialEntry(EntryType type, UUID invoiceId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
+    private LedgerEntry(
+            LedgerEntryType type, UUID invoiceId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
         this.type = type;
         this.invoiceId = invoiceId;
         this.amount = amount;
@@ -41,15 +42,15 @@ public class FinancialEntry extends AbstractBaseEntity {
         this.dueDate = dueDate;
     }
 
-    public static FinancialEntry receivable(UUID invoiceId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
-        return new FinancialEntry(EntryType.RECEIVABLE, invoiceId, amount, currencyCode, dueDate);
+    public static LedgerEntry receivable(UUID invoiceId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
+        return new LedgerEntry(LedgerEntryType.RECEIVABLE, invoiceId, amount, currencyCode, dueDate);
     }
 
     public void settle() {
-        this.status = EntryStatus.SETTLED;
+        this.status = LedgerEntryStatus.SETTLED;
     }
 
-    public EntryType getType() {
+    public LedgerEntryType getType() {
         return type;
     }
 
@@ -69,7 +70,7 @@ public class FinancialEntry extends AbstractBaseEntity {
         return dueDate;
     }
 
-    public EntryStatus getStatus() {
+    public LedgerEntryStatus getStatus() {
         return status;
     }
 }

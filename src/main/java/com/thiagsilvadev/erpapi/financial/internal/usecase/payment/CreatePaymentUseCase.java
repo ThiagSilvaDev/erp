@@ -7,11 +7,11 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundExceptio
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreatePaymentRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
+import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
 import com.thiagsilvadev.erpapi.financial.internal.model.Payment;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 
 @Component
@@ -19,17 +19,17 @@ public class CreatePaymentUseCase {
 
     private final InvoiceRepository invoiceRepository;
     private final PaymentRepository paymentRepository;
-    private final FinancialEntryRepository entryRepository;
+    private final LedgerEntryRepository ledgerEntryRepository;
     private final FinancialMapper mapper;
 
     public CreatePaymentUseCase(
             InvoiceRepository invoiceRepository,
             PaymentRepository paymentRepository,
-            FinancialEntryRepository entryRepository,
+            LedgerEntryRepository ledgerEntryRepository,
             FinancialMapper mapper) {
         this.invoiceRepository = invoiceRepository;
         this.paymentRepository = paymentRepository;
-        this.entryRepository = entryRepository;
+        this.ledgerEntryRepository = ledgerEntryRepository;
         this.mapper = mapper;
     }
 
@@ -44,7 +44,7 @@ public class CreatePaymentUseCase {
 
         if (request.amount().compareTo(invoice.getAmount()) >= 0) {
             invoice.markPaid();
-            entryRepository.findByInvoiceId(invoice.getId()).ifPresent(FinancialEntry::settle);
+            ledgerEntryRepository.findByInvoiceId(invoice.getId()).ifPresent(LedgerEntry::settle);
         }
 
         return mapper.toResponse(payment);

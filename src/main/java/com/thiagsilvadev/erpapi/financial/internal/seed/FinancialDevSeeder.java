@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 
 @Component
 @Profile("dev")
@@ -23,15 +23,15 @@ class FinancialDevSeeder implements ApplicationRunner {
     private static final String CUSTOMER_DOCUMENT = "12345678901";
 
     private final InvoiceRepository invoiceRepository;
-    private final FinancialEntryRepository entryRepository;
+    private final LedgerEntryRepository ledgerEntryRepository;
     private final CustomerFacade customerFacade;
 
     FinancialDevSeeder(
             InvoiceRepository invoiceRepository,
-            FinancialEntryRepository entryRepository,
+            LedgerEntryRepository ledgerEntryRepository,
             CustomerFacade customerFacade) {
         this.invoiceRepository = invoiceRepository;
-        this.entryRepository = entryRepository;
+        this.ledgerEntryRepository = ledgerEntryRepository;
         this.customerFacade = customerFacade;
     }
 
@@ -50,7 +50,7 @@ class FinancialDevSeeder implements ApplicationRunner {
                 new java.math.BigDecimal("21.00"),
                 "BRL",
                 LocalDate.now().plusDays(15)));
-        entryRepository.save(FinancialEntry.receivable(
+        ledgerEntryRepository.save(LedgerEntry.receivable(
                 invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
     }
 }

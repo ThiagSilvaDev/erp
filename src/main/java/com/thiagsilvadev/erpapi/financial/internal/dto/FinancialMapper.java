@@ -12,5 +12,5 @@ public interface FinancialMapper {
 
     PaymentResponse toResponse(Payment payment);
 
-    FinancialEntryResponse toResponse(FinancialEntry entry);
+    LedgerEntryResponse toResponse(LedgerEntry ledgerEntry);
 }

@@ -14,8 +14,8 @@ import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 import com.thiagsilvadev.erpapi.customer.internal.repository.ContactPersonRepository;
 import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
 import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
@@ -120,8 +120,8 @@ class ErpApiApplicationTests {
         }
 
         @Bean
-        FinancialEntryRepository financialEntryRepository() {
-            return mock(FinancialEntryRepository.class);
+        LedgerEntryRepository ledgerEntryRepository() {
+            return mock(LedgerEntryRepository.class);
         }
     }
 }

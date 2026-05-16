@@ -8,23 +8,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.FinancialEntryResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.LedgerEntryResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@RequestMapping(value = "/api/v1/financial/entries", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "financial entries")
-interface FinancialEntryApi {
+@RequestMapping(value = "/api/v1/financial/ledger-entries", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "ledger entries")
+interface LedgerEntryApi {
 
     @GetMapping("/{id}")
-    @Operation(operationId = "getFinancialEntryById")
+    @Operation(operationId = "getLedgerEntryById")
     @ApiResponse(responseCode = "200")
-    FinancialEntryResponse getEntry(@PathVariable UUID id);
+    LedgerEntryResponse getLedgerEntry(@PathVariable UUID id);
 
     @GetMapping
-    @Operation(operationId = "listFinancialEntries")
+    @Operation(operationId = "listLedgerEntries")
     @ApiResponse(responseCode = "200")
-    Page<FinancialEntryResponse> listEntries(@ParameterObject Pageable pageable);
+    Page<LedgerEntryResponse> listLedgerEntries(@ParameterObject Pageable pageable);
 }

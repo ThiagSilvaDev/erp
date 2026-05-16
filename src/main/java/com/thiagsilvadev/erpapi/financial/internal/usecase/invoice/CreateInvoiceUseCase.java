@@ -8,29 +8,29 @@ import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreateInvoiceRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
 
 @Component
 public class CreateInvoiceUseCase {
 
     private final InvoiceRepository invoiceRepository;
-    private final FinancialEntryRepository entryRepository;
+    private final LedgerEntryRepository ledgerEntryRepository;
     private final CustomerFacade customerFacade;
     private final SalesFacade salesFacade;
     private final FinancialMapper mapper;
 
     public CreateInvoiceUseCase(
             InvoiceRepository invoiceRepository,
-            FinancialEntryRepository entryRepository,
+            LedgerEntryRepository ledgerEntryRepository,
             CustomerFacade customerFacade,
             SalesFacade salesFacade,
             FinancialMapper mapper) {
         this.invoiceRepository = invoiceRepository;
-        this.entryRepository = entryRepository;
+        this.ledgerEntryRepository = ledgerEntryRepository;
         this.customerFacade = customerFacade;
         this.salesFacade = salesFacade;
         this.mapper = mapper;
@@ -55,7 +55,7 @@ public class CreateInvoiceUseCase {
                 request.currencyCode(),
                 request.dueDate()));
 
-        entryRepository.save(FinancialEntry.receivable(
+        ledgerEntryRepository.save(LedgerEntry.receivable(
                 invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
 
         return mapper.toResponse(invoice);

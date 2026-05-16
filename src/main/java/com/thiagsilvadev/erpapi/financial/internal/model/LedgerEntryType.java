@@ -1,6 +1,6 @@
 package com.thiagsilvadev.erpapi.financial.internal.model;
 
-public enum EntryType {
+public enum LedgerEntryType {
     RECEIVABLE,
     PAYABLE
 }

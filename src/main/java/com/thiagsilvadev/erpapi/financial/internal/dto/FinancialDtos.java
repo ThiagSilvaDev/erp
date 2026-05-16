@@ -34,12 +34,12 @@ public final class FinancialDtos {
 
     public record PaymentResponse(UUID id, UUID invoiceId, BigDecimal amount, LocalDate paidAt) {}
 
-    public record FinancialEntryResponse(
+    public record LedgerEntryResponse(
             UUID id,
-            EntryType type,
+            LedgerEntryType type,
             UUID invoiceId,
             BigDecimal amount,
             String currencyCode,
             LocalDate dueDate,
-            EntryStatus status) {}
+            LedgerEntryStatus status) {}
 }
