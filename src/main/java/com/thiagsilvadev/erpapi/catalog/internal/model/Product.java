@@ -53,7 +53,11 @@ public class Product extends AbstractBaseEntity {
     protected Product() {}
 
     private Product(String sku, String name, String description, Money basePrice, Category category) {
-        this.sku = Sku.create(sku);
+        this(Sku.create(sku), name, description, basePrice, category);
+    }
+
+    private Product(Sku sku, String name, String description, Money basePrice, Category category) {
+        this.sku = Objects.requireNonNull(sku, "Product SKU cannot be null");
         this.name = Strings.required(name, "Product name cannot be blank");
         this.description = Strings.trimToNull(description);
         this.basePrice = Objects.requireNonNull(basePrice, "Product base price cannot be null");
@@ -61,6 +65,10 @@ public class Product extends AbstractBaseEntity {
     }
 
     public static Product create(String sku, String name, String description, Money basePrice, Category category) {
+        return new Product(sku, name, description, basePrice, category);
+    }
+
+    public static Product create(Sku sku, String name, String description, Money basePrice, Category category) {
         return new Product(sku, name, description, basePrice, category);
     }
 

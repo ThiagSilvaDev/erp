@@ -10,40 +10,31 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
-import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.dto.*;
 import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;
 import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerSpecification;
 import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
+import com.thiagsilvadev.erpapi.customer.internal.usecase.CreateSupplierUseCase;
 
 @RestController
 class SupplierController implements SupplierApi {
 
     private final SupplierRepository supplierRepository;
-    private final CompanyFacade companyFacade;
     private final CustomerMapper mapper;
+    private final CreateSupplierUseCase createSupplierUseCase;
 
-    SupplierController(SupplierRepository supplierRepository, CompanyFacade companyFacade, CustomerMapper mapper) {
+    SupplierController(
+            SupplierRepository supplierRepository, CustomerMapper mapper, CreateSupplierUseCase createSupplierUseCase) {
         this.supplierRepository = supplierRepository;
-        this.companyFacade = companyFacade;
         this.mapper = mapper;
+        this.createSupplierUseCase = createSupplierUseCase;
     }
 
     @Override
-    @Transactional
     public ResponseEntity<SupplierResponse> createSupplier(@Valid CreateSupplierRequest request) {
-        companyFacade
-                .findById(request.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.companyId()));
-        String document = Supplier.normalizeDocument(request.document());
-        if (supplierRepository.existsByDocument(document)) {
-            throw new ConflictException(
-                    "Supplier with this document already exists.", java.util.Map.of("document", document));
-        }
-        SupplierResponse response = mapper.toResponse(supplierRepository.save(mapper.toSupplier(request)));
+        SupplierResponse response = createSupplierUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 

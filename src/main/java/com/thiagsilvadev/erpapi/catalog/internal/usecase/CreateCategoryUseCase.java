@@ -29,7 +29,7 @@ public class CreateCategoryUseCase {
             throw new CategoryCodeAlreadyExistsException(code);
         }
 
-        Category category = catalogMapper.toEntity(request);
+        Category category = Category.create(request.code(), request.name(), request.description());
         Category savedCategory = categoryRepository.save(category);
 
         return catalogMapper.toResponse(savedCategory);

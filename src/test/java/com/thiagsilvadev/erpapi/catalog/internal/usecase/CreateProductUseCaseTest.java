@@ -19,6 +19,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.event.CatalogEventPublisher;
 import com.thiagsilvadev.erpapi.catalog.internal.exception.SkuAlreadyExistsException;
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
+import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
@@ -46,6 +47,7 @@ class CreateProductUseCaseTest {
         UUID categoryId = UUID.randomUUID();
         CreateProductRequest request = new CreateProductRequest(
                 " sku-1 ", "Product", null, new MoneyRequest(java.math.BigDecimal.TEN, "BRL"), categoryId);
+        when(catalogMapper.toSku(" sku-1 ")).thenReturn(Sku.create(" sku-1 "));
         when(productRepository.existsBySkuValue("SKU-1")).thenReturn(true);
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(SkuAlreadyExistsException.class);
@@ -59,6 +61,7 @@ class CreateProductUseCaseTest {
         UUID categoryId = UUID.randomUUID();
         CreateProductRequest request = new CreateProductRequest(
                 "sku-1", "Product", null, new MoneyRequest(java.math.BigDecimal.TEN, "BRL"), categoryId);
+        when(catalogMapper.toSku("sku-1")).thenReturn(Sku.create("sku-1"));
         when(productRepository.existsBySkuValue("SKU-1")).thenReturn(false);
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 

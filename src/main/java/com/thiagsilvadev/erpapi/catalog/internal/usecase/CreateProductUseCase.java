@@ -36,16 +36,17 @@ public class CreateProductUseCase {
 
     @Transactional
     public ProductResponse execute(CreateProductRequest request) {
-        String sku = Sku.create(request.sku()).getValue();
+        Sku sku = catalogMapper.toSku(request.sku());
 
-        if (productRepository.existsBySkuValue(sku)) {
-            throw new SkuAlreadyExistsException(sku);
+        if (productRepository.existsBySkuValue(sku.getValue())) {
+            throw new SkuAlreadyExistsException(sku.getValue());
         }
 
         Category category = categoryRepository
                 .findById(request.categoryId())
                 .orElseThrow(() -> new ResourceNotFoundException(Category.class, request.categoryId()));
-        Product product = catalogMapper.toEntity(request, category);
+        Product product = Product.create(
+                sku, request.name(), request.description(), catalogMapper.toMoney(request.basePrice()), category);
         Product savedProduct = productRepository.save(product);
 
         eventPublisher.productCreated(savedProduct);

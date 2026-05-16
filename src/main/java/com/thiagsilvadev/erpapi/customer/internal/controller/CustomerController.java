@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
@@ -20,6 +19,7 @@ import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
 import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
 import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerSpecification;
 import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
+import com.thiagsilvadev.erpapi.customer.internal.usecase.CreateCustomerUseCase;
 
 @RestController
 class CustomerController implements CustomerApi, CustomerFacade {
@@ -28,30 +28,24 @@ class CustomerController implements CustomerApi, CustomerFacade {
     private final SupplierRepository supplierRepository;
     private final CompanyFacade companyFacade;
     private final CustomerMapper mapper;
+    private final CreateCustomerUseCase createCustomerUseCase;
 
     CustomerController(
             CustomerRepository customerRepository,
             SupplierRepository supplierRepository,
             CompanyFacade companyFacade,
-            CustomerMapper mapper) {
+            CustomerMapper mapper,
+            CreateCustomerUseCase createCustomerUseCase) {
         this.customerRepository = customerRepository;
         this.supplierRepository = supplierRepository;
         this.companyFacade = companyFacade;
         this.mapper = mapper;
+        this.createCustomerUseCase = createCustomerUseCase;
     }
 
     @Override
-    @Transactional
     public ResponseEntity<CustomerResponse> createCustomer(@Valid CreateCustomerRequest request) {
-        companyFacade
-                .findById(request.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.companyId()));
-        String document = Customer.normalizeDocument(request.document());
-        if (customerRepository.existsByDocument(document)) {
-            throw new ConflictException(
-                    "Customer with this document already exists.", java.util.Map.of("document", document));
-        }
-        CustomerResponse response = mapper.toResponse(customerRepository.save(mapper.toCustomer(request)));
+        CustomerResponse response = createCustomerUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 

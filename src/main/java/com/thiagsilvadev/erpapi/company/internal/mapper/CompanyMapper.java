@@ -14,7 +14,6 @@ import com.thiagsilvadev.erpapi.company.internal.dto.AddressResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.ContactRequest;
 import com.thiagsilvadev.erpapi.company.internal.dto.ContactResponse;
-import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyRequest;
 import com.thiagsilvadev.erpapi.company.internal.model.Company;
 
 @Mapper(componentModel = "spring")
@@ -54,17 +53,8 @@ public interface CompanyMapper {
 
     ContactResponse toContactResponse(Contact contact);
 
-    default Company toEntity(CreateCompanyRequest request, Cnpj cnpj) {
-        if (request == null) {
-            return null;
-        }
-        return Company.create(
-                trimToNull(request.legalName()),
-                trimToNull(request.tradeName()),
-                cnpj,
-                request.type(),
-                toAddress(request.address()),
-                toContact(request.contact()));
+    default Cnpj toCnpj(String value) {
+        return value == null ? null : Cnpj.create(value);
     }
 
     @Named("trimToNull")

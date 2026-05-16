@@ -15,37 +15,6 @@ import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;
 @Mapper(componentModel = "spring")
 public interface CustomerMapper {
 
-    default Customer toCustomer(CreateCustomerRequest request) {
-        if (request == null) {
-            return null;
-        }
-        return Customer.create(
-                request.name(),
-                request.document(),
-                request.companyId(),
-                toContact(request.contact()),
-                toAddress(request.address()));
-    }
-
-    default Supplier toSupplier(CreateSupplierRequest request) {
-        if (request == null) {
-            return null;
-        }
-        return Supplier.create(
-                request.name(),
-                request.document(),
-                request.companyId(),
-                toContact(request.contact()),
-                toAddress(request.address()));
-    }
-
-    default ContactPerson toContactPerson(CreateContactPersonRequest request) {
-        if (request == null) {
-            return null;
-        }
-        return ContactPerson.create(request.name(), request.customerId(), toContact(request.contact()));
-    }
-
     CustomerResponse toResponse(Customer customer);
 
     SupplierResponse toResponse(Supplier supplier);

@@ -3,7 +3,6 @@ package com.thiagsilvadev.erpapi.company.internal.usecase;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyRequest;
 import com.thiagsilvadev.erpapi.company.internal.event.CompanyEventPublisher;
@@ -28,13 +27,19 @@ public class CreateCompanyUseCase {
 
     @Transactional
     public CompanyResponse execute(CreateCompanyRequest request) {
-        Cnpj cnpj = Cnpj.create(request.cnpj());
+        var cnpj = companyMapper.toCnpj(request.cnpj());
 
         if (companyRepository.existsByCnpj(cnpj)) {
             throw new CnpjAlreadyExistsException(cnpj.getNumber());
         }
 
-        Company company = companyMapper.toEntity(request, cnpj);
+        Company company = Company.create(
+                companyMapper.trimToNull(request.legalName()),
+                companyMapper.trimToNull(request.tradeName()),
+                cnpj,
+                request.type(),
+                companyMapper.toAddress(request.address()),
+                companyMapper.toContact(request.contact()));
         Company savedCompany = companyRepository.save(company);
 
         eventPublisher.companyCreated(savedCompany);

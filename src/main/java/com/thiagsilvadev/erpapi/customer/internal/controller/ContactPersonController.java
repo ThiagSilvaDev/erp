@@ -14,34 +14,28 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundExceptio
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.customer.internal.dto.*;
 import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;
-import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
 import com.thiagsilvadev.erpapi.customer.internal.repository.ContactPersonRepository;
-import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
+import com.thiagsilvadev.erpapi.customer.internal.usecase.CreateContactPersonUseCase;
 
 @RestController
 class ContactPersonController implements ContactPersonApi {
 
     private final ContactPersonRepository contactPersonRepository;
-    private final CustomerRepository customerRepository;
     private final CustomerMapper mapper;
+    private final CreateContactPersonUseCase createContactPersonUseCase;
 
     ContactPersonController(
             ContactPersonRepository contactPersonRepository,
-            CustomerRepository customerRepository,
-            CustomerMapper mapper) {
+            CustomerMapper mapper,
+            CreateContactPersonUseCase createContactPersonUseCase) {
         this.contactPersonRepository = contactPersonRepository;
-        this.customerRepository = customerRepository;
         this.mapper = mapper;
+        this.createContactPersonUseCase = createContactPersonUseCase;
     }
 
     @Override
-    @Transactional
     public ResponseEntity<ContactPersonResponse> createContactPerson(@Valid CreateContactPersonRequest request) {
-        customerRepository
-                .findById(request.customerId())
-                .orElseThrow(() -> new ResourceNotFoundException(Customer.class, request.customerId()));
-        ContactPersonResponse response =
-                mapper.toResponse(contactPersonRepository.save(mapper.toContactPerson(request)));
+        ContactPersonResponse response = createContactPersonUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
