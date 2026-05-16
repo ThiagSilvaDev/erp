@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -22,25 +23,26 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@RequestMapping(value = "/api/v1/company", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "companies", description = "Company management endpoints")
+@RequestMapping(value = "/api/v1/companies", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "companies")
 public interface CompanyApi {
 
-    @PostMapping
-    @Operation(operationId = "createCompany", summary = "Create a new company")
-    @ApiResponse(responseCode = "201", description = "Company created successfully")
-    @ApiResponse(responseCode = "400", description = "Bad Request")
-    @ApiResponse(responseCode = "422", description = "Unprocessable Entity")
+    @PostMapping(consumes = "application/json")
+    @Operation(operationId = "createCompany")
+    @ApiResponse(responseCode = "201")
+    @ApiResponse(responseCode = "400")
+    @ApiResponse(responseCode = "422")
     ResponseEntity<CompanyResponse> createCompany(@Valid @RequestBody CreateCompanyRequest request);
 
     @GetMapping("/{id}")
-    @Operation(operationId = "getCompanyById", summary = "Get a company by ID")
-    @ApiResponse(responseCode = "200", description = "Company retrieved successfully")
-    @ApiResponse(responseCode = "404", description = "Company not found")
+    @Operation(operationId = "getCompanyById")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "404")
     ResponseEntity<CompanyResponse> getCompanyById(@PathVariable UUID id);
 
     @GetMapping
-    @Operation(operationId = "listCompanies", summary = "List companies")
-    @ApiResponse(responseCode = "200", description = "Companies listed successfully")
-    ResponseEntity<Page<CompanyResponse>> listCompanies(CompanySearchCriteria criteria, Pageable pageable);
+    @Operation(operationId = "listCompanies")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<Page<CompanyResponse>> listCompanies(
+            @ParameterObject CompanySearchCriteria criteria, @ParameterObject Pageable pageable);
 }

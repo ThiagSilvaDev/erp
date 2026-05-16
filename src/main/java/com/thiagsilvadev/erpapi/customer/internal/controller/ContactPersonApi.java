@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -17,21 +18,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping(value = "/api/v1/contact-persons", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "contact-persons", description = "Contact person management endpoints")
+@Tag(name = "contact-persons")
 public interface ContactPersonApi {
 
-    @PostMapping
-    @Operation(operationId = "createContactPerson", summary = "Create a contact person")
-    @ApiResponse(responseCode = "201", description = "Contact person created successfully")
+    @PostMapping(consumes = "application/json")
+    @Operation(operationId = "createContactPerson")
+    @ApiResponse(responseCode = "201")
     ResponseEntity<ContactPersonResponse> createContactPerson(@Valid @RequestBody CreateContactPersonRequest request);
 
     @GetMapping("/{id}")
-    @Operation(operationId = "getContactPersonById", summary = "Get a contact person by ID")
-    @ApiResponse(responseCode = "200", description = "Contact person retrieved successfully")
+    @Operation(operationId = "getContactPersonById")
+    @ApiResponse(responseCode = "200")
     ResponseEntity<ContactPersonResponse> getContactPersonById(@PathVariable UUID id);
 
     @GetMapping
-    @Operation(operationId = "listContactPersons", summary = "List contact persons")
-    @ApiResponse(responseCode = "200", description = "Contact persons listed successfully")
-    ResponseEntity<Page<ContactPersonResponse>> listContactPersons(Pageable pageable);
+    @Operation(operationId = "listContactPersons")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<Page<ContactPersonResponse>> listContactPersons(@ParameterObject Pageable pageable);
 }

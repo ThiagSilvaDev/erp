@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -17,61 +18,61 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping(value = "/api/v1/inventory", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "inventory", description = "Inventory and stock management endpoints")
+@Tag(name = "inventory")
 public interface InventoryApi {
 
     @PostMapping("/warehouses")
-    @Operation(operationId = "createWarehouse", summary = "Create a warehouse")
-    @ApiResponse(responseCode = "201", description = "Warehouse created successfully")
+    @Operation(operationId = "createWarehouse")
+    @ApiResponse(responseCode = "201")
     ResponseEntity<WarehouseResponse> createWarehouse(@Valid @RequestBody CreateWarehouseRequest request);
 
     @GetMapping("/warehouses/{id}")
-    @Operation(operationId = "getWarehouseById", summary = "Get a warehouse by ID")
-    @ApiResponse(responseCode = "200", description = "Warehouse retrieved successfully")
-    WarehouseResponse getWarehouse(@PathVariable UUID id);
+    @Operation(operationId = "getWarehouseById")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<WarehouseResponse> getWarehouse(@PathVariable UUID id);
 
     @GetMapping("/warehouses")
-    @Operation(operationId = "listWarehouses", summary = "List warehouses")
-    @ApiResponse(responseCode = "200", description = "Warehouses listed successfully")
-    Page<WarehouseResponse> listWarehouses(Pageable pageable);
+    @Operation(operationId = "listWarehouses")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<Page<WarehouseResponse>> listWarehouses(@ParameterObject Pageable pageable);
 
     @PostMapping("/stock-movements")
-    @Operation(operationId = "createStockMovement", summary = "Create a stock movement")
-    @ApiResponse(responseCode = "201", description = "Stock movement created successfully")
+    @Operation(operationId = "createStockMovement")
+    @ApiResponse(responseCode = "201")
     ResponseEntity<StockMovementResponse> createMovement(@Valid @RequestBody CreateStockMovementRequest request);
 
     @GetMapping("/stock-movements/{id}")
-    @Operation(operationId = "getStockMovementById", summary = "Get a stock movement by ID")
-    @ApiResponse(responseCode = "200", description = "Stock movement retrieved successfully")
-    StockMovementResponse getMovement(@PathVariable UUID id);
+    @Operation(operationId = "getStockMovementById")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<StockMovementResponse> getMovement(@PathVariable UUID id);
 
     @GetMapping("/stock-movements")
-    @Operation(operationId = "listStockMovements", summary = "List stock movements")
-    @ApiResponse(responseCode = "200", description = "Stock movements listed successfully")
-    Page<StockMovementResponse> listMovements(Pageable pageable);
+    @Operation(operationId = "listStockMovements")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<Page<StockMovementResponse>> listMovements(@ParameterObject Pageable pageable);
 
     @GetMapping("/items")
-    @Operation(operationId = "listInventoryItems", summary = "List inventory items")
-    @ApiResponse(responseCode = "200", description = "Inventory items listed successfully")
-    Page<InventoryItemResponse> listItems(Pageable pageable);
+    @Operation(operationId = "listInventoryItems")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<Page<InventoryItemResponse>> listItems(@ParameterObject Pageable pageable);
 
     @GetMapping("/items/{id}")
-    @Operation(operationId = "getInventoryItemById", summary = "Get an inventory item by ID")
-    @ApiResponse(responseCode = "200", description = "Inventory item retrieved successfully")
-    InventoryItemResponse getItem(@PathVariable UUID id);
+    @Operation(operationId = "getInventoryItemById")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<InventoryItemResponse> getItem(@PathVariable UUID id);
 
-    @PostMapping("/reservations")
-    @Operation(operationId = "createInventoryReservation", summary = "Create an inventory reservation")
-    @ApiResponse(responseCode = "201", description = "Inventory reservation created successfully")
+    @PostMapping(value = "/reservations", consumes = "application/json")
+    @Operation(operationId = "createInventoryReservation")
+    @ApiResponse(responseCode = "201")
     ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody CreateReservationRequest request);
 
     @GetMapping("/reservations/{id}")
-    @Operation(operationId = "getInventoryReservationById", summary = "Get an inventory reservation by ID")
-    @ApiResponse(responseCode = "200", description = "Inventory reservation retrieved successfully")
-    ReservationResponse getReservation(@PathVariable UUID id);
+    @Operation(operationId = "getInventoryReservationById")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<ReservationResponse> getReservation(@PathVariable UUID id);
 
     @GetMapping("/reservations")
-    @Operation(operationId = "listInventoryReservations", summary = "List inventory reservations")
-    @ApiResponse(responseCode = "200", description = "Inventory reservations listed successfully")
-    Page<ReservationResponse> listReservations(Pageable pageable);
+    @Operation(operationId = "listInventoryReservations")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<Page<ReservationResponse>> listReservations(@ParameterObject Pageable pageable);
 }

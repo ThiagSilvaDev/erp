@@ -16,13 +16,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping(value = "/api/v1/auth", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "authentication", description = "Authentication and login")
+@Tag(name = "authentication")
 public interface AuthApi {
 
-    @PostMapping("/login")
-    @Operation(operationId = "authenticateUserAndIssueToken", summary = "Authenticate user and issue token")
-    @ApiResponse(responseCode = "200", description = "Authentication successful")
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @ApiResponse(responseCode = "400", description = "Bad Request")
+    @PostMapping(value = "/login", consumes = "application/json")
+    @Operation(operationId = "authenticateUserAndIssueToken")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "401")
+    @ApiResponse(responseCode = "400")
     ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request);
 }

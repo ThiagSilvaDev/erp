@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -17,21 +18,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping(value = "/api/v1/customers", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "customers", description = "Customer management endpoints")
+@Tag(name = "customers")
 public interface CustomerApi {
 
-    @PostMapping
-    @Operation(operationId = "createCustomer", summary = "Create a customer")
-    @ApiResponse(responseCode = "201", description = "Customer created successfully")
+    @PostMapping(consumes = "application/json")
+    @Operation(operationId = "createCustomer")
+    @ApiResponse(responseCode = "201")
     ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CreateCustomerRequest request);
 
     @GetMapping("/{id}")
-    @Operation(operationId = "getCustomerById", summary = "Get a customer by ID")
-    @ApiResponse(responseCode = "200", description = "Customer retrieved successfully")
+    @Operation(operationId = "getCustomerById")
+    @ApiResponse(responseCode = "200")
     ResponseEntity<CustomerResponse> getCustomerById(@PathVariable UUID id);
 
     @GetMapping
-    @Operation(operationId = "listCustomers", summary = "List customers")
-    @ApiResponse(responseCode = "200", description = "Customers listed successfully")
-    ResponseEntity<Page<CustomerResponse>> listCustomers(CustomerSearchCriteria criteria, Pageable pageable);
+    @Operation(operationId = "listCustomers")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<Page<CustomerResponse>> listCustomers(
+            @ParameterObject CustomerSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

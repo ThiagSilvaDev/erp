@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -23,24 +24,25 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping(value = "/api/v1/catalog/categories", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "catalog", description = "Category management endpoints")
+@Tag(name = "catalog")
 public interface CategoryApi {
 
-    @PostMapping
-    @Operation(operationId = "createCategory", summary = "Create a new category")
-    @ApiResponse(responseCode = "201", description = "Category created successfully")
-    @ApiResponse(responseCode = "400", description = "Bad Request")
-    @ApiResponse(responseCode = "422", description = "Unprocessable Entity")
+    @PostMapping(consumes = "application/json")
+    @Operation(operationId = "createCategory")
+    @ApiResponse(responseCode = "201")
+    @ApiResponse(responseCode = "400")
+    @ApiResponse(responseCode = "422")
     ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request);
 
     @GetMapping("/{id}")
-    @Operation(operationId = "getCategoryById", summary = "Get a category by ID")
-    @ApiResponse(responseCode = "200", description = "Category retrieved successfully")
-    @ApiResponse(responseCode = "404", description = "Category not found")
+    @Operation(operationId = "getCategoryById")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "404")
     ResponseEntity<CategoryResponse> getCategoryById(@PathVariable UUID id);
 
     @GetMapping
-    @Operation(operationId = "listCategories", summary = "List categories")
-    @ApiResponse(responseCode = "200", description = "Categories listed successfully")
-    ResponseEntity<Page<CategoryResponse>> listCategories(CategorySearchCriteria criteria, Pageable pageable);
+    @Operation(operationId = "listCategories")
+    @ApiResponse(responseCode = "200")
+    ResponseEntity<Page<CategoryResponse>> listCategories(
+            @ParameterObject CategorySearchCriteria criteria, @ParameterObject Pageable pageable);
 }
