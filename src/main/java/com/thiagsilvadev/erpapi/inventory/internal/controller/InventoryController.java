@@ -59,15 +59,16 @@ class InventoryController implements InventoryApi {
 
     @Override
     @Transactional(readOnly = true)
-    public WarehouseResponse getWarehouse(@PathVariable UUID id) {
-        return mapper.toResponse(
-                warehouseRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, id)));
+    public ResponseEntity<WarehouseResponse> getWarehouse(@PathVariable UUID id) {
+        return ResponseEntity.ok(mapper.toResponse(warehouseRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, id))));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<WarehouseResponse> listWarehouses(Pageable pageable) {
-        return warehouseRepository.findAll(pageable).map(mapper::toResponse);
+    public ResponseEntity<Page<WarehouseResponse>> listWarehouses(Pageable pageable) {
+        return ResponseEntity.ok(warehouseRepository.findAll(pageable).map(mapper::toResponse));
     }
 
     @Override
@@ -83,29 +84,29 @@ class InventoryController implements InventoryApi {
 
     @Override
     @Transactional(readOnly = true)
-    public StockMovementResponse getMovement(@PathVariable UUID id) {
-        return mapper.toResponse(movementRepository
+    public ResponseEntity<StockMovementResponse> getMovement(@PathVariable UUID id) {
+        return ResponseEntity.ok(mapper.toResponse(movementRepository
                 .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(StockMovement.class, id)));
+                .orElseThrow(() -> new ResourceNotFoundException(StockMovement.class, id))));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<StockMovementResponse> listMovements(Pageable pageable) {
-        return movementRepository.findAll(pageable).map(mapper::toResponse);
+    public ResponseEntity<Page<StockMovementResponse>> listMovements(Pageable pageable) {
+        return ResponseEntity.ok(movementRepository.findAll(pageable).map(mapper::toResponse));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<InventoryItemResponse> listItems(Pageable pageable) {
-        return itemRepository.findAll(pageable).map(mapper::toResponse);
+    public ResponseEntity<Page<InventoryItemResponse>> listItems(Pageable pageable) {
+        return ResponseEntity.ok(itemRepository.findAll(pageable).map(mapper::toResponse));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public InventoryItemResponse getItem(@PathVariable UUID id) {
-        return mapper.toResponse(
-                itemRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, id)));
+    public ResponseEntity<InventoryItemResponse> getItem(@PathVariable UUID id) {
+        return ResponseEntity.ok(mapper.toResponse(
+                itemRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, id))));
     }
 
     @Override
@@ -124,15 +125,15 @@ class InventoryController implements InventoryApi {
 
     @Override
     @Transactional(readOnly = true)
-    public ReservationResponse getReservation(@PathVariable UUID id) {
-        return mapper.toResponse(reservationRepository
+    public ResponseEntity<ReservationResponse> getReservation(@PathVariable UUID id) {
+        return ResponseEntity.ok(mapper.toResponse(reservationRepository
                 .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(InventoryReservation.class, id)));
+                .orElseThrow(() -> new ResourceNotFoundException(InventoryReservation.class, id))));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ReservationResponse> listReservations(Pageable pageable) {
-        return reservationRepository.findAll(pageable).map(mapper::toResponse);
+    public ResponseEntity<Page<ReservationResponse>> listReservations(Pageable pageable) {
+        return ResponseEntity.ok(reservationRepository.findAll(pageable).map(mapper::toResponse));
     }
 }
