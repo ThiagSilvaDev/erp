@@ -9,69 +9,45 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreatePaymentRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.PaymentResponse;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
-import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
-import com.thiagsilvadev.erpapi.financial.internal.model.Payment;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.CreatePaymentUseCase;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.GetPaymentByIdUseCase;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.ListPaymentsUseCase;
 
 @RestController
 class PaymentController implements PaymentApi {
 
-    private final InvoiceRepository invoiceRepository;
-    private final PaymentRepository paymentRepository;
-    private final FinancialEntryRepository entryRepository;
-    private final FinancialMapper mapper;
+    private final CreatePaymentUseCase createPaymentUseCase;
+    private final GetPaymentByIdUseCase getPaymentByIdUseCase;
+    private final ListPaymentsUseCase listPaymentsUseCase;
 
     PaymentController(
-            InvoiceRepository invoiceRepository,
-            PaymentRepository paymentRepository,
-            FinancialEntryRepository entryRepository,
-            FinancialMapper mapper) {
-        this.invoiceRepository = invoiceRepository;
-        this.paymentRepository = paymentRepository;
-        this.entryRepository = entryRepository;
-        this.mapper = mapper;
+            CreatePaymentUseCase createPaymentUseCase,
+            GetPaymentByIdUseCase getPaymentByIdUseCase,
+            ListPaymentsUseCase listPaymentsUseCase) {
+        this.createPaymentUseCase = createPaymentUseCase;
+        this.getPaymentByIdUseCase = getPaymentByIdUseCase;
+        this.listPaymentsUseCase = listPaymentsUseCase;
     }
 
     @Override
-    @Transactional
     public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody CreatePaymentRequest request) {
-        Invoice invoice = invoiceRepository
-                .findById(request.invoiceId())
-                .orElseThrow(() -> new ResourceNotFoundException(Invoice.class, request.invoiceId()));
-
-        Payment payment =
-                paymentRepository.save(Payment.create(request.invoiceId(), request.amount(), request.paidAt()));
-
-        if (request.amount().compareTo(invoice.getAmount()) >= 0) {
-            invoice.markPaid();
-            entryRepository.findByInvoiceId(invoice.getId()).ifPresent(FinancialEntry::settle);
-        }
-
-        return created(payment.getId(), mapper.toResponse(payment));
+        PaymentResponse response = createPaymentUseCase.execute(request);
+        return created(response.id(), response);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ResponseEntity<PaymentResponse> getPayment(@PathVariable UUID id) {
-        return ResponseEntity.ok(mapper.toResponse(
-                paymentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Payment.class, id))));
+        return ResponseEntity.ok(getPaymentByIdUseCase.execute(id));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ResponseEntity<Page<PaymentResponse>> listPayments(Pageable pageable) {
-        return ResponseEntity.ok(paymentRepository.findAll(pageable).map(mapper::toResponse));
+        return ResponseEntity.ok(listPaymentsUseCase.execute(pageable));
     }
 
     private <T> ResponseEntity<T> created(UUID id, T body) {

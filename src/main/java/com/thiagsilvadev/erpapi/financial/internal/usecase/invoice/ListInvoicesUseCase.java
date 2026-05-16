@@ -1,0 +1,27 @@
+package com.thiagsilvadev.erpapi.financial.internal.usecase.invoice;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
+import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
+
+@Component
+public class ListInvoicesUseCase {
+
+    private final InvoiceRepository invoiceRepository;
+    private final FinancialMapper mapper;
+
+    public ListInvoicesUseCase(InvoiceRepository invoiceRepository, FinancialMapper mapper) {
+        this.invoiceRepository = invoiceRepository;
+        this.mapper = mapper;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<InvoiceResponse> execute(Pageable pageable) {
+        return invoiceRepository.findAll(pageable).map(mapper::toResponse);
+    }
+}

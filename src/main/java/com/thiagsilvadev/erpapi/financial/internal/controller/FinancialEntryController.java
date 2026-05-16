@@ -5,37 +5,32 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.FinancialEntryResponse;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.financialentry.GetFinancialEntryByIdUseCase;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.financialentry.ListFinancialEntriesUseCase;
 
 @RestController
 class FinancialEntryController implements FinancialEntryApi {
 
-    private final FinancialEntryRepository entryRepository;
-    private final FinancialMapper mapper;
+    private final GetFinancialEntryByIdUseCase getFinancialEntryByIdUseCase;
+    private final ListFinancialEntriesUseCase listFinancialEntriesUseCase;
 
-    FinancialEntryController(FinancialEntryRepository entryRepository, FinancialMapper mapper) {
-        this.entryRepository = entryRepository;
-        this.mapper = mapper;
+    FinancialEntryController(
+            GetFinancialEntryByIdUseCase getFinancialEntryByIdUseCase,
+            ListFinancialEntriesUseCase listFinancialEntriesUseCase) {
+        this.getFinancialEntryByIdUseCase = getFinancialEntryByIdUseCase;
+        this.listFinancialEntriesUseCase = listFinancialEntriesUseCase;
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ResponseEntity<FinancialEntryResponse> getEntry(@PathVariable UUID id) {
-        return ResponseEntity.ok(mapper.toResponse(entryRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(FinancialEntry.class, id))));
+        return ResponseEntity.ok(getFinancialEntryByIdUseCase.execute(id));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ResponseEntity<Page<FinancialEntryResponse>> listEntries(Pageable pageable) {
-        return ResponseEntity.ok(entryRepository.findAll(pageable).map(mapper::toResponse));
+        return ResponseEntity.ok(listFinancialEntriesUseCase.execute(pageable));
     }
 }
