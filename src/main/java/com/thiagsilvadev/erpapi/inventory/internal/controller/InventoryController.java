@@ -1,21 +1,20 @@
 package com.thiagsilvadev.erpapi.inventory.internal.controller;
 
-import java.net.URI;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.*;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.model.*;
@@ -55,7 +54,7 @@ class InventoryController implements InventoryApi {
         }
         WarehouseResponse response =
                 mapper.toResponse(warehouseRepository.save(Warehouse.create(code, request.name())));
-        return created(response.id(), response);
+        return ResponseEntities.created(response.id(), response);
     }
 
     @Override
@@ -79,7 +78,7 @@ class InventoryController implements InventoryApi {
                 inventoryService.applyMovement(request.productId(), request.warehouseId(), request.quantity());
         StockMovement movement = movementRepository.save(StockMovement.create(
                 item.getProductId(), item.getWarehouse().getId(), request.quantity(), request.reason()));
-        return created(movement.getId(), mapper.toResponse(movement));
+        return ResponseEntities.created(movement.getId(), mapper.toResponse(movement));
     }
 
     @Override
@@ -113,7 +112,7 @@ class InventoryController implements InventoryApi {
     public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody CreateReservationRequest request) {
         var reservation = inventoryService.reserve(
                 request.productId(), request.warehouseId(), request.quantity(), request.salesOrderId());
-        return created(
+        return ResponseEntities.created(
                 reservation.id(),
                 new ReservationResponse(
                         reservation.id(),
@@ -135,13 +134,5 @@ class InventoryController implements InventoryApi {
     @Transactional(readOnly = true)
     public Page<ReservationResponse> listReservations(Pageable pageable) {
         return reservationRepository.findAll(pageable).map(mapper::toResponse);
-    }
-
-    private <T> ResponseEntity<T> created(UUID id, T body) {
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(id)
-                .toUri();
-        return ResponseEntity.status(HttpStatus.CREATED).location(location).body(body);
     }
 }

@@ -1,19 +1,16 @@
 package com.thiagsilvadev.erpapi.catalog.internal.controller;
 
-import java.net.URI;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.thiagsilvadev.erpapi.catalog.internal.dto.CategoryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.CategorySearchCriteria;
@@ -21,6 +18,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.dto.CreateCategoryRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.CreateCategoryUseCase;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.GetCategoryByIdUseCase;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.ListCategoriesUseCase;
+import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 
 @RestController
 @Validated
@@ -42,12 +40,7 @@ class CategoryController implements CategoryApi {
     @Override
     public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
         CategoryResponse response = createCategoryUseCase.execute(request);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.id())
-                .toUri();
-
-        return ResponseEntity.status(HttpStatus.CREATED).location(location).body(response);
+        return ResponseEntities.created(response.id(), response);
     }
 
     @Override

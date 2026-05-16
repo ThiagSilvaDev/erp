@@ -1,17 +1,15 @@
 package com.thiagsilvadev.erpapi.financial.internal.controller;
 
-import java.net.URI;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreateInvoiceRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.CreateInvoiceUseCase;
@@ -37,7 +35,7 @@ class InvoiceController implements InvoiceApi {
     @Override
     public ResponseEntity<InvoiceResponse> createInvoice(@Valid @RequestBody CreateInvoiceRequest request) {
         InvoiceResponse response = createInvoiceUseCase.execute(request);
-        return created(response.id(), response);
+        return ResponseEntities.created(response.id(), response);
     }
 
     @Override
@@ -48,13 +46,5 @@ class InvoiceController implements InvoiceApi {
     @Override
     public ResponseEntity<Page<InvoiceResponse>> listInvoices(Pageable pageable) {
         return ResponseEntity.ok(listInvoicesUseCase.execute(pageable));
-    }
-
-    private <T> ResponseEntity<T> created(UUID id, T body) {
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(id)
-                .toUri();
-        return ResponseEntity.status(HttpStatus.CREATED).location(location).body(body);
     }
 }
