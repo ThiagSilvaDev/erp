@@ -46,7 +46,13 @@ public class CreateUserUseCase {
                 .findById(request.companyId())
                 .orElseThrow(() -> new ResourceNotFoundException(CompanySnapshot.class, request.companyId()));
 
-        User user = userMapper.toEntity(request, contact);
+        User user = User.create(
+                request.firstName(),
+                request.lastName(),
+                contact,
+                request.birthDate(),
+                request.role(),
+                request.companyId());
         User savedUser = userRepository.save(user);
         eventPublisher.userCreated(savedUser, request.password());
 

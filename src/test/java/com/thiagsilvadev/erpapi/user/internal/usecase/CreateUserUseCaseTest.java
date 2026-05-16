@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
-import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
@@ -72,28 +71,18 @@ class CreateUserUseCaseTest {
     @Test
     void shouldCreateUserAndPublishEventWithRawPassword() {
         CreateUserRequest request = userRequest();
-        User user = User.create(
-                "User",
-                "Example",
-                Contact.create("user@example.com", "11912345678"),
-                null,
-                UserRole.ADMIN,
-                request.companyId());
-        User savedUser = user;
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
         when(companyFacade.findById(request.companyId()))
                 .thenReturn(Optional.of(
                         org.mockito.Mockito.mock(com.thiagsilvadev.erpapi.company.api.CompanySnapshot.class)));
-        when(userMapper.toEntity(
-                        org.mockito.ArgumentMatchers.eq(request), org.mockito.ArgumentMatchers.any(Contact.class)))
-                .thenReturn(user);
-        when(userRepository.save(user)).thenReturn(savedUser);
+        when(userRepository.save(org.mockito.ArgumentMatchers.any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         useCase.execute(request);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(eventPublisher).userCreated(userCaptor.capture(), org.mockito.ArgumentMatchers.eq("secret123"));
-        verify(userRepository).save(user);
+        verify(userRepository).save(userCaptor.getValue());
     }
 
     private static CreateUserRequest userRequest() {
