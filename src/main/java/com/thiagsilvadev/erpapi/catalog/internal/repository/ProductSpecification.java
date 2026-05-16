@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductSearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
+import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 
 public class ProductSpecification {
 
@@ -22,7 +23,7 @@ public class ProductSpecification {
             if (sku == null || sku.isBlank()) {
                 return null;
             }
-            return cb.equal(root.get("sku"), Product.normalizeSku(sku));
+            return cb.equal(root.get("sku").get("value"), Sku.create(sku).getValue());
         };
     }
 

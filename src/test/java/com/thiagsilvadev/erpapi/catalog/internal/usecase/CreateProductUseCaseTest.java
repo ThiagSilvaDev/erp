@@ -46,7 +46,7 @@ class CreateProductUseCaseTest {
         UUID categoryId = UUID.randomUUID();
         CreateProductRequest request = new CreateProductRequest(
                 " sku-1 ", "Product", null, new MoneyRequest(java.math.BigDecimal.TEN, "BRL"), categoryId);
-        when(productRepository.existsBySku("SKU-1")).thenReturn(true);
+        when(productRepository.existsBySkuValue("SKU-1")).thenReturn(true);
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(SkuAlreadyExistsException.class);
 
@@ -59,7 +59,7 @@ class CreateProductUseCaseTest {
         UUID categoryId = UUID.randomUUID();
         CreateProductRequest request = new CreateProductRequest(
                 "sku-1", "Product", null, new MoneyRequest(java.math.BigDecimal.TEN, "BRL"), categoryId);
-        when(productRepository.existsBySku("SKU-1")).thenReturn(false);
+        when(productRepository.existsBySkuValue("SKU-1")).thenReturn(false);
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ResourceNotFoundException.class);

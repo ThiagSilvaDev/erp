@@ -10,6 +10,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.exception.SkuAlreadyExistsExcep
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
+import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
@@ -35,9 +36,9 @@ public class CreateProductUseCase {
 
     @Transactional
     public ProductResponse execute(CreateProductRequest request) {
-        String sku = Product.normalizeSku(request.sku());
+        String sku = Sku.create(request.sku()).getValue();
 
-        if (productRepository.existsBySku(sku)) {
+        if (productRepository.existsBySkuValue(sku)) {
             throw new SkuAlreadyExistsException(sku);
         }
 

@@ -10,7 +10,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 
 public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
 
-    boolean existsBySku(String sku);
+    boolean existsBySkuValue(String sku);
 
-    Optional<Product> findBySku(String sku);
+    Optional<Product> findBySkuValue(String sku);
 }

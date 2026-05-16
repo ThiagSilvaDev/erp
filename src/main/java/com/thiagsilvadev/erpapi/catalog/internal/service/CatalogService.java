@@ -11,7 +11,7 @@ import com.thiagsilvadev.erpapi.catalog.api.CategorySnapshot;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
-import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
+import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 
@@ -38,7 +38,7 @@ public class CatalogService implements CatalogFacade {
     @Override
     @Transactional(readOnly = true)
     public Optional<ProductSnapshot> findProductBySku(String sku) {
-        return productRepository.findBySku(Product.normalizeSku(sku)).map(catalogMapper::toSnapshot);
+        return productRepository.findBySkuValue(Sku.create(sku).getValue()).map(catalogMapper::toSnapshot);
     }
 
     @Override

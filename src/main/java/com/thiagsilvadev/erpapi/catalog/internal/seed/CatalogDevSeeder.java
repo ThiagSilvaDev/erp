@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
+import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
@@ -38,7 +39,8 @@ class CatalogDevSeeder implements ApplicationRunner {
                 .findByCode(Category.normalizeCode(INDUSTRIAL_CATEGORY_CODE))
                 .orElseGet(this::seedCategory);
 
-        if (!productRepository.existsBySku(Product.normalizeSku(INDUSTRIAL_WIDGET_SKU))) {
+        if (!productRepository.existsBySkuValue(
+                Sku.create(INDUSTRIAL_WIDGET_SKU).getValue())) {
             productRepository.save(Product.create(
                     INDUSTRIAL_WIDGET_SKU,
                     "Industrial Widget",

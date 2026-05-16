@@ -33,7 +33,7 @@ class CatalogDevSeederTest {
         when(categoryRepository.findByCode("INDUSTRIAL")).thenReturn(Optional.empty());
         when(categoryRepository.save(org.mockito.ArgumentMatchers.any(Category.class)))
                 .thenReturn(category);
-        when(productRepository.existsBySku("SKU-001")).thenReturn(false);
+        when(productRepository.existsBySkuValue("SKU-001")).thenReturn(false);
 
         new CatalogDevSeeder(categoryRepository, productRepository).run(null);
 
@@ -53,7 +53,7 @@ class CatalogDevSeederTest {
     void shouldSkipProductWhenAlreadySeeded() {
         Category category = Category.create(CatalogDevSeeder.INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", null);
         when(categoryRepository.findByCode("INDUSTRIAL")).thenReturn(Optional.of(category));
-        when(productRepository.existsBySku("SKU-001")).thenReturn(true);
+        when(productRepository.existsBySkuValue("SKU-001")).thenReturn(true);
 
         new CatalogDevSeeder(categoryRepository, productRepository).run(null);
 

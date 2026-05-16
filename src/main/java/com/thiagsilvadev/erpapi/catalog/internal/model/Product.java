@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.model;
 
+import java.util.Objects;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -15,6 +17,7 @@ import jakarta.persistence.UniqueConstraint;
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(
@@ -22,8 +25,8 @@ import com.thiagsilvadev.erpapi.common.domain.model.Money;
         uniqueConstraints = {@UniqueConstraint(name = "uk_catalog_product_sku", columnNames = "sku")})
 public class Product extends AbstractBaseEntity {
 
-    @Column(nullable = false, length = 80)
-    private String sku;
+    @Embedded
+    private Sku sku;
 
     @Column(nullable = false)
     private String name;
@@ -50,11 +53,11 @@ public class Product extends AbstractBaseEntity {
     protected Product() {}
 
     private Product(String sku, String name, String description, Money basePrice, Category category) {
-        this.sku = normalizeSku(sku);
-        this.name = normalizeRequired(name, "Product name cannot be blank");
-        this.description = trimToNull(description);
-        this.basePrice = requireBasePrice(basePrice);
-        this.category = requireCategory(category);
+        this.sku = Sku.create(sku);
+        this.name = Strings.required(name, "Product name cannot be blank");
+        this.description = Strings.trimToNull(description);
+        this.basePrice = Objects.requireNonNull(basePrice, "Product base price cannot be null");
+        this.category = Objects.requireNonNull(category, "Product category cannot be null");
     }
 
     public static Product create(String sku, String name, String description, Money basePrice, Category category) {
@@ -62,10 +65,10 @@ public class Product extends AbstractBaseEntity {
     }
 
     public void update(String name, String description, Money basePrice, Category category) {
-        this.name = normalizeRequired(name, "Product name cannot be blank");
-        this.description = trimToNull(description);
-        this.basePrice = requireBasePrice(basePrice);
-        this.category = requireCategory(category);
+        this.name = Strings.required(name, "Product name cannot be blank");
+        this.description = Strings.trimToNull(description);
+        this.basePrice = Objects.requireNonNull(basePrice, "Product base price cannot be null");
+        this.category = Objects.requireNonNull(category, "Product category cannot be null");
     }
 
     public void activate() {
@@ -77,7 +80,7 @@ public class Product extends AbstractBaseEntity {
     }
 
     public String getSku() {
-        return sku;
+        return sku.getValue();
     }
 
     public String getName() {
@@ -98,39 +101,5 @@ public class Product extends AbstractBaseEntity {
 
     public Category getCategory() {
         return category;
-    }
-
-    public static String normalizeSku(String sku) {
-        return normalizeRequired(sku, "Product SKU cannot be blank").toUpperCase();
-    }
-
-    private static Money requireBasePrice(Money basePrice) {
-        if (basePrice == null) {
-            throw new IllegalArgumentException("Product base price cannot be null");
-        }
-        return basePrice;
-    }
-
-    private static Category requireCategory(Category category) {
-        if (category == null) {
-            throw new IllegalArgumentException("Product category cannot be null");
-        }
-        return category;
-    }
-
-    private static String normalizeRequired(String value, String message) {
-        String normalized = trimToNull(value);
-        if (normalized == null) {
-            throw new IllegalArgumentException(message);
-        }
-        return normalized;
-    }
-
-    private static String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 }

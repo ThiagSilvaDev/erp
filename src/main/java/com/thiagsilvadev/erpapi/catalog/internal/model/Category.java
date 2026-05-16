@@ -9,6 +9,7 @@ import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.catalog.api.CategoryStatus;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(
@@ -32,8 +33,8 @@ public class Category extends AbstractBaseEntity {
 
     private Category(String code, String name, String description) {
         this.code = normalizeCode(code);
-        this.name = normalizeRequired(name, "Category name cannot be blank");
-        this.description = trimToNull(description);
+        this.name = Strings.required(name, "Category name cannot be blank");
+        this.description = Strings.trimToNull(description);
     }
 
     public static Category create(String code, String name, String description) {
@@ -41,8 +42,8 @@ public class Category extends AbstractBaseEntity {
     }
 
     public void update(String name, String description) {
-        this.name = normalizeRequired(name, "Category name cannot be blank");
-        this.description = trimToNull(description);
+        this.name = Strings.required(name, "Category name cannot be blank");
+        this.description = Strings.trimToNull(description);
     }
 
     public void activate() {
@@ -70,22 +71,6 @@ public class Category extends AbstractBaseEntity {
     }
 
     public static String normalizeCode(String code) {
-        return normalizeRequired(code, "Category code cannot be blank").toUpperCase();
-    }
-
-    private static String normalizeRequired(String value, String message) {
-        String normalized = trimToNull(value);
-        if (normalized == null) {
-            throw new IllegalArgumentException(message);
-        }
-        return normalized;
-    }
-
-    private static String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+        return Strings.required(code, "Category code cannot be blank").toUpperCase();
     }
 }
