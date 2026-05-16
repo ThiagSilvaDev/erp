@@ -1,5 +1,8 @@
 package com.thiagsilvadev.erpapi.customer.internal.usecase;
 
+import java.util.Map;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +37,7 @@ public class CreateCustomerUseCase {
 
         String document = Customer.normalizeDocument(request.document());
         if (customerRepository.existsByDocument(document)) {
-            throw new ConflictException(
-                    "Customer with this document already exists.", java.util.Map.of("document", document));
+            throw duplicateDocument(document);
         }
 
         Customer customer = Customer.create(
@@ -45,6 +47,14 @@ public class CreateCustomerUseCase {
                 mapper.toContact(request.contact()),
                 mapper.toAddress(request.address()));
 
-        return mapper.toResponse(customerRepository.save(customer));
+        try {
+            return mapper.toResponse(customerRepository.saveAndFlush(customer));
+        } catch (DataIntegrityViolationException e) {
+            throw duplicateDocument(document);
+        }
+    }
+
+    private static ConflictException duplicateDocument(String document) {
+        return new ConflictException("Customer with this document already exists.", Map.of("document", document));
     }
 }

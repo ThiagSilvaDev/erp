@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -52,8 +53,13 @@ class InventoryController implements InventoryApi {
         if (warehouseRepository.existsByCode(code)) {
             throw new ConflictException("Warehouse with this code already exists.", java.util.Map.of("code", code));
         }
-        WarehouseResponse response =
-                mapper.toResponse(warehouseRepository.save(Warehouse.create(code, request.name())));
+        Warehouse savedWarehouse;
+        try {
+            savedWarehouse = warehouseRepository.saveAndFlush(Warehouse.create(code, request.name()));
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Warehouse with this code already exists.", java.util.Map.of("code", code));
+        }
+        WarehouseResponse response = mapper.toResponse(savedWarehouse);
         return ResponseEntities.created(response.id(), response);
     }
 

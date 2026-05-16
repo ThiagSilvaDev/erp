@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.thiagsilvadev.erpapi.catalog.internal.dto.CreateCategoryRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.exception.CategoryCodeAlreadyExistsException;
@@ -35,6 +36,16 @@ class CreateCategoryUseCaseTest {
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(CategoryCodeAlreadyExistsException.class);
 
-        verify(categoryRepository, never()).save(org.mockito.ArgumentMatchers.any());
+        verify(categoryRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void shouldTranslateDuplicateCategoryCodeRace() {
+        CreateCategoryRequest request = new CreateCategoryRequest(" raw ", "Raw materials", null);
+        when(categoryRepository.existsByCode("RAW")).thenReturn(false);
+        when(categoryRepository.saveAndFlush(org.mockito.ArgumentMatchers.any()))
+                .thenThrow(new DataIntegrityViolationException("uk_catalog_category_code"));
+
+        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(CategoryCodeAlreadyExistsException.class);
     }
 }

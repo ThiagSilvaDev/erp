@@ -14,6 +14,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
@@ -50,7 +51,7 @@ class CreateUserUseCaseTest {
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(EmailAlreadyExistsException.class);
 
-        verify(userRepository, never()).save(org.mockito.ArgumentMatchers.any());
+        verify(userRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
         verify(eventPublisher, never())
                 .userCreated(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
     }
@@ -63,7 +64,7 @@ class CreateUserUseCaseTest {
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ResourceNotFoundException.class);
 
-        verify(userRepository, never()).save(org.mockito.ArgumentMatchers.any());
+        verify(userRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
         verify(eventPublisher, never())
                 .userCreated(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
     }
@@ -75,14 +76,30 @@ class CreateUserUseCaseTest {
         when(companyFacade.findById(request.companyId()))
                 .thenReturn(Optional.of(
                         org.mockito.Mockito.mock(com.thiagsilvadev.erpapi.company.api.CompanySnapshot.class)));
-        when(userRepository.save(org.mockito.ArgumentMatchers.any(User.class)))
+        when(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         useCase.execute(request);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(eventPublisher).userCreated(userCaptor.capture(), org.mockito.ArgumentMatchers.eq("secret123"));
-        verify(userRepository).save(userCaptor.getValue());
+        verify(userRepository).saveAndFlush(userCaptor.getValue());
+    }
+
+    @Test
+    void shouldTranslateDuplicateEmailRace() {
+        CreateUserRequest request = userRequest();
+        when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
+        when(companyFacade.findById(request.companyId()))
+                .thenReturn(Optional.of(
+                        org.mockito.Mockito.mock(com.thiagsilvadev.erpapi.company.api.CompanySnapshot.class)));
+        when(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(User.class)))
+                .thenThrow(new DataIntegrityViolationException("uk_user_email"));
+
+        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(EmailAlreadyExistsException.class);
+
+        verify(eventPublisher, never())
+                .userCreated(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
     }
 
     private static CreateUserRequest userRequest() {

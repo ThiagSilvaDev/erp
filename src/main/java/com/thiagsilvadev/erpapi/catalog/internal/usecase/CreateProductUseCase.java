@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.catalog.internal.usecase;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,8 +48,13 @@ public class CreateProductUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(Category.class, request.categoryId()));
         Product product = Product.create(
                 sku, request.name(), request.description(), catalogMapper.toMoney(request.basePrice()), category);
-        Product savedProduct = productRepository.save(product);
 
+        Product savedProduct;
+        try {
+            savedProduct = productRepository.saveAndFlush(product);
+        } catch (DataIntegrityViolationException e) {
+            throw new SkuAlreadyExistsException(sku.getValue());
+        }
         eventPublisher.productCreated(savedProduct);
 
         return catalogMapper.toResponse(savedProduct);

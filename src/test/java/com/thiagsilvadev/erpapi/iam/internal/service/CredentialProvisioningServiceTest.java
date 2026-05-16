@@ -15,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
@@ -44,7 +45,7 @@ class CredentialProvisioningServiceTest {
         service.provision(new CredentialProvisioningRequest(userId, " User@Example.com ", "secret123", "admin"));
 
         ArgumentCaptor<IamCredential> captor = ArgumentCaptor.forClass(IamCredential.class);
-        verify(credentialRepository).save(captor.capture());
+        verify(credentialRepository).saveAndFlush(captor.capture());
         assertThat(captor.getValue().getUserId()).isEqualTo(userId);
         assertThat(captor.getValue().getEmail()).isEqualTo("user@example.com");
         assertThat(captor.getValue().getPasswordHash()).isEqualTo("encoded-password");
@@ -60,7 +61,7 @@ class CredentialProvisioningServiceTest {
                         new CredentialProvisioningRequest(userId, "user@example.com", "secret123", "ADMIN")))
                 .isInstanceOf(CredentialAlreadyExistsException.class);
 
-        verify(credentialRepository, never()).save(any());
+        verify(credentialRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -73,6 +74,20 @@ class CredentialProvisioningServiceTest {
                         new CredentialProvisioningRequest(userId, "user@example.com", "secret123", "ADMIN")))
                 .isInstanceOf(CredentialAlreadyExistsException.class);
 
-        verify(credentialRepository, never()).save(any());
+        verify(credentialRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void shouldTranslateDuplicatedEmailRace() {
+        UUID userId = UUID.randomUUID();
+        when(credentialRepository.existsByUserId(userId)).thenReturn(false);
+        when(credentialRepository.existsByEmailValue("user@example.com")).thenReturn(false);
+        when(passwordEncoder.encode("secret123")).thenReturn("encoded-password");
+        when(credentialRepository.saveAndFlush(any()))
+                .thenThrow(new DataIntegrityViolationException("uk_iam_credential_email"));
+
+        assertThatThrownBy(() -> service.provision(
+                        new CredentialProvisioningRequest(userId, "user@example.com", "secret123", "ADMIN")))
+                .isInstanceOf(CredentialAlreadyExistsException.class);
     }
 }

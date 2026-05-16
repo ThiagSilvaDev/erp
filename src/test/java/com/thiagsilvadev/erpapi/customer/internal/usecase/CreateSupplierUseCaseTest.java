@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.customer.internal.usecase;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,7 +12,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
@@ -42,7 +45,7 @@ class CreateSupplierUseCaseTest {
         when(supplierRepository.existsByDocument("12345678900")).thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(Contact.create("supplier@example.com", "11912345678"));
         when(mapper.toAddress(request.address())).thenReturn(address());
-        when(supplierRepository.save(org.mockito.ArgumentMatchers.any(Supplier.class)))
+        when(supplierRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Supplier.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         CreateSupplierUseCase useCase = new CreateSupplierUseCase(supplierRepository, companyFacade, mapper);
@@ -50,7 +53,22 @@ class CreateSupplierUseCaseTest {
         useCase.execute(request);
 
         ArgumentCaptor<Supplier> supplierCaptor = ArgumentCaptor.forClass(Supplier.class);
-        verify(supplierRepository).save(supplierCaptor.capture());
+        verify(supplierRepository).saveAndFlush(supplierCaptor.capture());
+    }
+
+    @Test
+    void shouldTranslateDuplicateDocumentRace() {
+        CreateSupplierRequest request = supplierRequest();
+        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(supplierRepository.existsByDocument("12345678900")).thenReturn(false);
+        when(mapper.toContact(request.contact())).thenReturn(Contact.create("supplier@example.com", "11912345678"));
+        when(mapper.toAddress(request.address())).thenReturn(address());
+        when(supplierRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Supplier.class)))
+                .thenThrow(new DataIntegrityViolationException("uk_supplier_document"));
+
+        CreateSupplierUseCase useCase = new CreateSupplierUseCase(supplierRepository, companyFacade, mapper);
+
+        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ConflictException.class);
     }
 
     private static CreateSupplierRequest supplierRequest() {

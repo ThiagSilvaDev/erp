@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.user.internal.usecase;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +54,12 @@ public class CreateUserUseCase {
                 request.birthDate(),
                 request.role(),
                 request.companyId());
-        User savedUser = userRepository.save(user);
+        User savedUser;
+        try {
+            savedUser = userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new EmailAlreadyExistsException(contact.getEmail());
+        }
         eventPublisher.userCreated(savedUser, request.password());
 
         return userMapper.toResponse(savedUser);

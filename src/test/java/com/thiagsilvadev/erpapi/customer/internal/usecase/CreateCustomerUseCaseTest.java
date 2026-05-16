@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
@@ -46,7 +47,7 @@ class CreateCustomerUseCaseTest {
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ResourceNotFoundException.class);
 
-        verify(customerRepository, never()).save(org.mockito.ArgumentMatchers.any());
+        verify(customerRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -59,7 +60,7 @@ class CreateCustomerUseCaseTest {
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ConflictException.class);
 
-        verify(customerRepository, never()).save(org.mockito.ArgumentMatchers.any());
+        verify(customerRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -71,7 +72,7 @@ class CreateCustomerUseCaseTest {
         when(customerRepository.existsByDocument("12345678900")).thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(contact);
         when(mapper.toAddress(request.address())).thenReturn(address);
-        when(customerRepository.save(org.mockito.ArgumentMatchers.any(Customer.class)))
+        when(customerRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Customer.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
@@ -79,7 +80,22 @@ class CreateCustomerUseCaseTest {
         useCase.execute(request);
 
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
-        verify(customerRepository).save(customerCaptor.capture());
+        verify(customerRepository).saveAndFlush(customerCaptor.capture());
+    }
+
+    @Test
+    void shouldTranslateDuplicateDocumentRace() {
+        CreateCustomerRequest request = customerRequest();
+        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(customerRepository.existsByDocument("12345678900")).thenReturn(false);
+        when(mapper.toContact(request.contact())).thenReturn(Contact.create("customer@example.com", "11912345678"));
+        when(mapper.toAddress(request.address())).thenReturn(address());
+        when(customerRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Customer.class)))
+                .thenThrow(new DataIntegrityViolationException("uk_customer_document"));
+
+        CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
+
+        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ConflictException.class);
     }
 
     private static CreateCustomerRequest customerRequest() {

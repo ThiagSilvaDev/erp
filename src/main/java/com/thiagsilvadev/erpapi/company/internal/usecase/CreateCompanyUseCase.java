@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.company.internal.usecase;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,12 @@ public class CreateCompanyUseCase {
                 request.type(),
                 companyMapper.toAddress(request.address()),
                 companyMapper.toContact(request.contact()));
-        Company savedCompany = companyRepository.save(company);
+        Company savedCompany;
+        try {
+            savedCompany = companyRepository.saveAndFlush(company);
+        } catch (DataIntegrityViolationException e) {
+            throw new CnpjAlreadyExistsException(cnpj.getNumber());
+        }
 
         eventPublisher.companyCreated(savedCompany);
 

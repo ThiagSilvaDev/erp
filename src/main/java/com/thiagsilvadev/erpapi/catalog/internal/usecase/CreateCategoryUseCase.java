@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.catalog.internal.usecase;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +31,12 @@ public class CreateCategoryUseCase {
         }
 
         Category category = Category.create(request.code(), request.name(), request.description());
-        Category savedCategory = categoryRepository.save(category);
+        Category savedCategory;
+        try {
+            savedCategory = categoryRepository.saveAndFlush(category);
+        } catch (DataIntegrityViolationException e) {
+            throw new CategoryCodeAlreadyExistsException(code);
+        }
 
         return catalogMapper.toResponse(savedCategory);
     }

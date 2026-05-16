@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.iam.internal.service;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,34 @@ public class CredentialProvisioningService implements CredentialProvisioningFaca
 
         IamCredential credential = IamCredential.create(
                 request.userId(), normalizedEmail, passwordEncoder.encode(request.rawPassword()), request.role());
-        credentialRepository.save(credential);
+        try {
+            credentialRepository.saveAndFlush(credential);
+        } catch (DataIntegrityViolationException e) {
+            throw duplicateCredential(e, request.userId(), normalizedEmail);
+        }
+    }
+
+    private static CredentialAlreadyExistsException duplicateCredential(
+            DataIntegrityViolationException exception, java.util.UUID userId, String email) {
+        String message = getMessages(exception);
+        if (message.contains("uk_iam_credential_user")) {
+            return new CredentialAlreadyExistsException("userId", userId);
+        }
+        if (message.contains("uk_iam_credential_email")) {
+            return new CredentialAlreadyExistsException("email", email);
+        }
+        return new CredentialAlreadyExistsException("email", email);
+    }
+
+    private static String getMessages(Throwable exception) {
+        StringBuilder messages = new StringBuilder();
+        Throwable current = exception;
+        while (current != null) {
+            if (current.getMessage() != null) {
+                messages.append(current.getMessage()).append(' ');
+            }
+            current = current.getCause();
+        }
+        return messages.toString();
     }
 }

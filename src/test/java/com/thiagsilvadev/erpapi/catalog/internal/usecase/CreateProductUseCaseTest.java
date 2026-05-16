@@ -13,16 +13,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.thiagsilvadev.erpapi.catalog.internal.dto.CreateProductRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.event.CatalogEventPublisher;
 import com.thiagsilvadev.erpapi.catalog.internal.exception.SkuAlreadyExistsException;
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
+import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.model.Money;
 
 @ExtendWith(MockitoExtension.class)
 class CreateProductUseCaseTest {
@@ -52,7 +55,7 @@ class CreateProductUseCaseTest {
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(SkuAlreadyExistsException.class);
 
-        verify(productRepository, never()).save(org.mockito.ArgumentMatchers.any());
+        verify(productRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
         verify(eventPublisher, never()).productCreated(org.mockito.ArgumentMatchers.any());
     }
 
@@ -67,7 +70,25 @@ class CreateProductUseCaseTest {
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ResourceNotFoundException.class);
 
-        verify(productRepository, never()).save(org.mockito.ArgumentMatchers.any());
+        verify(productRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+        verify(eventPublisher, never()).productCreated(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void shouldTranslateDuplicateSkuRace() {
+        UUID categoryId = UUID.randomUUID();
+        Category category = Category.create("RAW", "Raw materials", null);
+        CreateProductRequest request = new CreateProductRequest(
+                "sku-1", "Product", null, new MoneyRequest(java.math.BigDecimal.TEN, "BRL"), categoryId);
+        when(catalogMapper.toSku("sku-1")).thenReturn(Sku.create("sku-1"));
+        when(productRepository.existsBySkuValue("SKU-1")).thenReturn(false);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+        when(catalogMapper.toMoney(request.basePrice())).thenReturn(Money.reais(java.math.BigDecimal.TEN));
+        when(productRepository.saveAndFlush(org.mockito.ArgumentMatchers.any()))
+                .thenThrow(new DataIntegrityViolationException("uk_catalog_product_sku"));
+
+        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(SkuAlreadyExistsException.class);
+
         verify(eventPublisher, never()).productCreated(org.mockito.ArgumentMatchers.any());
     }
 }
