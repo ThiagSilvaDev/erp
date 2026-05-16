@@ -3,7 +3,7 @@ package com.thiagsilvadev.erpapi.catalog.internal.repository;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductSearchCriteria;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductSearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 

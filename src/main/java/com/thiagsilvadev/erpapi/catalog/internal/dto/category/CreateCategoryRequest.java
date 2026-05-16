@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.catalog.internal.dto;
+package com.thiagsilvadev.erpapi.catalog.internal.dto.category;
 
 import jakarta.validation.constraints.NotBlank;
 

@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CreateProductRequest;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductResponse;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductSearchCriteria;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductSearchCriteria;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

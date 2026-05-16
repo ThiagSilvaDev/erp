@@ -3,7 +3,7 @@ package com.thiagsilvadev.erpapi.catalog.internal.repository;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.thiagsilvadev.erpapi.catalog.api.CategoryStatus;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CategorySearchCriteria;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategorySearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 
 public class CategorySpecification {

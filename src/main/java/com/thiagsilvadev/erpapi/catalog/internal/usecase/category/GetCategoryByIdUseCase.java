@@ -1,11 +1,11 @@
-package com.thiagsilvadev.erpapi.catalog.internal.usecase;
+package com.thiagsilvadev.erpapi.catalog.internal.usecase.category;
 
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CategoryResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;

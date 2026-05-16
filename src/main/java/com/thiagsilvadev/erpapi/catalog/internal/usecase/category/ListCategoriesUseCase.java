@@ -1,12 +1,12 @@
-package com.thiagsilvadev.erpapi.catalog.internal.usecase;
+package com.thiagsilvadev.erpapi.catalog.internal.usecase.category;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CategoryResponse;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CategorySearchCriteria;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategorySearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategorySpecification;

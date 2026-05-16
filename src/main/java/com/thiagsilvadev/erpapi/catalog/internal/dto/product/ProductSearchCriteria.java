@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.catalog.internal.dto;
+package com.thiagsilvadev.erpapi.catalog.internal.dto.product;
 
 import java.util.UUID;
 

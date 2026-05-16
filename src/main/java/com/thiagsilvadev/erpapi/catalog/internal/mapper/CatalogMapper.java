@@ -4,10 +4,10 @@ import org.mapstruct.Mapper;
 
 import com.thiagsilvadev.erpapi.catalog.api.CategorySnapshot;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CategoryResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyResponse;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;

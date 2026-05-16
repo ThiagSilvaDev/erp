@@ -24,14 +24,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.thiagsilvadev.erpapi.catalog.api.CategoryStatus;
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CategoryResponse;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CreateProductRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyResponse;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductResponse;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductSearchCriteria;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.CreateProductUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.GetProductByIdUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.ListProductsUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductSearchCriteria;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.GetProductByIdUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.ListProductsUseCase;
 
 class ProductControllerTest {
 

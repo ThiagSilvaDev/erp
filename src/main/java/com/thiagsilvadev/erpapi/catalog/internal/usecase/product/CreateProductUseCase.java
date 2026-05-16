@@ -1,11 +1,11 @@
-package com.thiagsilvadev.erpapi.catalog.internal.usecase;
+package com.thiagsilvadev.erpapi.catalog.internal.usecase.product;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CreateProductRequest;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.event.CatalogEventPublisher;
 import com.thiagsilvadev.erpapi.catalog.internal.exception.SkuAlreadyExistsException;
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;

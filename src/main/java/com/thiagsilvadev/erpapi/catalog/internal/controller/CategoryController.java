@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CategoryResponse;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CategorySearchCriteria;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CreateCategoryRequest;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.CreateCategoryUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.GetCategoryByIdUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.ListCategoriesUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategorySearchCriteria;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CreateCategoryRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.CreateCategoryUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.GetCategoryByIdUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.ListCategoriesUseCase;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 
 @RestController

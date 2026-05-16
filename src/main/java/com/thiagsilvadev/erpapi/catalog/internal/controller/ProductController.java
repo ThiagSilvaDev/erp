@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thiagsilvadev.erpapi.catalog.internal.dto.CreateProductRequest;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductResponse;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.ProductSearchCriteria;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.CreateProductUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.GetProductByIdUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.ListProductsUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductSearchCriteria;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.GetProductByIdUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.ListProductsUseCase;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 
 @RestController
