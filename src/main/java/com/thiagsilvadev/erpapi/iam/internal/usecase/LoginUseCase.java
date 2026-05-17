@@ -1,10 +1,7 @@
 package com.thiagsilvadev.erpapi.iam.internal.usecase;
 
-import java.util.Objects;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
@@ -24,26 +21,30 @@ public class LoginUseCase {
     private final JwtTokenService jwtTokenService;
     private final AuthenticationManager authenticationManager;
 
-    public LoginUseCase(JwtTokenService jwtTokenService, AuthenticationConfiguration authenticationConfiguration)
-            throws Exception {
+    public LoginUseCase(JwtTokenService jwtTokenService, AuthenticationManager authenticationManager) {
         this.jwtTokenService = jwtTokenService;
-        this.authenticationManager = authenticationConfiguration.getAuthenticationManager();
+        this.authenticationManager = authenticationManager;
     }
 
     @Transactional(readOnly = true)
     public LoginResponse execute(LoginRequest request) {
-        Authentication authentication;
+        Authentication authentication = authenticate(request);
+
+        if (!(authentication.getPrincipal() instanceof IamUserDetails principal)) {
+            throw new InvalidCredentialsException();
+        }
+        IssuedToken token = jwtTokenService.issue(principal);
+
+        return LoginResponse.bearer(token.value(), token.expiresIn(), toAuthUserResponse(principal));
+    }
+
+    private Authentication authenticate(LoginRequest request) {
         try {
-            authentication = authenticationManager.authenticate(
+            return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         } catch (AuthenticationException exception) {
             throw new InvalidCredentialsException();
         }
-
-        IamUserDetails principal = (IamUserDetails) authentication.getPrincipal();
-        IssuedToken token = jwtTokenService.issue(Objects.requireNonNull(principal));
-
-        return LoginResponse.bearer(token.value(), token.expiresIn(), toAuthUserResponse(principal));
     }
 
     private AuthUserResponse toAuthUserResponse(IamUserDetails principal) {

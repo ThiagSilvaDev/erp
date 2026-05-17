@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,8 +15,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.event.CatalogEventPublisher;
 import com.thiagsilvadev.erpapi.catalog.internal.exception.SkuAlreadyExistsException;
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
@@ -25,6 +24,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
 

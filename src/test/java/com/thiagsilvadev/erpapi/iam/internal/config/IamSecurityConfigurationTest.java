@@ -4,9 +4,13 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -28,11 +34,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
+import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
+import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
+
 @SpringBootTest(
         classes = {
             IamSecurityConfigurationTest.TestApplication.class,
             IamSecurityConfigurationTest.DummyController.class,
-            IamSecurityConfiguration.class
+            IamSecurityConfiguration.class,
+            ProblemDetailFactory.class,
+            CustomAuthenticationEntryPoint.class,
+            CustomAccessDeniedHandler.class
         },
         properties = {
             "erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes",
@@ -67,7 +80,14 @@ class IamSecurityConfigurationTest {
 
     @Test
     void shouldRequireAuthenticationForApiReads() throws Exception {
-        mockMvc.perform(get("/api/v1/security-test")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/security-test"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.detail").value("Authentication is required to access this resource."))
+                .andExpect(jsonPath("$.type").value("http://localhost/errors/unauthorized"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/security-test"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test
@@ -81,7 +101,13 @@ class IamSecurityConfigurationTest {
     void shouldRejectNonAdminApiWrites() throws Exception {
         mockMvc.perform(post("/api/v1/security-test")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.detail").value("Access is denied for this resource."))
+                .andExpect(jsonPath("$.type").value("http://localhost/errors/forbidden"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/security-test"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test
@@ -119,7 +145,13 @@ class IamSecurityConfigurationTest {
     }
 
     @SpringBootApplication
-    static class TestApplication {}
+    static class TestApplication {
+
+        @Bean
+        Clock clock() {
+            return Clock.fixed(Instant.parse("2026-05-16T00:00:00Z"), ZoneOffset.UTC);
+        }
+    }
 
     @RestController
     @RequestMapping("/api/v1/security-test")

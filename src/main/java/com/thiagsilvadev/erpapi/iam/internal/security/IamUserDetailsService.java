@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.iam.internal.security;
 
+import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,6 +11,7 @@ import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 
 @Service
+@NullMarked
 public class IamUserDetailsService implements UserDetailsService {
 
     private final IamCredentialRepository credentialRepository;

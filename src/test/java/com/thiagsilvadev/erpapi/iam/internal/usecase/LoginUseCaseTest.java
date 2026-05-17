@@ -17,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
@@ -33,17 +32,13 @@ class LoginUseCaseTest {
     private AuthenticationManager authenticationManager;
 
     @Mock
-    private AuthenticationConfiguration authenticationConfiguration;
-
-    @Mock
     private JwtTokenService jwtTokenService;
 
     private LoginUseCase useCase;
 
     @BeforeEach
-    void setUp() throws Exception {
-        when(authenticationConfiguration.getAuthenticationManager()).thenReturn(authenticationManager);
-        useCase = new LoginUseCase(jwtTokenService, authenticationConfiguration);
+    void setUp() {
+        useCase = new LoginUseCase(jwtTokenService, authenticationManager);
     }
 
     @Test

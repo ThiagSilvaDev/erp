@@ -24,9 +24,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.thiagsilvadev.erpapi.catalog.api.CategoryStatus;
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductRequest;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductSearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase;

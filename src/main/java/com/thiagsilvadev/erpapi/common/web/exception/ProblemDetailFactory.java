@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import jakarta.annotation.Nullable;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -33,6 +34,12 @@ public class ProblemDetailFactory {
         return enrich(detail, customProperties);
     }
 
+    public ProblemDetail create(
+            HttpStatus status, String message, HttpServletRequest request, @Nullable Map<String, ?> customProperties) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(status, message);
+        return enrich(detail, request, customProperties);
+    }
+
     public ProblemDetail enrich(ProblemDetail problemDetail) {
         return enrich(problemDetail, null);
     }
@@ -56,6 +63,28 @@ public class ProblemDetailFactory {
             problemDetail.setInstance(URI.create("urn:erp:background-process"));
         }
 
+        problemDetail.setProperty("timestamp", Instant.from(clock.instant()));
+
+        if (customProperties != null) {
+            customProperties.forEach(problemDetail::setProperty);
+        }
+
+        return problemDetail;
+    }
+
+    public ProblemDetail enrich(
+            ProblemDetail problemDetail, HttpServletRequest request, @Nullable Map<String, ?> customProperties) {
+        int statusCode = problemDetail.getStatus();
+        HttpStatus status = HttpStatus.resolve(statusCode);
+
+        URI typeUri = ServletUriComponentsBuilder.fromContextPath(request)
+                .path("/errors/{slug}")
+                .buildAndExpand(resolveStatusSlug(statusCode, status))
+                .toUri();
+        URI instanceUri = URI.create(request.getRequestURI());
+
+        problemDetail.setType(typeUri);
+        problemDetail.setInstance(instanceUri);
         problemDetail.setProperty("timestamp", Instant.from(clock.instant()));
 
         if (customProperties != null) {

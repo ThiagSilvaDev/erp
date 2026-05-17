@@ -3,8 +3,8 @@ package com.thiagsilvadev.erpapi.catalog.internal.dto.product;
 import java.util.UUID;
 
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
 
 public record ProductResponse(
         UUID id,

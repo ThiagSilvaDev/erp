@@ -2,10 +2,11 @@ package com.thiagsilvadev.erpapi.catalog.internal.dto.product;
 
 import java.util.UUID;
 
-import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyRequest;
 
 public record CreateProductRequest(
         @NotBlank String sku,
