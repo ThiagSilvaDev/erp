@@ -1,0 +1,27 @@
+package com.thiagsilvadev.erpapi.inventory.internal.usecase;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.StockMovementResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
+
+@Component
+public class ListStockMovementsUseCase {
+
+    private final StockMovementRepository movementRepository;
+    private final InventoryMapper mapper;
+
+    public ListStockMovementsUseCase(StockMovementRepository movementRepository, InventoryMapper mapper) {
+        this.movementRepository = movementRepository;
+        this.mapper = mapper;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<StockMovementResponse> execute(Pageable pageable) {
+        return movementRepository.findAll(pageable).map(mapper::toResponse);
+    }
+}

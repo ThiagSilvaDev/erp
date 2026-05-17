@@ -12,100 +12,65 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
-import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
-import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
 import com.thiagsilvadev.erpapi.sales.api.*;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesDtos.*;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
-import com.thiagsilvadev.erpapi.sales.internal.model.*;
-import com.thiagsilvadev.erpapi.sales.internal.repository.*;
+import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
+import com.thiagsilvadev.erpapi.sales.internal.usecase.*;
 
 @RestController
 class SalesOrderController implements SalesOrderApi, SalesFacade {
 
     private final SalesOrderRepository orderRepository;
-    private final CustomerFacade customerFacade;
-    private final CatalogFacade catalogFacade;
-    private final InventoryFacade inventoryFacade;
     private final SalesMapper mapper;
+    private final CreateSalesOrderUseCase createSalesOrderUseCase;
+    private final GetSalesOrderByIdUseCase getSalesOrderByIdUseCase;
+    private final ListSalesOrdersUseCase listSalesOrdersUseCase;
+    private final ConfirmSalesOrderUseCase confirmSalesOrderUseCase;
+    private final CancelSalesOrderUseCase cancelSalesOrderUseCase;
 
     SalesOrderController(
             SalesOrderRepository orderRepository,
-            CustomerFacade customerFacade,
-            CatalogFacade catalogFacade,
-            InventoryFacade inventoryFacade,
-            SalesMapper mapper) {
+            SalesMapper mapper,
+            CreateSalesOrderUseCase createSalesOrderUseCase,
+            GetSalesOrderByIdUseCase getSalesOrderByIdUseCase,
+            ListSalesOrdersUseCase listSalesOrdersUseCase,
+            ConfirmSalesOrderUseCase confirmSalesOrderUseCase,
+            CancelSalesOrderUseCase cancelSalesOrderUseCase) {
         this.orderRepository = orderRepository;
-        this.customerFacade = customerFacade;
-        this.catalogFacade = catalogFacade;
-        this.inventoryFacade = inventoryFacade;
         this.mapper = mapper;
+        this.createSalesOrderUseCase = createSalesOrderUseCase;
+        this.getSalesOrderByIdUseCase = getSalesOrderByIdUseCase;
+        this.listSalesOrdersUseCase = listSalesOrdersUseCase;
+        this.confirmSalesOrderUseCase = confirmSalesOrderUseCase;
+        this.cancelSalesOrderUseCase = cancelSalesOrderUseCase;
     }
 
     @Override
-    @Transactional
     public ResponseEntity<SalesOrderResponse> createOrder(@Valid @RequestBody CreateSalesOrderRequest request) {
-        customerFacade
-                .findCustomerById(request.customerId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.customerId()));
-        var items = request.items().stream()
-                .map(item -> {
-                    var product = catalogFacade
-                            .findProductById(item.productId())
-                            .orElseThrow(() -> new ResourceNotFoundException(Object.class, item.productId()));
-                    return SalesOrderItem.create(
-                            product.id(),
-                            item.warehouseId(),
-                            product.sku(),
-                            product.name(),
-                            item.quantity(),
-                            product.basePrice().getAmount(),
-                            product.basePrice().getCurrencyCode());
-                })
-                .toList();
-        SalesOrderResponse response =
-                mapper.toResponse(orderRepository.save(SalesOrder.create(request.customerId(), items)));
+        SalesOrderResponse response = createSalesOrderUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public SalesOrderResponse getOrder(@PathVariable UUID id) {
-        return mapper.toResponse(
-                orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id)));
+        return getSalesOrderByIdUseCase.execute(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Page<SalesOrderResponse> listOrders(SalesOrderSearchCriteria criteria, Pageable pageable) {
-        return orderRepository
-                .findAll(SalesOrderSpecification.withCriteria(criteria), pageable)
-                .map(mapper::toResponse);
+        return listSalesOrdersUseCase.execute(criteria, pageable);
     }
 
     @Override
-    @Transactional
     public SalesOrderResponse confirmOrder(@PathVariable UUID id) {
-        SalesOrder order =
-                orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
-        order.confirm();
-        for (SalesOrderItem item : order.getItems()) {
-            inventoryFacade.reserve(item.getProductId(), item.getWarehouseId(), item.getQuantity(), order.getId());
-        }
-        return mapper.toResponse(order);
+        return confirmSalesOrderUseCase.execute(id);
     }
 
     @Override
-    @Transactional
     public SalesOrderResponse cancelOrder(@PathVariable UUID id) {
-        SalesOrder order =
-                orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
-        order.cancel();
-        inventoryFacade.releaseBySalesOrderId(order.getId());
-        return mapper.toResponse(order);
+        return cancelSalesOrderUseCase.execute(id);
     }
 
     @Override
