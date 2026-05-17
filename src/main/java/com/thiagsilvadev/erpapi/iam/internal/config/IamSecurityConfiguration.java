@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -30,6 +29,8 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
+import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
+import com.thiagsilvadev.erpapi.iam.internal.security.SecurityAuthorities;
 
 @Configuration
 @EnableConfigurationProperties(IamJwtProperties.class)
@@ -39,7 +40,8 @@ public class IamSecurityConfiguration {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             CustomAuthenticationEntryPoint authenticationEntryPoint,
-            CustomAccessDeniedHandler accessDeniedHandler) {
+            CustomAccessDeniedHandler accessDeniedHandler,
+            RolePermissionResolver rolePermissionResolver) {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -50,25 +52,34 @@ public class IamSecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**")
+                        .hasAnyAuthority("*", "catalog:read")
+                        .requestMatchers("/api/v1/catalog/**")
+                        .hasAnyAuthority("*", "catalog:write")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/inventory/**")
+                        .hasAnyAuthority("*", "inventory:read")
+                        .requestMatchers("/api/v1/inventory/**")
+                        .hasAnyAuthority("*", "inventory:write")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/financial/**")
+                        .hasAnyAuthority("*", "financial:read")
+                        .requestMatchers("/api/v1/financial/**")
+                        .hasAuthority("*")
                         .requestMatchers(HttpMethod.GET, "/api/v1/**")
                         .authenticated()
                         .requestMatchers("/api/v1/**")
-                        .hasRole("ADMIN")
+                        .hasAuthority("*")
                         .anyRequest()
                         .permitAll())
-                .oauth2ResourceServer(
-                        oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(
+                        jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter(rolePermissionResolver))))
                 .build();
     }
 
-    private JwtAuthenticationConverter jwtAuthenticationConverter() {
+    private JwtAuthenticationConverter jwtAuthenticationConverter(RolePermissionResolver rolePermissionResolver) {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
             String role = jwt.getClaimAsString("role");
-            if (role == null || role.isBlank()) {
-                return java.util.List.of();
-            }
-            return java.util.List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            return SecurityAuthorities.fromRole(role, rolePermissionResolver);
         });
         return converter;
     }

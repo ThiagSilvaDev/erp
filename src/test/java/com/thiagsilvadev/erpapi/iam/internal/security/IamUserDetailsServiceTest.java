@@ -7,9 +7,9 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,8 +23,12 @@ class IamUserDetailsServiceTest {
     @Mock
     private IamCredentialRepository credentialRepository;
 
-    @InjectMocks
     private IamUserDetailsService userDetailsService;
+
+    @BeforeEach
+    void setUp() {
+        userDetailsService = new IamUserDetailsService(credentialRepository, new RolePermissionResolver());
+    }
 
     @Test
     void shouldLoadCredentialByNormalizedEmail() {
@@ -41,7 +45,7 @@ class IamUserDetailsServiceTest {
         assertThat(userDetails.getRole()).isEqualTo("ADMIN");
         assertThat(userDetails.getAuthorities())
                 .extracting(authority -> authority.getAuthority())
-                .containsExactly("ROLE_ADMIN");
+                .containsExactly("ROLE_ADMIN", "*");
         assertThat(userDetails.isEnabled()).isTrue();
     }
 
@@ -63,7 +67,13 @@ class IamUserDetailsServiceTest {
 
         assertThat(userDetails.getAuthorities())
                 .extracting(authority -> authority.getAuthority())
-                .containsExactly("ROLE_MANAGER");
+                .containsExactlyInAnyOrder(
+                        "ROLE_MANAGER",
+                        "catalog:read",
+                        "catalog:write",
+                        "inventory:read",
+                        "inventory:write",
+                        "financial:read");
         assertThat(userDetails.isEnabled()).isFalse();
     }
 }

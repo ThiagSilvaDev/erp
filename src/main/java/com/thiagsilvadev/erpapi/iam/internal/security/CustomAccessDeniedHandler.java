@@ -30,7 +30,9 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(
-            @NonNull HttpServletRequest request, HttpServletResponse response, @NonNull AccessDeniedException accessDeniedException)
+            @NonNull HttpServletRequest request,
+            HttpServletResponse response,
+            @NonNull AccessDeniedException accessDeniedException)
             throws IOException {
         ProblemDetail problemDetail =
                 problemDetailFactory.create(HttpStatus.FORBIDDEN, "Access is denied for this resource.", request, null);

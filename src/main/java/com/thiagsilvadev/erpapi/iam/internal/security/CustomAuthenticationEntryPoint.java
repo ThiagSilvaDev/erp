@@ -30,7 +30,9 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
     @Override
     public void commence(
-            @NonNull HttpServletRequest request, HttpServletResponse response, @NonNull AuthenticationException authException)
+            @NonNull HttpServletRequest request,
+            HttpServletResponse response,
+            @NonNull AuthenticationException authException)
             throws IOException {
         ProblemDetail problemDetail = problemDetailFactory.create(
                 HttpStatus.UNAUTHORIZED, "Authentication is required to access this resource.", request, null);

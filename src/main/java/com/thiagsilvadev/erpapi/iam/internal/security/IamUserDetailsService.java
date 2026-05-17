@@ -15,9 +15,12 @@ import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 public class IamUserDetailsService implements UserDetailsService {
 
     private final IamCredentialRepository credentialRepository;
+    private final RolePermissionResolver rolePermissionResolver;
 
-    public IamUserDetailsService(IamCredentialRepository credentialRepository) {
+    public IamUserDetailsService(
+            IamCredentialRepository credentialRepository, RolePermissionResolver rolePermissionResolver) {
         this.credentialRepository = credentialRepository;
+        this.rolePermissionResolver = rolePermissionResolver;
     }
 
     @Override
@@ -32,6 +35,7 @@ public class IamUserDetailsService implements UserDetailsService {
                 credential.getEmail(),
                 credential.getPasswordHash(),
                 credential.getRole(),
-                credential.isActive());
+                credential.isActive(),
+                SecurityAuthorities.fromRole(credential.getRole(), rolePermissionResolver));
     }
 }

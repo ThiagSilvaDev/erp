@@ -37,15 +37,18 @@ import org.springframework.web.context.WebApplicationContext;
 import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
+import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
 
 @SpringBootTest(
         classes = {
             IamSecurityConfigurationTest.TestApplication.class,
             IamSecurityConfigurationTest.DummyController.class,
+            IamSecurityConfigurationTest.PermissionController.class,
             IamSecurityConfiguration.class,
             ProblemDetailFactory.class,
             CustomAuthenticationEntryPoint.class,
-            CustomAccessDeniedHandler.class
+            CustomAccessDeniedHandler.class,
+            RolePermissionResolver.class
         },
         properties = {
             "erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes",
@@ -112,7 +115,7 @@ class IamSecurityConfigurationTest {
 
     @Test
     void shouldAllowAdminApiWrites() throws Exception {
-        mockMvc.perform(post("/api/v1/security-test").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+        mockMvc.perform(post("/api/v1/security-test").with(jwt().authorities(new SimpleGrantedAuthority("*"))))
                 .andExpect(status().isOk());
     }
 
@@ -125,6 +128,53 @@ class IamSecurityConfigurationTest {
     @Test
     void shouldRejectNonAdminApiWritesWithIssuedBearerTokenRoleClaim() throws Exception {
         mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + tokenWithRole("MANAGER")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAuthorizeManagerWithResolvedPermissions() throws Exception {
+        String token = tokenWithRole("MANAGER");
+
+        mockMvc.perform(post("/api/v1/catalog/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/inventory/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/financial/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/financial/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAuthorizeOperatorWithResolvedPermissions() throws Exception {
+        String token = tokenWithRole("OPERATOR");
+
+        mockMvc.perform(get("/api/v1/catalog/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/inventory/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/catalog/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/inventory/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/financial/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAuthorizeAdminWildcardPermissions() throws Exception {
+        String token = tokenWithRole("ADMIN");
+
+        mockMvc.perform(post("/api/v1/financial/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldRejectUnknownRoleClaimForPermissionRules() throws Exception {
+        mockMvc.perform(get("/api/v1/catalog/security-test")
+                        .header("Authorization", "Bearer " + tokenWithRole("UNKNOWN")))
                 .andExpect(status().isForbidden());
     }
 
@@ -165,6 +215,41 @@ class IamSecurityConfigurationTest {
         @PostMapping
         String write() {
             return "write";
+        }
+    }
+
+    @RestController
+    @RequestMapping("/api/v1")
+    static class PermissionController {
+
+        @GetMapping("/catalog/security-test")
+        String catalogRead() {
+            return "catalog read";
+        }
+
+        @PostMapping("/catalog/security-test")
+        String catalogWrite() {
+            return "catalog write";
+        }
+
+        @GetMapping("/inventory/security-test")
+        String inventoryRead() {
+            return "inventory read";
+        }
+
+        @PostMapping("/inventory/security-test")
+        String inventoryWrite() {
+            return "inventory write";
+        }
+
+        @GetMapping("/financial/security-test")
+        String financialRead() {
+            return "financial read";
+        }
+
+        @PostMapping("/financial/security-test")
+        String financialWrite() {
+            return "financial write";
         }
     }
 }
