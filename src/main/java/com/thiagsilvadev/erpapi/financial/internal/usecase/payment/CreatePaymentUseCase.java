@@ -34,6 +34,7 @@ public class CreatePaymentUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
     public PaymentResponse execute(CreatePaymentRequest request) {
         Invoice invoice = invoiceRepository
                 .findById(request.invoiceId())

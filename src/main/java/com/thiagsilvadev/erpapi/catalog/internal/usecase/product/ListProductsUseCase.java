@@ -23,6 +23,7 @@ public class ListProductsUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
     public Page<ProductResponse> execute(ProductSearchCriteria criteria, Pageable pageable) {
         return productRepository
                 .findAll(ProductSpecification.withCriteria(criteria), pageable)

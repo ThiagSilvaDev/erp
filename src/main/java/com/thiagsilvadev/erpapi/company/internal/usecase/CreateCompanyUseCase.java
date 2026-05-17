@@ -27,6 +27,7 @@ public class CreateCompanyUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.company.api.CompanyPermissions).WRITE)")
     public CompanyResponse execute(CreateCompanyRequest request) {
         var cnpj = companyMapper.toCnpj(request.cnpj());
 

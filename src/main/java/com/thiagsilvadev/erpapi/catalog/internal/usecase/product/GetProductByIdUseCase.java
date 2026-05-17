@@ -23,6 +23,7 @@ public class GetProductByIdUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
     public ProductResponse execute(UUID id) {
         Product product =
                 productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Product.class, id));

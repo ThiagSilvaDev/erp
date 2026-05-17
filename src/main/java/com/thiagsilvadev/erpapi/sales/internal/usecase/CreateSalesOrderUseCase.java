@@ -33,6 +33,7 @@ public class CreateSalesOrderUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).WRITE)")
     public SalesOrderResponse execute(CreateSalesOrderRequest request) {
         customerFacade
                 .findCustomerById(request.customerId())

@@ -23,6 +23,7 @@ public class ListUsersUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.user.api.UserPermissions).READ)")
     public Page<UserResponse> execute(UserSearchCriteria criteria, Pageable pageable) {
         return userRepository
                 .findAll(UserSpecification.withCriteria(criteria), pageable)

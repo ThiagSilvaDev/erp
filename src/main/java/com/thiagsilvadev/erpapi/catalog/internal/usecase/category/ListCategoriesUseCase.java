@@ -23,6 +23,7 @@ public class ListCategoriesUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
     public Page<CategoryResponse> execute(CategorySearchCriteria criteria, Pageable pageable) {
         return categoryRepository
                 .findAll(CategorySpecification.withCriteria(criteria), pageable)

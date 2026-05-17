@@ -36,6 +36,7 @@ public class CreateProductUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
     public ProductResponse execute(CreateProductRequest request) {
         Sku sku = catalogMapper.toSku(request.sku());
 

@@ -36,6 +36,7 @@ public class CreateUserUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.user.api.UserPermissions).WRITE)")
     public UserResponse execute(CreateUserRequest request) {
         Contact contact = Contact.create(request.email(), request.phone());
 

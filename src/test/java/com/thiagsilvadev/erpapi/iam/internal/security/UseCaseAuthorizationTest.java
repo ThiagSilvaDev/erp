@@ -1,0 +1,93 @@
+package com.thiagsilvadev.erpapi.iam.internal.security;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.lang.reflect.Method;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+class UseCaseAuthorizationTest {
+
+    private static final String[] SECURED_USE_CASES = {
+        "com.thiagsilvadev.erpapi.catalog.internal.usecase.category.CreateCategoryUseCase",
+        "com.thiagsilvadev.erpapi.catalog.internal.usecase.category.GetCategoryByIdUseCase",
+        "com.thiagsilvadev.erpapi.catalog.internal.usecase.category.ListCategoriesUseCase",
+        "com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase",
+        "com.thiagsilvadev.erpapi.catalog.internal.usecase.product.GetProductByIdUseCase",
+        "com.thiagsilvadev.erpapi.catalog.internal.usecase.product.ListProductsUseCase",
+        "com.thiagsilvadev.erpapi.company.internal.usecase.CreateCompanyUseCase",
+        "com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyByIdUseCase",
+        "com.thiagsilvadev.erpapi.company.internal.usecase.ListCompaniesUseCase",
+        "com.thiagsilvadev.erpapi.customer.internal.usecase.CreateContactPersonUseCase",
+        "com.thiagsilvadev.erpapi.customer.internal.usecase.CreateCustomerUseCase",
+        "com.thiagsilvadev.erpapi.customer.internal.usecase.CreateSupplierUseCase",
+        "com.thiagsilvadev.erpapi.customer.internal.usecase.GetContactPersonByIdUseCase",
+        "com.thiagsilvadev.erpapi.customer.internal.usecase.GetCustomerByIdUseCase",
+        "com.thiagsilvadev.erpapi.customer.internal.usecase.GetSupplierByIdUseCase",
+        "com.thiagsilvadev.erpapi.customer.internal.usecase.ListContactPersonsUseCase",
+        "com.thiagsilvadev.erpapi.customer.internal.usecase.ListCustomersUseCase",
+        "com.thiagsilvadev.erpapi.customer.internal.usecase.ListSuppliersUseCase",
+        "com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.CreateInvoiceUseCase",
+        "com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.GetInvoiceByIdUseCase",
+        "com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.ListInvoicesUseCase",
+        "com.thiagsilvadev.erpapi.financial.internal.usecase.ledgerentry.GetLedgerEntryByIdUseCase",
+        "com.thiagsilvadev.erpapi.financial.internal.usecase.ledgerentry.ListLedgerEntriesUseCase",
+        "com.thiagsilvadev.erpapi.financial.internal.usecase.payment.CreatePaymentUseCase",
+        "com.thiagsilvadev.erpapi.financial.internal.usecase.payment.GetPaymentByIdUseCase",
+        "com.thiagsilvadev.erpapi.financial.internal.usecase.payment.ListPaymentsUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.CreateReservationUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.CreateStockMovementUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.CreateWarehouseUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.GetInventoryItemByIdUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.GetReservationByIdUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.GetStockMovementByIdUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.GetWarehouseByIdUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.ListInventoryItemsUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.ListReservationsUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.ListStockMovementsUseCase",
+        "com.thiagsilvadev.erpapi.inventory.internal.usecase.ListWarehousesUseCase",
+        "com.thiagsilvadev.erpapi.sales.internal.usecase.CancelSalesOrderUseCase",
+        "com.thiagsilvadev.erpapi.sales.internal.usecase.ConfirmSalesOrderUseCase",
+        "com.thiagsilvadev.erpapi.sales.internal.usecase.CreateSalesOrderUseCase",
+        "com.thiagsilvadev.erpapi.sales.internal.usecase.GetSalesOrderByIdUseCase",
+        "com.thiagsilvadev.erpapi.sales.internal.usecase.ListSalesOrdersUseCase",
+        "com.thiagsilvadev.erpapi.user.internal.usecase.CreateUserUseCase",
+        "com.thiagsilvadev.erpapi.user.internal.usecase.GetUserByIdUseCase",
+        "com.thiagsilvadev.erpapi.user.internal.usecase.ListUsersUseCase"
+    };
+
+    @Test
+    void shouldProtectHttpFacingUseCaseExecuteMethods() {
+        assertThat(Stream.of(SECURED_USE_CASES)
+                        .map(UseCaseAuthorizationTest::executeMethod)
+                        .map(method -> method.getAnnotation(PreAuthorize.class)))
+                .allSatisfy(annotation -> assertThat(annotation).isNotNull());
+    }
+
+    @Test
+    void shouldKeepLoginUseCasePublic() throws Exception {
+        Method execute = Class.forName("com.thiagsilvadev.erpapi.iam.internal.usecase.LoginUseCase")
+                .getDeclaredMethod(
+                        "execute",
+                        Class.forName("com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest"));
+
+        assertThat(execute.getAnnotation(PreAuthorize.class)).isNull();
+    }
+
+    private static Method executeMethod(String className) {
+        return Stream.of(type(className).getDeclaredMethods())
+                .filter(method -> method.getName().equals("execute"))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private static Class<?> type(String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError("Missing use case class " + className, e);
+        }
+    }
+}

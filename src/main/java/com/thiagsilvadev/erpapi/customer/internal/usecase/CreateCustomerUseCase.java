@@ -30,6 +30,7 @@ public class CreateCustomerUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public CustomerResponse execute(CreateCustomerRequest request) {
         companyFacade
                 .findById(request.companyId())

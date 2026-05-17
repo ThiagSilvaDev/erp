@@ -21,6 +21,7 @@ public class ListInventoryItemsUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public Page<InventoryItemResponse> execute(Pageable pageable) {
         return itemRepository.findAll(pageable).map(mapper::toResponse);
     }

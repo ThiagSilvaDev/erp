@@ -15,6 +15,7 @@ public class CreateReservationUseCase {
     public CreateReservationUseCase(InventoryService inventoryService) {
         this.inventoryService = inventoryService;
     }
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
 
     public ReservationResponse execute(CreateReservationRequest request) {
         InventoryReservationSnapshot reservation = inventoryService.reserve(

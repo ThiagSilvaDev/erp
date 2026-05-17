@@ -29,6 +29,7 @@ public class CreateContactPersonUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public ContactPersonResponse execute(CreateContactPersonRequest request) {
         customerRepository
                 .findById(request.customerId())

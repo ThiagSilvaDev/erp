@@ -23,6 +23,7 @@ public class GetSalesOrderByIdUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).READ)")
     public SalesOrderResponse execute(UUID id) {
         return mapper.toResponse(
                 orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id)));

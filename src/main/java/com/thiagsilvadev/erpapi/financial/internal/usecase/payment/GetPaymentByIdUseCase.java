@@ -23,6 +23,7 @@ public class GetPaymentByIdUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public PaymentResponse execute(UUID id) {
         return mapper.toResponse(
                 paymentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Payment.class, id)));

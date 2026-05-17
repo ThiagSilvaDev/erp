@@ -23,6 +23,7 @@ public class ListSalesOrdersUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).READ)")
     public Page<SalesOrderResponse> execute(SalesOrderSearchCriteria criteria, Pageable pageable) {
         return orderRepository
                 .findAll(SalesOrderSpecification.withCriteria(criteria), pageable)

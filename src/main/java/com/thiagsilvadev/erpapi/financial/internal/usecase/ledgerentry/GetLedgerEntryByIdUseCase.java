@@ -23,6 +23,7 @@ public class GetLedgerEntryByIdUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public LedgerEntryResponse execute(UUID id) {
         return mapper.toResponse(ledgerEntryRepository
                 .findById(id)

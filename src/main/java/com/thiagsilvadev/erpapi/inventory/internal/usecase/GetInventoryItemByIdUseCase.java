@@ -23,6 +23,7 @@ public class GetInventoryItemByIdUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public InventoryItemResponse execute(UUID id) {
         return mapper.toResponse(
                 itemRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, id)));

@@ -23,6 +23,7 @@ public class GetCategoryByIdUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
     public CategoryResponse execute(UUID id) {
         Category category =
                 categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Category.class, id));

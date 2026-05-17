@@ -7,30 +7,26 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.customer.internal.dto.*;
-import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;
-import com.thiagsilvadev.erpapi.customer.internal.repository.ContactPersonRepository;
-import com.thiagsilvadev.erpapi.customer.internal.usecase.CreateContactPersonUseCase;
+import com.thiagsilvadev.erpapi.customer.internal.usecase.*;
 
 @RestController
 class ContactPersonController implements ContactPersonApi {
 
-    private final ContactPersonRepository contactPersonRepository;
-    private final CustomerMapper mapper;
     private final CreateContactPersonUseCase createContactPersonUseCase;
+    private final GetContactPersonByIdUseCase getContactPersonByIdUseCase;
+    private final ListContactPersonsUseCase listContactPersonsUseCase;
 
     ContactPersonController(
-            ContactPersonRepository contactPersonRepository,
-            CustomerMapper mapper,
-            CreateContactPersonUseCase createContactPersonUseCase) {
-        this.contactPersonRepository = contactPersonRepository;
-        this.mapper = mapper;
+            CreateContactPersonUseCase createContactPersonUseCase,
+            GetContactPersonByIdUseCase getContactPersonByIdUseCase,
+            ListContactPersonsUseCase listContactPersonsUseCase) {
         this.createContactPersonUseCase = createContactPersonUseCase;
+        this.getContactPersonByIdUseCase = getContactPersonByIdUseCase;
+        this.listContactPersonsUseCase = listContactPersonsUseCase;
     }
 
     @Override
@@ -40,16 +36,12 @@ class ContactPersonController implements ContactPersonApi {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ContactPersonResponse getContactPersonById(UUID id) {
-        return mapper.toResponse(contactPersonRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ContactPerson.class, id)));
+        return getContactPersonByIdUseCase.execute(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Page<ContactPersonResponse> listContactPersons(Pageable pageable) {
-        return contactPersonRepository.findAll(pageable).map(mapper::toResponse);
+        return listContactPersonsUseCase.execute(pageable);
     }
 }

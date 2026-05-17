@@ -10,16 +10,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.api.*;
 import com.thiagsilvadev.erpapi.customer.internal.dto.*;
 import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
 import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
-import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerSpecification;
 import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
-import com.thiagsilvadev.erpapi.customer.internal.usecase.CreateCustomerUseCase;
+import com.thiagsilvadev.erpapi.customer.internal.usecase.*;
 
 @RestController
 class CustomerController implements CustomerApi, CustomerFacade {
@@ -29,18 +27,24 @@ class CustomerController implements CustomerApi, CustomerFacade {
     private final CompanyFacade companyFacade;
     private final CustomerMapper mapper;
     private final CreateCustomerUseCase createCustomerUseCase;
+    private final GetCustomerByIdUseCase getCustomerByIdUseCase;
+    private final ListCustomersUseCase listCustomersUseCase;
 
     CustomerController(
             CustomerRepository customerRepository,
             SupplierRepository supplierRepository,
             CompanyFacade companyFacade,
             CustomerMapper mapper,
-            CreateCustomerUseCase createCustomerUseCase) {
+            CreateCustomerUseCase createCustomerUseCase,
+            GetCustomerByIdUseCase getCustomerByIdUseCase,
+            ListCustomersUseCase listCustomersUseCase) {
         this.customerRepository = customerRepository;
         this.supplierRepository = supplierRepository;
         this.companyFacade = companyFacade;
         this.mapper = mapper;
         this.createCustomerUseCase = createCustomerUseCase;
+        this.getCustomerByIdUseCase = getCustomerByIdUseCase;
+        this.listCustomersUseCase = listCustomersUseCase;
     }
 
     @Override
@@ -50,18 +54,13 @@ class CustomerController implements CustomerApi, CustomerFacade {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CustomerResponse getCustomerById(UUID id) {
-        return mapper.toResponse(
-                customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Customer.class, id)));
+        return getCustomerByIdUseCase.execute(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Page<CustomerResponse> listCustomers(CustomerSearchCriteria criteria, Pageable pageable) {
-        return customerRepository
-                .findAll(CustomerSpecification.customers(criteria), pageable)
-                .map(mapper::toResponse);
+        return listCustomersUseCase.execute(criteria, pageable);
     }
 
     @Override

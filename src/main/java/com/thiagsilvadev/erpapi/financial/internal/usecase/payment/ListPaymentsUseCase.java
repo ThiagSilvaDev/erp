@@ -21,6 +21,7 @@ public class ListPaymentsUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public Page<PaymentResponse> execute(Pageable pageable) {
         return paymentRepository.findAll(pageable).map(mapper::toResponse);
     }

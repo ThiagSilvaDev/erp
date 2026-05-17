@@ -23,6 +23,7 @@ public class GetReservationByIdUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public ReservationResponse execute(UUID id) {
         return mapper.toResponse(reservationRepository
                 .findById(id)

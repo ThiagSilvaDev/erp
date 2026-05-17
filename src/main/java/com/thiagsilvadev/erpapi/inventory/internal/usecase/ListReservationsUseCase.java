@@ -21,6 +21,7 @@ public class ListReservationsUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public Page<ReservationResponse> execute(Pageable pageable) {
         return reservationRepository.findAll(pageable).map(mapper::toResponse);
     }

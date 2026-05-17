@@ -37,6 +37,7 @@ public class CreateInvoiceUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
     public InvoiceResponse execute(CreateInvoiceRequest request) {
         customerFacade
                 .findCustomerById(request.customerId())

@@ -23,6 +23,7 @@ public class ListCompaniesUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.company.api.CompanyPermissions).READ)")
     public Page<CompanyResponse> execute(CompanySearchCriteria criteria, Pageable pageable) {
         return companyRepository
                 .findAll(CompanySpecification.withCriteria(criteria), pageable)

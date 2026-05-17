@@ -26,6 +26,7 @@ public class CreateStockMovementUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
     public StockMovementResponse execute(CreateStockMovementRequest request) {
         InventoryItem item =
                 inventoryService.applyMovement(request.productId(), request.warehouseId(), request.quantity());

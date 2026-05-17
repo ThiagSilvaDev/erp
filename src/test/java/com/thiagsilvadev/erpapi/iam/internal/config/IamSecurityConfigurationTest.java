@@ -21,6 +21,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -37,7 +39,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
 import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
-import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
 import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
@@ -47,6 +48,7 @@ import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
             IamSecurityConfigurationTest.TestApplication.class,
             IamSecurityConfigurationTest.DummyController.class,
             IamSecurityConfigurationTest.PermissionController.class,
+            IamSecurityConfigurationTest.TestWriteUseCase.class,
             IamSecurityConfiguration.class,
             ProblemDetailFactory.class,
             CustomAuthenticationEntryPoint.class,
@@ -104,95 +106,80 @@ class IamSecurityConfigurationTest {
     }
 
     @Test
-    void shouldRejectNonAdminApiWrites() throws Exception {
+    void shouldAllowAuthenticatedApiWritesThroughUrlSecurity() throws Exception {
         mockMvc.perform(post("/api/v1/security-test")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldRejectUnauthorizedMethodCalls() throws Exception {
+        mockMvc.perform(post("/api/v1/method-security-test")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
                 .andExpect(status().isForbidden())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(403))
                 .andExpect(jsonPath("$.detail").value("Access is denied for this resource."))
                 .andExpect(jsonPath("$.type").value("http://localhost/errors/forbidden"))
-                .andExpect(jsonPath("$.instance").value("/api/v1/security-test"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/method-security-test"))
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test
-    void shouldAllowExplicitUserWritePermission() throws Exception {
-        mockMvc.perform(post("/api/v1/users/security-test")
-                        .with(jwt().authorities(new SimpleGrantedAuthority(UserPermissions.WRITE))))
+    void shouldAllowAuthorizedMethodCalls() throws Exception {
+        mockMvc.perform(post("/api/v1/method-security-test")
+                        .with(jwt().authorities(new SimpleGrantedAuthority(CatalogPermissions.WRITE))))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void shouldRejectAdminRoleClaimForGenericApiWrites() throws Exception {
+    void shouldAllowAdminRoleClaimThroughUrlSecurity() throws Exception {
         mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + tokenWithRole("ADMIN")))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void shouldAllowAdminRoleClaimForExplicitModuleWrites() throws Exception {
-        mockMvc.perform(post("/api/v1/financial/security-test").header("Authorization", "Bearer " + tokenWithRole("ADMIN")))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void shouldRejectNonAdminApiWritesWithIssuedBearerTokenRoleClaim() throws Exception {
+    void shouldAllowNonAdminRoleClaimThroughUrlSecurity() throws Exception {
         mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + tokenWithRole("MANAGER")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test
-    void shouldAuthorizeManagerWithResolvedPermissions() throws Exception {
+    void shouldAuthorizeManagerWithResolvedPermissionsAtMethodBoundary() throws Exception {
         String token = tokenWithRole("MANAGER");
 
-        mockMvc.perform(post("/api/v1/catalog/security-test").header("Authorization", "Bearer " + token))
+        mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
-        mockMvc.perform(post("/api/v1/inventory/security-test").header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
-        mockMvc.perform(get("/api/v1/financial/security-test").header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
-        mockMvc.perform(post("/api/v1/financial/security-test").header("Authorization", "Bearer " + token))
-                .andExpect(status().isForbidden());
     }
 
     @Test
-    void shouldAuthorizeOperatorWithResolvedPermissions() throws Exception {
+    void shouldRejectOperatorWithoutWritePermissionAtMethodBoundary() throws Exception {
         String token = tokenWithRole("OPERATOR");
 
-        mockMvc.perform(get("/api/v1/catalog/security-test").header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
-        mockMvc.perform(get("/api/v1/inventory/security-test").header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
-        mockMvc.perform(post("/api/v1/catalog/security-test").header("Authorization", "Bearer " + token))
-                .andExpect(status().isForbidden());
-        mockMvc.perform(post("/api/v1/inventory/security-test").header("Authorization", "Bearer " + token))
-                .andExpect(status().isForbidden());
-        mockMvc.perform(get("/api/v1/financial/security-test").header("Authorization", "Bearer " + token))
+        mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void shouldAuthorizeAdminExplicitPermissions() throws Exception {
+    void shouldAuthorizeAdminExplicitPermissionsAtMethodBoundary() throws Exception {
         String token = tokenWithRole("ADMIN");
 
-        mockMvc.perform(post("/api/v1/financial/security-test").header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
-        mockMvc.perform(post("/api/v1/users/security-test").header("Authorization", "Bearer " + token))
+        mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void shouldRejectUnknownRoleClaimForPermissionRules() throws Exception {
-        mockMvc.perform(get("/api/v1/catalog/security-test")
+    void shouldAllowUnknownRoleClaimThroughUrlSecurity() throws Exception {
+        mockMvc.perform(get("/api/v1/security-test")
                         .header("Authorization", "Bearer " + tokenWithRole("UNKNOWN")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test
     void shouldAuthorizeWithAuthoritiesClaim() throws Exception {
-        String token = tokenWithAuthorities("UNKNOWN", List.of("ROLE_UNKNOWN", CatalogPermissions.READ));
+        String token = tokenWithAuthorities("UNKNOWN", List.of("ROLE_UNKNOWN", CatalogPermissions.WRITE));
 
-        mockMvc.perform(get("/api/v1/catalog/security-test").header("Authorization", "Bearer " + token))
+        mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
 
@@ -200,7 +187,7 @@ class IamSecurityConfigurationTest {
     void shouldRejectWhenAuthoritiesClaimDoesNotGrantPermission() throws Exception {
         String token = tokenWithAuthorities("ADMIN", List.of("ROLE_ADMIN"));
 
-        mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + token))
+        mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
 
@@ -262,42 +249,27 @@ class IamSecurityConfigurationTest {
     }
 
     @RestController
-    @RequestMapping("/api/v1")
+    @RequestMapping("/api/v1/method-security-test")
     static class PermissionController {
 
-        @GetMapping("/catalog/security-test")
-        String catalogRead() {
-            return "catalog read";
+        private final TestWriteUseCase useCase;
+
+        PermissionController(TestWriteUseCase useCase) {
+            this.useCase = useCase;
         }
 
-        @PostMapping("/catalog/security-test")
-        String catalogWrite() {
-            return "catalog write";
+        @PostMapping
+        String write() {
+            return useCase.execute();
         }
+    }
 
-        @GetMapping("/inventory/security-test")
-        String inventoryRead() {
-            return "inventory read";
-        }
+    @Component
+    static class TestWriteUseCase {
 
-        @PostMapping("/inventory/security-test")
-        String inventoryWrite() {
-            return "inventory write";
-        }
-
-        @GetMapping("/financial/security-test")
-        String financialRead() {
-            return "financial read";
-        }
-
-        @PostMapping("/financial/security-test")
-        String financialWrite() {
-            return "financial write";
-        }
-
-        @PostMapping("/users/security-test")
-        String userWrite() {
-            return "user write";
+        @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
+        String execute() {
+            return "method write";
         }
     }
 }

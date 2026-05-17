@@ -7,29 +7,26 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.customer.internal.dto.*;
-import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;
-import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerSpecification;
-import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
-import com.thiagsilvadev.erpapi.customer.internal.usecase.CreateSupplierUseCase;
+import com.thiagsilvadev.erpapi.customer.internal.usecase.*;
 
 @RestController
 class SupplierController implements SupplierApi {
 
-    private final SupplierRepository supplierRepository;
-    private final CustomerMapper mapper;
     private final CreateSupplierUseCase createSupplierUseCase;
+    private final GetSupplierByIdUseCase getSupplierByIdUseCase;
+    private final ListSuppliersUseCase listSuppliersUseCase;
 
     SupplierController(
-            SupplierRepository supplierRepository, CustomerMapper mapper, CreateSupplierUseCase createSupplierUseCase) {
-        this.supplierRepository = supplierRepository;
-        this.mapper = mapper;
+            CreateSupplierUseCase createSupplierUseCase,
+            GetSupplierByIdUseCase getSupplierByIdUseCase,
+            ListSuppliersUseCase listSuppliersUseCase) {
         this.createSupplierUseCase = createSupplierUseCase;
+        this.getSupplierByIdUseCase = getSupplierByIdUseCase;
+        this.listSuppliersUseCase = listSuppliersUseCase;
     }
 
     @Override
@@ -39,17 +36,12 @@ class SupplierController implements SupplierApi {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public SupplierResponse getSupplierById(UUID id) {
-        return mapper.toResponse(
-                supplierRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Supplier.class, id)));
+        return getSupplierByIdUseCase.execute(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Page<SupplierResponse> listSuppliers(CustomerSearchCriteria criteria, Pageable pageable) {
-        return supplierRepository
-                .findAll(CustomerSpecification.suppliers(criteria), pageable)
-                .map(mapper::toResponse);
+        return listSuppliersUseCase.execute(criteria, pageable);
     }
 }

@@ -23,6 +23,7 @@ public class GetUserByIdUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.user.api.UserPermissions).READ)")
     public UserResponse execute(UUID id) {
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(User.class, id));
 

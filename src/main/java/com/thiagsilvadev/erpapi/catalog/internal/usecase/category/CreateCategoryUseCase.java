@@ -23,6 +23,7 @@ public class CreateCategoryUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
     public CategoryResponse execute(CreateCategoryRequest request) {
         String code = Category.normalizeCode(request.code());
 

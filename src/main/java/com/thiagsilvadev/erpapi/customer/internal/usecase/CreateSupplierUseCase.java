@@ -30,6 +30,7 @@ public class CreateSupplierUseCase {
     }
 
     @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public SupplierResponse execute(CreateSupplierRequest request) {
         companyFacade
                 .findById(request.companyId())

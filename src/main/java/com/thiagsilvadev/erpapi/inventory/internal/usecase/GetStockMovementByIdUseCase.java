@@ -23,6 +23,7 @@ public class GetStockMovementByIdUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public StockMovementResponse execute(UUID id) {
         return mapper.toResponse(movementRepository
                 .findById(id)

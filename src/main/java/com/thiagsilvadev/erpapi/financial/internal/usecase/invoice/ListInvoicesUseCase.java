@@ -21,6 +21,7 @@ public class ListInvoicesUseCase {
     }
 
     @Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public Page<InvoiceResponse> execute(Pageable pageable) {
         return invoiceRepository.findAll(pageable).map(mapper::toResponse);
     }
