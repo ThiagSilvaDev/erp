@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
+import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @ExtendWith(MockitoExtension.class)
 class IamUserDetailsServiceTest {
@@ -33,7 +34,7 @@ class IamUserDetailsServiceTest {
     @Test
     void shouldLoadCredentialByNormalizedEmail() {
         UUID userId = UUID.randomUUID();
-        IamCredential credential = IamCredential.create(userId, "user@example.com", "hash", "ADMIN");
+        IamCredential credential = IamCredential.create(userId, "user@example.com", "hash", UserRole.ADMIN);
         when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.of(credential));
 
         IamUserDetails userDetails = (IamUserDetails) userDetailsService.loadUserByUsername(" User@Example.com ");
@@ -59,8 +60,9 @@ class IamUserDetailsServiceTest {
 
     @Test
     void shouldDisableInactiveCredential() {
-        IamCredential credential = IamCredential.create(UUID.randomUUID(), "user@example.com", "hash", "MANAGER");
-        credential.inactivate();
+        IamCredential credential =
+                IamCredential.create(UUID.randomUUID(), "user@example.com", "hash", UserRole.MANAGER);
+        credential.deactivate();
         when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.of(credential));
 
         IamUserDetails userDetails = (IamUserDetails) userDetailsService.loadUserByUsername("user@example.com");

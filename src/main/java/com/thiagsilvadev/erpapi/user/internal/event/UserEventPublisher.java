@@ -17,10 +17,6 @@ public class UserEventPublisher {
 
     public void userCreated(User user, String rawPassword) {
         eventPublisher.publishEvent(new UserCreatedEvent(
-                user.getId(),
-                user.getContact().getEmail(),
-                user.getCompanyId(),
-                rawPassword,
-                user.getRole().name()));
+                user.getId(), user.getContact().getEmail(), user.getCompanyId(), rawPassword, user.getRole()));
     }
 }

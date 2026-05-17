@@ -2,4 +2,6 @@ package com.thiagsilvadev.erpapi.iam.api;
 
 import java.util.UUID;
 
-public record CredentialProvisioningRequest(UUID userId, String email, String rawPassword, String role) {}
+import com.thiagsilvadev.erpapi.user.api.UserRole;
+
+public record CredentialProvisioningRequest(UUID userId, String email, String rawPassword, UserRole role) {}

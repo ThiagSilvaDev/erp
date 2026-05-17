@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.iam.internal.model;
 
-import java.util.Locale;
 import java.util.UUID;
 
 import jakarta.persistence.AttributeOverride;
@@ -14,6 +13,7 @@ import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Email;
+import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @Entity
 @Table(
@@ -36,8 +36,9 @@ public class IamCredential extends AbstractBaseEntity {
     @Column(nullable = false, length = 120)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
-    private String role;
+    private UserRole role;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -45,14 +46,14 @@ public class IamCredential extends AbstractBaseEntity {
 
     protected IamCredential() {}
 
-    private IamCredential(UUID userId, String email, String passwordHash, String role) {
+    private IamCredential(UUID userId, String email, String passwordHash, UserRole role) {
         this.userId = requireUserId(userId);
         this.email = Email.create(email);
         this.passwordHash = requireText(passwordHash, "Password hash cannot be blank");
-        this.role = requireText(role, "Role cannot be blank").toUpperCase(Locale.ROOT);
+        this.role = requireRole(role);
     }
 
-    public static IamCredential create(UUID userId, String email, String passwordHash, String role) {
+    public static IamCredential create(UUID userId, String email, String passwordHash, UserRole role) {
         return new IamCredential(userId, email, passwordHash, role);
     }
 
@@ -60,7 +61,7 @@ public class IamCredential extends AbstractBaseEntity {
         this.status = CredentialStatus.ACTIVE;
     }
 
-    public void inactivate() {
+    public void deactivate() {
         this.status = CredentialStatus.INACTIVE;
     }
 
@@ -80,7 +81,7 @@ public class IamCredential extends AbstractBaseEntity {
         return passwordHash;
     }
 
-    public String getRole() {
+    public UserRole getRole() {
         return role;
     }
 
@@ -93,6 +94,13 @@ public class IamCredential extends AbstractBaseEntity {
             throw new IllegalArgumentException("Credential user cannot be null");
         }
         return userId;
+    }
+
+    private static UserRole requireRole(UserRole role) {
+        if (role == null) {
+            throw new IllegalArgumentException("Role cannot be null");
+        }
+        return role;
     }
 
     private static String requireText(String value, String message) {

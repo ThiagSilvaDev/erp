@@ -34,8 +34,8 @@ public class IamUserDetailsService implements UserDetailsService {
                 credential.getUserId(),
                 credential.getEmail(),
                 credential.getPasswordHash(),
-                credential.getRole(),
+                credential.getRole().name(),
                 credential.isActive(),
-                SecurityAuthorities.fromRole(credential.getRole(), rolePermissionResolver));
+                SecurityAuthorities.fromRole(credential.getRole().name(), rolePermissionResolver));
     }
 }

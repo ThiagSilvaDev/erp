@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.iam.internal.service.CredentialProvisioningService;
 import com.thiagsilvadev.erpapi.user.api.UserCreatedEvent;
+import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @ExtendWith(MockitoExtension.class)
 class ProvisionCredentialListenerTest {
@@ -29,7 +30,7 @@ class ProvisionCredentialListenerTest {
     void shouldProvisionCredentialWhenUserIsCreated() {
         UUID userId = UUID.randomUUID();
         UserCreatedEvent event =
-                new UserCreatedEvent(userId, "user@example.com", UUID.randomUUID(), "secret123", "ADMIN");
+                new UserCreatedEvent(userId, "user@example.com", UUID.randomUUID(), "secret123", UserRole.ADMIN);
 
         listener.on(event);
 
@@ -39,6 +40,6 @@ class ProvisionCredentialListenerTest {
         assertThat(captor.getValue().userId()).isEqualTo(userId);
         assertThat(captor.getValue().email()).isEqualTo("user@example.com");
         assertThat(captor.getValue().rawPassword()).isEqualTo("secret123");
-        assertThat(captor.getValue().role()).isEqualTo("ADMIN");
+        assertThat(captor.getValue().role()).isEqualTo(UserRole.ADMIN);
     }
 }
