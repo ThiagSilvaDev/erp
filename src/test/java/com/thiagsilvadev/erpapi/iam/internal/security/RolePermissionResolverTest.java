@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
+import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
+import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 class RolePermissionResolverTest {
@@ -19,12 +22,17 @@ class RolePermissionResolverTest {
     void shouldResolveManagerPermissions() {
         assertThat(resolver.resolve(UserRole.MANAGER))
                 .containsExactlyInAnyOrder(
-                        "catalog:read", "catalog:write", "inventory:read", "inventory:write", "financial:read");
+                        CatalogPermissions.READ,
+                        CatalogPermissions.WRITE,
+                        InventoryPermissions.READ,
+                        InventoryPermissions.WRITE,
+                        FinancialPermissions.READ);
     }
 
     @Test
     void shouldResolveOperatorPermissions() {
-        assertThat(resolver.resolve(UserRole.OPERATOR)).containsExactlyInAnyOrder("catalog:read", "inventory:read");
+        assertThat(resolver.resolve(UserRole.OPERATOR))
+                .containsExactlyInAnyOrder(CatalogPermissions.READ, InventoryPermissions.READ);
     }
 
     @Test

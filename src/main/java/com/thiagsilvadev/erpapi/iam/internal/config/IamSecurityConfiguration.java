@@ -27,10 +27,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
+import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
 import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
 import com.thiagsilvadev.erpapi.iam.internal.security.SecurityAuthorities;
+import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
 
 @Configuration
 @EnableConfigurationProperties(IamJwtProperties.class)
@@ -53,15 +56,15 @@ public class IamSecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**")
-                        .hasAnyAuthority("*", "catalog:read")
+                        .hasAnyAuthority("*", CatalogPermissions.READ)
                         .requestMatchers("/api/v1/catalog/**")
-                        .hasAnyAuthority("*", "catalog:write")
+                        .hasAnyAuthority("*", CatalogPermissions.WRITE)
                         .requestMatchers(HttpMethod.GET, "/api/v1/inventory/**")
-                        .hasAnyAuthority("*", "inventory:read")
+                        .hasAnyAuthority("*", InventoryPermissions.READ)
                         .requestMatchers("/api/v1/inventory/**")
-                        .hasAnyAuthority("*", "inventory:write")
+                        .hasAnyAuthority("*", InventoryPermissions.WRITE)
                         .requestMatchers(HttpMethod.GET, "/api/v1/financial/**")
-                        .hasAnyAuthority("*", "financial:read")
+                        .hasAnyAuthority("*", FinancialPermissions.READ)
                         .requestMatchers("/api/v1/financial/**")
                         .hasAuthority("*")
                         .requestMatchers(HttpMethod.GET, "/api/v1/**")

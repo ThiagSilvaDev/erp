@@ -14,8 +14,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
+import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
+import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,11 +74,11 @@ class IamUserDetailsServiceTest {
                 .extracting(authority -> authority.getAuthority())
                 .containsExactlyInAnyOrder(
                         "ROLE_MANAGER",
-                        "catalog:read",
-                        "catalog:write",
-                        "inventory:read",
-                        "inventory:write",
-                        "financial:read");
+                        CatalogPermissions.READ,
+                        CatalogPermissions.WRITE,
+                        InventoryPermissions.READ,
+                        InventoryPermissions.WRITE,
+                        FinancialPermissions.READ);
         assertThat(userDetails.isEnabled()).isFalse();
     }
 }

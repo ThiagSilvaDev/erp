@@ -6,6 +6,9 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
+import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
+import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
+import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @Component
@@ -15,8 +18,13 @@ public class RolePermissionResolver {
         return switch (role) {
             case ADMIN -> Set.of("*");
             case MANAGER ->
-                Set.of("catalog:read", "catalog:write", "inventory:read", "inventory:write", "financial:read");
-            case OPERATOR -> Set.of("catalog:read", "inventory:read");
+                Set.of(
+                        CatalogPermissions.READ,
+                        CatalogPermissions.WRITE,
+                        InventoryPermissions.READ,
+                        InventoryPermissions.WRITE,
+                        FinancialPermissions.READ);
+            case OPERATOR -> Set.of(CatalogPermissions.READ, InventoryPermissions.READ);
         };
     }
 
