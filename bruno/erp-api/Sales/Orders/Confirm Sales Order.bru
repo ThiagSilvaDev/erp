@@ -1,3 +1,15 @@
-meta { name: Confirm Sales Order type: http seq: 4 }
-post { url: {{baseUrl}}/api/v1/sales/orders/{{salesOrderId}}/confirm body: none auth: bearer }
-auth:bearer { token: {{accessToken}} }
+meta {
+  name: Confirm Sales Order
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/sales/orders/{{salesOrderId}}/confirm
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

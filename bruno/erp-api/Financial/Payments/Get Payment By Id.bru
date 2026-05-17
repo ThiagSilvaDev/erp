@@ -1,3 +1,15 @@
-meta { name: Get Payment By Id type: http seq: 3 }
-get { url: {{baseUrl}}/api/v1/financial/payments/{{paymentId}} body: none auth: bearer }
-auth:bearer { token: {{accessToken}} }
+meta {
+  name: Get Payment By Id
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/financial/payments/{{paymentId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

@@ -1,0 +1,15 @@
+meta {
+  name: List Ledger Entries
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/financial/ledger-entries
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
