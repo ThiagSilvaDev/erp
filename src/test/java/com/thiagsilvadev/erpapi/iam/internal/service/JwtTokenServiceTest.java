@@ -6,16 +6,19 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 
 import com.thiagsilvadev.erpapi.iam.internal.config.IamJwtProperties;
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
+import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 
 class JwtTokenServiceTest {
 
@@ -28,7 +31,13 @@ class JwtTokenServiceTest {
         properties.setExpiration(Duration.ofMinutes(15));
         JwtTokenService tokenService = new JwtTokenService(jwtEncoder, properties, Clock.fixed(now, ZoneOffset.UTC));
         UUID userId = UUID.randomUUID();
-        IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", "ADMIN", true);
+        IamUserDetails principal = new IamUserDetails(
+                userId,
+                "user@example.com",
+                "hash",
+                "ADMIN",
+                true,
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority(UserPermissions.WRITE)));
 
         JwtTokenService.IssuedToken issuedToken = tokenService.issue(principal);
 
@@ -38,6 +47,7 @@ class JwtTokenServiceTest {
         assertThat(jwtEncoder.claims).containsEntry("sub", userId.toString());
         assertThat(jwtEncoder.claims).containsEntry("email", "user@example.com");
         assertThat(jwtEncoder.claims).containsEntry("role", "ADMIN");
+        assertThat(jwtEncoder.claims.get("authorities")).isEqualTo(List.of("ROLE_ADMIN", UserPermissions.WRITE));
         assertThat(jwtEncoder.claims).containsEntry("iat", now);
         assertThat(jwtEncoder.claims).containsEntry("exp", now.plus(Duration.ofMinutes(15)));
         assertThat(jwtEncoder.claims).containsKey("jti");

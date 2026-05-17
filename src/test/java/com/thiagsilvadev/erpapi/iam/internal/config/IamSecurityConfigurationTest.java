@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
+import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
+import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
 import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
@@ -114,14 +117,21 @@ class IamSecurityConfigurationTest {
     }
 
     @Test
-    void shouldAllowAdminApiWrites() throws Exception {
-        mockMvc.perform(post("/api/v1/security-test").with(jwt().authorities(new SimpleGrantedAuthority("*"))))
+    void shouldAllowExplicitUserWritePermission() throws Exception {
+        mockMvc.perform(post("/api/v1/users/security-test")
+                        .with(jwt().authorities(new SimpleGrantedAuthority(UserPermissions.WRITE))))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void shouldAllowAdminApiWritesWithIssuedBearerTokenRoleClaim() throws Exception {
+    void shouldRejectAdminRoleClaimForGenericApiWrites() throws Exception {
         mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + tokenWithRole("ADMIN")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAllowAdminRoleClaimForExplicitModuleWrites() throws Exception {
+        mockMvc.perform(post("/api/v1/financial/security-test").header("Authorization", "Bearer " + tokenWithRole("ADMIN")))
                 .andExpect(status().isOk());
     }
 
@@ -162,12 +172,12 @@ class IamSecurityConfigurationTest {
     }
 
     @Test
-    void shouldAuthorizeAdminWildcardPermissions() throws Exception {
+    void shouldAuthorizeAdminExplicitPermissions() throws Exception {
         String token = tokenWithRole("ADMIN");
 
         mockMvc.perform(post("/api/v1/financial/security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
-        mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + token))
+        mockMvc.perform(post("/api/v1/users/security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
 
@@ -175,6 +185,22 @@ class IamSecurityConfigurationTest {
     void shouldRejectUnknownRoleClaimForPermissionRules() throws Exception {
         mockMvc.perform(get("/api/v1/catalog/security-test")
                         .header("Authorization", "Bearer " + tokenWithRole("UNKNOWN")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAuthorizeWithAuthoritiesClaim() throws Exception {
+        String token = tokenWithAuthorities("UNKNOWN", List.of("ROLE_UNKNOWN", CatalogPermissions.READ));
+
+        mockMvc.perform(get("/api/v1/catalog/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldRejectWhenAuthoritiesClaimDoesNotGrantPermission() throws Exception {
+        String token = tokenWithAuthorities("ADMIN", List.of("ROLE_ADMIN"));
+
+        mockMvc.perform(post("/api/v1/security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
 
@@ -187,6 +213,23 @@ class IamSecurityConfigurationTest {
                 .subject(UUID.randomUUID().toString())
                 .claim("email", "user@example.com")
                 .claim("role", role)
+                .build();
+        return jwtEncoder
+                .encode(JwtEncoderParameters.from(
+                        JwsHeader.with(MacAlgorithm.HS256).build(), claims))
+                .getTokenValue();
+    }
+
+    private String tokenWithAuthorities(String role, List<String> authorities) {
+        Instant issuedAt = Instant.now();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("erp-api")
+                .issuedAt(issuedAt)
+                .expiresAt(issuedAt.plusSeconds(3600))
+                .subject(UUID.randomUUID().toString())
+                .claim("email", "user@example.com")
+                .claim("role", role)
+                .claim("authorities", authorities)
                 .build();
         return jwtEncoder
                 .encode(JwtEncoderParameters.from(
@@ -250,6 +293,11 @@ class IamSecurityConfigurationTest {
         @PostMapping("/financial/security-test")
         String financialWrite() {
             return "financial write";
+        }
+
+        @PostMapping("/users/security-test")
+        String userWrite() {
+            return "user write";
         }
     }
 }

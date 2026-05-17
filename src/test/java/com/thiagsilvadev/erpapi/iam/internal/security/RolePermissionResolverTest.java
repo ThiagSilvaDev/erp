@@ -5,8 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
+import com.thiagsilvadev.erpapi.company.api.CompanyPermissions;
+import com.thiagsilvadev.erpapi.customer.api.CustomerPermissions;
 import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
+import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
+import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 class RolePermissionResolverTest {
@@ -15,7 +19,15 @@ class RolePermissionResolverTest {
 
     @Test
     void shouldResolveAdminPermissions() {
-        assertThat(resolver.resolve(UserRole.ADMIN)).containsExactly("*");
+        assertThat(resolver.resolve(UserRole.ADMIN))
+                .containsAll(CatalogPermissions.ALL)
+                .containsAll(CompanyPermissions.ALL)
+                .containsAll(CustomerPermissions.ALL)
+                .containsAll(FinancialPermissions.ALL)
+                .containsAll(InventoryPermissions.ALL)
+                .containsAll(SalesPermissions.ALL)
+                .containsAll(UserPermissions.ALL)
+                .doesNotContain("*");
     }
 
     @Test

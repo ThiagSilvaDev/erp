@@ -36,7 +36,7 @@ public class JwtTokenService {
 
         UUID userId = Objects.requireNonNull(principal.getUserId(), "userId cannot be null");
 
-        List<String> roles = principal.getAuthorities().stream()
+        List<String> authorities = principal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
@@ -48,7 +48,9 @@ public class JwtTokenService {
                 .notBefore(issuedAt)
                 .expiresAt(expiresAt)
                 .claim("token use", "access")
-                .claim("role", roles)
+                .claim("email", principal.getEmail())
+                .claim("role", principal.getRole())
+                .claim("authorities", authorities)
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();

@@ -15,10 +15,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
+import com.thiagsilvadev.erpapi.company.api.CompanyPermissions;
+import com.thiagsilvadev.erpapi.customer.api.CustomerPermissions;
 import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
+import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
+import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,7 +53,15 @@ class IamUserDetailsServiceTest {
         assertThat(userDetails.getRole()).isEqualTo("ADMIN");
         assertThat(userDetails.getAuthorities())
                 .extracting(authority -> authority.getAuthority())
-                .containsExactly("ROLE_ADMIN", "*");
+                .contains("ROLE_ADMIN")
+                .containsAll(CatalogPermissions.ALL)
+                .containsAll(CompanyPermissions.ALL)
+                .containsAll(CustomerPermissions.ALL)
+                .containsAll(FinancialPermissions.ALL)
+                .containsAll(InventoryPermissions.ALL)
+                .containsAll(SalesPermissions.ALL)
+                .containsAll(UserPermissions.ALL)
+                .doesNotContain("*");
         assertThat(userDetails.isEnabled()).isTrue();
     }
 

@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.iam.internal.config;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -14,6 +15,8 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -28,12 +31,16 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
+import com.thiagsilvadev.erpapi.company.api.CompanyPermissions;
+import com.thiagsilvadev.erpapi.customer.api.CustomerPermissions;
 import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
 import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
 import com.thiagsilvadev.erpapi.iam.internal.security.SecurityAuthorities;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
+import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
+import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 
 @Configuration
 @EnableConfigurationProperties(IamJwtProperties.class)
@@ -56,21 +63,37 @@ public class IamSecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**")
-                        .hasAnyAuthority("*", CatalogPermissions.READ)
+                        .hasAuthority(CatalogPermissions.READ)
                         .requestMatchers("/api/v1/catalog/**")
-                        .hasAnyAuthority("*", CatalogPermissions.WRITE)
+                        .hasAuthority(CatalogPermissions.WRITE)
                         .requestMatchers(HttpMethod.GET, "/api/v1/inventory/**")
-                        .hasAnyAuthority("*", InventoryPermissions.READ)
+                        .hasAuthority(InventoryPermissions.READ)
                         .requestMatchers("/api/v1/inventory/**")
-                        .hasAnyAuthority("*", InventoryPermissions.WRITE)
+                        .hasAuthority(InventoryPermissions.WRITE)
                         .requestMatchers(HttpMethod.GET, "/api/v1/financial/**")
-                        .hasAnyAuthority("*", FinancialPermissions.READ)
+                        .hasAuthority(FinancialPermissions.READ)
                         .requestMatchers("/api/v1/financial/**")
-                        .hasAuthority("*")
+                        .hasAuthority(FinancialPermissions.WRITE)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/companies/**")
+                        .hasAuthority(CompanyPermissions.READ)
+                        .requestMatchers("/api/v1/companies/**")
+                        .hasAuthority(CompanyPermissions.WRITE)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/customers/**", "/api/v1/suppliers/**", "/api/v1/contact-persons/**")
+                        .hasAuthority(CustomerPermissions.READ)
+                        .requestMatchers("/api/v1/customers/**", "/api/v1/suppliers/**", "/api/v1/contact-persons/**")
+                        .hasAuthority(CustomerPermissions.WRITE)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/sales/**")
+                        .hasAuthority(SalesPermissions.READ)
+                        .requestMatchers("/api/v1/sales/**")
+                        .hasAuthority(SalesPermissions.WRITE)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/**")
+                        .hasAuthority(UserPermissions.READ)
+                        .requestMatchers("/api/v1/users/**")
+                        .hasAuthority(UserPermissions.WRITE)
                         .requestMatchers(HttpMethod.GET, "/api/v1/**")
                         .authenticated()
                         .requestMatchers("/api/v1/**")
-                        .hasAuthority("*")
+                        .denyAll()
                         .anyRequest()
                         .permitAll())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
@@ -81,6 +104,12 @@ public class IamSecurityConfiguration {
     private JwtAuthenticationConverter jwtAuthenticationConverter(RolePermissionResolver rolePermissionResolver) {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            List<String> authorities = jwt.getClaimAsStringList("authorities");
+            if (authorities != null && !authorities.isEmpty()) {
+                return authorities.stream()
+                        .<GrantedAuthority>map(SimpleGrantedAuthority::new)
+                        .toList();
+            }
             String role = jwt.getClaimAsString("role");
             return SecurityAuthorities.fromRole(role, rolePermissionResolver);
         });
