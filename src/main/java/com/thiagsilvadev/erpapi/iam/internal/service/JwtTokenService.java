@@ -2,8 +2,11 @@ package com.thiagsilvadev.erpapi.iam.internal.service;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -31,14 +34,21 @@ public class JwtTokenService {
         Instant issuedAt = clock.instant();
         Instant expiresAt = issuedAt.plus(properties.getExpiration());
 
+        UUID userId = Objects.requireNonNull(principal.getUserId(), "userId cannot be null");
+
+        List<String> roles = principal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(properties.getIssuer())
-                .issuedAt(issuedAt)
-                .expiresAt(expiresAt)
-                .subject(principal.getUserId().toString())
+                .subject(userId.toString())
                 .id(UUID.randomUUID().toString())
-                .claim("email", principal.getEmail())
-                .claim("role", principal.getRole())
+                .issuedAt(issuedAt)
+                .notBefore(issuedAt)
+                .expiresAt(expiresAt)
+                .claim("token use", "access")
+                .claim("role", roles)
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
