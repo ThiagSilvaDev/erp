@@ -2,34 +2,54 @@ package com.thiagsilvadev.erpapi.inventory.internal.dto;
 
 import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationProductDto;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseResponse;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thiagsilvadev.erpapi.inventory.api.InventoryItemSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.WarehouseSnapshot;
 import com.thiagsilvadev.erpapi.inventory.internal.model.*;
+import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 
 @Mapper(componentModel = "spring")
-public interface InventoryMapper {
+public abstract class InventoryMapper {
 
-    WarehouseResponse toResponse(Warehouse warehouse);
+    protected CatalogFacade catalogFacade;
+
+    @Autowired
+    public void setCatalogFacade(CatalogFacade catalogFacade) {
+        this.catalogFacade = catalogFacade;
+    }
+
+    public abstract WarehouseResponse toResponse(Warehouse warehouse);
 
     @Mapping(target = "warehouseId", source = "warehouse.id")
     @Mapping(target = "availableQuantity", expression = "java(item.availableQuantity())")
-    InventoryItemResponse toResponse(InventoryItem item);
+    public abstract InventoryItemResponse toResponse(InventoryItem item);
 
-    StockMovementResponse toResponse(StockMovement movement);
+    public abstract StockMovementResponse toResponse(StockMovement movement);
 
-    ReservationResponse toResponse(InventoryReservation reservation);
+    @Mapping(target = "product", expression = "java(mapProduct(reservation.getProductId()))")
+    public abstract ReservationResponse toResponse(InventoryReservation reservation);
+
+    @Mapping(target = "product", expression = "java(mapProduct(reservation.productId()))")
+    public abstract ReservationResponse toResponse(InventoryReservationSnapshot reservation);
+
+    protected ReservationProductDto mapProduct(java.util.UUID productId) {
+        return catalogFacade.findProductById(productId)
+                .map(p -> new ReservationProductDto(p.id(), p.sku(), p.name(), p.basePrice()))
+                .orElse(null);
+    }
 
     @Mapping(target = "warehouseId", source = "warehouse.id")
-    InventoryItemSnapshot toSnapshot(InventoryItem item);
+    public abstract InventoryItemSnapshot toSnapshot(InventoryItem item);
 
-    WarehouseSnapshot toSnapshot(Warehouse warehouse);
+    public abstract WarehouseSnapshot toSnapshot(Warehouse warehouse);
 
-    InventoryReservationSnapshot toSnapshot(InventoryReservation reservation);
+    public abstract InventoryReservationSnapshot toSnapshot(InventoryReservation reservation);
 }
