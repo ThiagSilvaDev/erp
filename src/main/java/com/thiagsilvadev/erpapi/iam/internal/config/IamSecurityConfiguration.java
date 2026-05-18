@@ -58,6 +58,8 @@ public class IamSecurityConfiguration {
                         .permitAll()
                         .requestMatchers("/api/v1/**")
                         .authenticated()
+                        .requestMatchers("/v3/api-docs")
+                        .permitAll()
                         .anyRequest()
                         .authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(

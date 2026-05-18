@@ -9,12 +9,15 @@ import jakarta.persistence.*;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 
 @Entity
-@Table(name = "financial_invoices")
+@Table(
+        name = "financial_invoices",
+        uniqueConstraints = @UniqueConstraint(name = "uk_financial_invoice_sales_order", columnNames = "sales_order_id"))
 public class Invoice extends AbstractBaseEntity {
 
     @Column(nullable = false)
     private UUID customerId;
 
+    @Column(name = "sales_order_id")
     private UUID salesOrderId;
 
     @Column(nullable = false, precision = 19, scale = 2)
@@ -46,7 +49,17 @@ public class Invoice extends AbstractBaseEntity {
     }
 
     public void markPaid() {
+        if (status == InvoiceStatus.CANCELLED) {
+            throw new IllegalStateException("Cancelled invoices cannot be paid");
+        }
         this.status = InvoiceStatus.PAID;
+    }
+
+    public void cancel() {
+        if (status == InvoiceStatus.PAID) {
+            throw new IllegalStateException("Paid invoices cannot be cancelled");
+        }
+        this.status = InvoiceStatus.CANCELLED;
     }
 
     public UUID getCustomerId() {

@@ -29,6 +29,8 @@ public final class FinancialDtos {
             LocalDate dueDate,
             InvoiceStatus status) {}
 
+    public record InvoiceSearchCriteria(UUID salesOrderId) {}
+
     public record CreatePaymentRequest(
             @NotNull UUID invoiceId, @NotNull @Positive BigDecimal amount, @NotNull LocalDate paidAt) {}
 

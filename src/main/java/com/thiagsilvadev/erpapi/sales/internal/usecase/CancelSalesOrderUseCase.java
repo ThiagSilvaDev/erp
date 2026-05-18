@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
+import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
+import com.thiagsilvadev.erpapi.sales.internal.event.SalesOrderEventPublisher;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesDtos.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
@@ -17,12 +19,17 @@ public class CancelSalesOrderUseCase {
 
     private final SalesOrderRepository orderRepository;
     private final InventoryFacade inventoryFacade;
+    private final SalesOrderEventPublisher eventPublisher;
     private final SalesMapper mapper;
 
     public CancelSalesOrderUseCase(
-            SalesOrderRepository orderRepository, InventoryFacade inventoryFacade, SalesMapper mapper) {
+            SalesOrderRepository orderRepository,
+            InventoryFacade inventoryFacade,
+            SalesOrderEventPublisher eventPublisher,
+            SalesMapper mapper) {
         this.orderRepository = orderRepository;
         this.inventoryFacade = inventoryFacade;
+        this.eventPublisher = eventPublisher;
         this.mapper = mapper;
     }
 
@@ -31,6 +38,9 @@ public class CancelSalesOrderUseCase {
     public SalesOrderResponse execute(UUID id) {
         SalesOrder order =
                 orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
+        if (order.getStatus() == OrderStatus.CONFIRMED) {
+            eventPublisher.salesOrderCancelled(order);
+        }
         order.cancel();
         inventoryFacade.releaseBySalesOrderId(order.getId());
         return mapper.toResponse(order);

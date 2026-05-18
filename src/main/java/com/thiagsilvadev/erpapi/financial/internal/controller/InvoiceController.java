@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreateInvoiceRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceSearchCriteria;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.CreateInvoiceUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.GetInvoiceByIdUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.ListInvoicesUseCase;
@@ -44,7 +45,7 @@ class InvoiceController implements InvoiceApi {
     }
 
     @Override
-    public Page<InvoiceResponse> listInvoices(Pageable pageable) {
-        return listInvoicesUseCase.execute(pageable);
+    public Page<InvoiceResponse> listInvoices(InvoiceSearchCriteria criteria, Pageable pageable) {
+        return listInvoicesUseCase.execute(criteria, pageable);
     }
 }

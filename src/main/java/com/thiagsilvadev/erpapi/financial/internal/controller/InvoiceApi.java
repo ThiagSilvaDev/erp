@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreateInvoiceRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceSearchCriteria;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,5 +36,6 @@ interface InvoiceApi {
     @GetMapping
     @Operation(operationId = "listInvoices")
     @ApiResponse(responseCode = "200")
-    Page<InvoiceResponse> listInvoices(@ParameterObject Pageable pageable);
+    Page<InvoiceResponse> listInvoices(
+            @ParameterObject InvoiceSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

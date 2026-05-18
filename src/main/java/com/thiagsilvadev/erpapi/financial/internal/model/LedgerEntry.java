@@ -50,6 +50,12 @@ public class LedgerEntry extends AbstractBaseEntity {
         this.status = LedgerEntryStatus.SETTLED;
     }
 
+    public void cancel() {
+        if (status != LedgerEntryStatus.SETTLED) {
+            this.status = LedgerEntryStatus.CANCELLED;
+        }
+    }
+
     public LedgerEntryType getType() {
         return type;
     }

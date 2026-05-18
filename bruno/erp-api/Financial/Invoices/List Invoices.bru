@@ -13,3 +13,16 @@ get {
 auth:bearer {
   token: {{accessToken}}
 }
+
+params:query {
+  salesOrderId: {{salesOrderId}}
+  page: 0
+  size: 20
+}
+
+script:post-response {
+  const invoice = res.body?.content?.[0];
+  if (res.status === 200 && invoice?.id) {
+    bru.setEnvVar("invoiceId", invoice.id);
+  }
+}

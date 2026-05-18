@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceSearchCriteria;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 
@@ -22,7 +23,10 @@ public class ListInvoicesUseCase {
 
     @Transactional(readOnly = true)
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
-    public Page<InvoiceResponse> execute(Pageable pageable) {
+    public Page<InvoiceResponse> execute(InvoiceSearchCriteria criteria, Pageable pageable) {
+        if (criteria != null && criteria.salesOrderId() != null) {
+            return invoiceRepository.findBySalesOrderId(criteria.salesOrderId(), pageable).map(mapper::toResponse);
+        }
         return invoiceRepository.findAll(pageable).map(mapper::toResponse);
     }
 }
