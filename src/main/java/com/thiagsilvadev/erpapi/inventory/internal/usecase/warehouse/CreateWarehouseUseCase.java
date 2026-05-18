@@ -1,13 +1,15 @@
-package com.thiagsilvadev.erpapi.inventory.internal.usecase;
+package com.thiagsilvadev.erpapi.inventory.internal.usecase.warehouse;
+
+import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+
+import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.CreateWarehouseRequest;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseResponse;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.CreateWarehouseRequest;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.WarehouseResponse;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
 

@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.inventory.internal.controller;
+package com.thiagsilvadev.erpapi.inventory.internal.service;
 
 import java.util.Optional;
 import java.util.UUID;

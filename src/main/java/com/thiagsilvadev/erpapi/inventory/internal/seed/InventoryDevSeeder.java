@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
-import com.thiagsilvadev.erpapi.inventory.internal.controller.InventoryService;
+import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryService;
 import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;

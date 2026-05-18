@@ -1,11 +1,12 @@
-package com.thiagsilvadev.erpapi.inventory.internal.usecase;
+package com.thiagsilvadev.erpapi.inventory.internal.usecase.reservation;
+
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.CreateReservationRequest;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
 
 import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
-import com.thiagsilvadev.erpapi.inventory.internal.controller.InventoryService;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.CreateReservationRequest;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.ReservationResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryService;
 
 @Component
 public class CreateReservationUseCase {

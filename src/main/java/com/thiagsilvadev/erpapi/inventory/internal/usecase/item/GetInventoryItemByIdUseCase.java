@@ -1,4 +1,8 @@
-package com.thiagsilvadev.erpapi.inventory.internal.usecase;
+package com.thiagsilvadev.erpapi.inventory.internal.usecase.item;
+
+import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+
+import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
 
 import java.util.UUID;
 
@@ -6,8 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.InventoryItemResponse;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.model.InventoryItem;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
 

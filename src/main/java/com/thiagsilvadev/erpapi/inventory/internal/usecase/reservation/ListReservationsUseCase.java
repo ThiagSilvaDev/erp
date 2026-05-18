@@ -1,12 +1,14 @@
-package com.thiagsilvadev.erpapi.inventory.internal.usecase;
+package com.thiagsilvadev.erpapi.inventory.internal.usecase.reservation;
+
+import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.ReservationResponse;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryReservationRepository;
 
 @Component

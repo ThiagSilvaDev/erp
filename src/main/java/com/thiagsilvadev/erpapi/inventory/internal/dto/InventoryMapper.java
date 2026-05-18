@@ -1,12 +1,16 @@
 package com.thiagsilvadev.erpapi.inventory.internal.dto;
 
+import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseResponse;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.thiagsilvadev.erpapi.inventory.api.InventoryItemSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.WarehouseSnapshot;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryDtos.*;
 import com.thiagsilvadev.erpapi.inventory.internal.model.*;
 
 @Mapper(componentModel = "spring")

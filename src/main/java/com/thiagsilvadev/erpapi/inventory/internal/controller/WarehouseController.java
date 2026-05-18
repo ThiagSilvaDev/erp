@@ -1,0 +1,49 @@
+package com.thiagsilvadev.erpapi.inventory.internal.controller;
+
+import java.util.UUID;
+
+import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.*;
+import com.thiagsilvadev.erpapi.inventory.internal.usecase.warehouse.*;
+
+@RestController
+class WarehouseController implements WarehouseApi {
+
+    private final CreateWarehouseUseCase createWarehouseUseCase;
+    private final GetWarehouseByIdUseCase getWarehouseByIdUseCase;
+    private final ListWarehousesUseCase listWarehousesUseCase;
+
+    WarehouseController(
+            CreateWarehouseUseCase createWarehouseUseCase,
+            GetWarehouseByIdUseCase getWarehouseByIdUseCase,
+            ListWarehousesUseCase listWarehousesUseCase) {
+        this.createWarehouseUseCase = createWarehouseUseCase;
+        this.getWarehouseByIdUseCase = getWarehouseByIdUseCase;
+        this.listWarehousesUseCase = listWarehousesUseCase;
+    }
+
+    @Override
+    public ResponseEntity<WarehouseResponse> createWarehouse(@Valid @RequestBody CreateWarehouseRequest request) {
+        WarehouseResponse response = createWarehouseUseCase.execute(request);
+        return ResponseEntities.created(response.id(), response);
+    }
+
+    @Override
+    public WarehouseResponse getWarehouse(@PathVariable UUID id) {
+        return getWarehouseByIdUseCase.execute(id);
+    }
+
+    @Override
+    public Page<WarehouseResponse> listWarehouses(Pageable pageable) {
+        return listWarehousesUseCase.execute(pageable);
+    }
+}
