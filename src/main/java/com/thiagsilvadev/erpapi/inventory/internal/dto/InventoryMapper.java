@@ -1,20 +1,19 @@
 package com.thiagsilvadev.erpapi.inventory.internal.dto;
 
-import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationProductDto;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseResponse;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryItemSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.WarehouseSnapshot;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationProductDto;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.*;
-import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 
 @Mapper(componentModel = "spring")
 public abstract class InventoryMapper {
@@ -41,7 +40,8 @@ public abstract class InventoryMapper {
     public abstract ReservationResponse toResponse(InventoryReservationSnapshot reservation);
 
     protected ReservationProductDto mapProduct(java.util.UUID productId) {
-        return catalogFacade.findProductById(productId)
+        return catalogFacade
+                .findProductById(productId)
                 .map(p -> new ReservationProductDto(p.id(), p.sku(), p.name(), p.basePrice()))
                 .orElse(null);
     }

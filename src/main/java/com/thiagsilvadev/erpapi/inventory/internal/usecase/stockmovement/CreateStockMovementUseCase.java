@@ -1,18 +1,16 @@
 package com.thiagsilvadev.erpapi.inventory.internal.usecase.stockmovement;
 
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
-
-import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.CreateStockMovementRequest;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryService;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.CreateStockMovementRequest;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.InventoryItem;
 import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovement;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
+import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryService;
 
 @Component
 public class CreateStockMovementUseCase {

@@ -1,13 +1,12 @@
 package com.thiagsilvadev.erpapi.inventory.internal.usecase.reservation;
 
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.CreateReservationRequest;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.CreateReservationRequest;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryService;
 
 @Component
@@ -20,8 +19,8 @@ public class CreateReservationUseCase {
         this.inventoryService = inventoryService;
         this.mapper = mapper;
     }
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
 
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
     public ReservationResponse execute(CreateReservationRequest request) {
         InventoryReservationSnapshot reservation = inventoryService.reserve(
                 request.productId(), request.warehouseId(), request.quantity(), request.salesOrderId());

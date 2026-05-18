@@ -26,7 +26,9 @@ public class ListInvoicesUseCase {
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public Page<InvoiceResponse> execute(InvoiceSearchCriteria criteria, Pageable pageable) {
         if (criteria != null && criteria.salesOrderId() != null) {
-            return invoiceRepository.findBySalesOrderId(criteria.salesOrderId(), pageable).map(mapper::toResponse);
+            return invoiceRepository
+                    .findBySalesOrderId(criteria.salesOrderId(), pageable)
+                    .map(mapper::toResponse);
         }
         return invoiceRepository.findAll(pageable).map(mapper::toResponse);
     }

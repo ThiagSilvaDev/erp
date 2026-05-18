@@ -11,7 +11,8 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 @Entity
 @Table(
         name = "financial_invoices",
-        uniqueConstraints = @UniqueConstraint(name = "uk_financial_invoice_sales_order", columnNames = "sales_order_id"))
+        uniqueConstraints =
+                @UniqueConstraint(name = "uk_financial_invoice_sales_order", columnNames = "sales_order_id"))
 public class Invoice extends AbstractBaseEntity {
 
     @Column(nullable = false)

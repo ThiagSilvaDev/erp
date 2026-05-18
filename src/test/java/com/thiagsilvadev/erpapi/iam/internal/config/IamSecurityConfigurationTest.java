@@ -21,7 +21,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -29,6 +28,7 @@ import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,8 +37,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
 import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
+import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
 import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
@@ -170,8 +170,7 @@ class IamSecurityConfigurationTest {
 
     @Test
     void shouldAllowUnknownRoleClaimThroughUrlSecurity() throws Exception {
-        mockMvc.perform(get("/api/v1/security-test")
-                        .header("Authorization", "Bearer " + tokenWithRole("UNKNOWN")))
+        mockMvc.perform(get("/api/v1/security-test").header("Authorization", "Bearer " + tokenWithRole("UNKNOWN")))
                 .andExpect(status().isOk());
     }
 

@@ -53,7 +53,10 @@ class ModulePermissionsTest {
     void shouldExposeSalesPermissions() {
         assertThat(SalesPermissions.ALL)
                 .containsExactlyInAnyOrder(
-                        SalesPermissions.READ, SalesPermissions.WRITE, SalesPermissions.CONFIRM, SalesPermissions.CANCEL);
+                        SalesPermissions.READ,
+                        SalesPermissions.WRITE,
+                        SalesPermissions.CONFIRM,
+                        SalesPermissions.CANCEL);
     }
 
     @Test

@@ -69,9 +69,7 @@ class UseCaseAuthorizationTest {
     @Test
     void shouldKeepLoginUseCasePublic() throws Exception {
         Method execute = Class.forName("com.thiagsilvadev.erpapi.iam.internal.usecase.LoginUseCase")
-                .getDeclaredMethod(
-                        "execute",
-                        Class.forName("com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest"));
+                .getDeclaredMethod("execute", Class.forName("com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest"));
 
         assertThat(execute.getAnnotation(PreAuthorize.class)).isNull();
     }
