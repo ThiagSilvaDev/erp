@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.catalog.internal.usecase.product;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class ListProductsUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
     public Page<ProductResponse> execute(ProductSearchCriteria criteria, Pageable pageable) {
         return productRepository
                 .findAll(ProductSpecification.withCriteria(criteria), pageable)

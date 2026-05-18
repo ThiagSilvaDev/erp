@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.customer.internal.usecase;
 
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class GetContactPersonByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
     public ContactPersonResponse execute(UUID id) {
         return mapper.toResponse(contactPersonRepository
                 .findById(id)

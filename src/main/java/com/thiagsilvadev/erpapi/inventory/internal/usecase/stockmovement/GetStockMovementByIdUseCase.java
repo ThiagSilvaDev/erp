@@ -6,6 +6,7 @@ import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMoveme
 
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,7 @@ public class GetStockMovementByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public StockMovementResponse execute(UUID id) {
         return mapper.toResponse(movementRepository
                 .findById(id)

@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.company.internal.usecase;
 
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class GetCompanyByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.company.api.CompanyPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.company.api.CompanyPermissions).READ)")
     public CompanyResponse execute(UUID id) {
         Company company =
                 companyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Company.class, id));

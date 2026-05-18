@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.user.internal.usecase;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class ListUsersUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.user.api.UserPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.user.api.UserPermissions).READ)")
     public Page<UserResponse> execute(UserSearchCriteria criteria, Pageable pageable) {
         return userRepository
                 .findAll(UserSpecification.withCriteria(criteria), pageable)

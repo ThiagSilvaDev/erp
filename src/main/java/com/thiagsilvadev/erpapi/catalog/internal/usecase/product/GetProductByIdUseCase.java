@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.catalog.internal.usecase.product;
 
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class GetProductByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
     public ProductResponse execute(UUID id) {
         Product product =
                 productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Product.class, id));

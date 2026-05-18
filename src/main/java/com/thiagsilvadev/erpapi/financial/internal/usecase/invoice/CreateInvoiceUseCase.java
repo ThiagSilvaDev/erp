@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.invoice;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,7 @@ public class CreateInvoiceUseCase {
     }
 
     @Transactional
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
     public InvoiceResponse execute(CreateInvoiceRequest request) {
         customerFacade
                 .findCustomerById(request.customerId())

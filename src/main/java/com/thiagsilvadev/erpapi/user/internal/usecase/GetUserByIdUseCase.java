@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.user.internal.usecase;
 
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class GetUserByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.user.api.UserPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.user.api.UserPermissions).READ)")
     public UserResponse execute(UUID id) {
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(User.class, id));
 

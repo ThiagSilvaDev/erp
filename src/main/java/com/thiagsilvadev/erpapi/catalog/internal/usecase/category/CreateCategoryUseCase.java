@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.usecase.category;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class CreateCategoryUseCase {
     }
 
     @Transactional
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
     public CategoryResponse execute(CreateCategoryRequest request) {
         String code = Category.normalizeCode(request.code());
 

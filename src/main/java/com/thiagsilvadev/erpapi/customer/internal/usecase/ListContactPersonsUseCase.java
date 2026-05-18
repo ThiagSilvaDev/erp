@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.customer.internal.usecase;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +22,7 @@ public class ListContactPersonsUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
     public Page<ContactPersonResponse> execute(Pageable pageable) {
         return contactPersonRepository.findAll(pageable).map(mapper::toResponse);
     }

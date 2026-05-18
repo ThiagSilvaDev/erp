@@ -6,6 +6,7 @@ import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseRespon
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class ListWarehousesUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public Page<WarehouseResponse> execute(Pageable pageable) {
         return warehouseRepository.findAll(pageable).map(mapper::toResponse);
     }

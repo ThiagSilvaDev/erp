@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.financial.internal.usecase.invoice;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ public class ListInvoicesUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public Page<InvoiceResponse> execute(InvoiceSearchCriteria criteria, Pageable pageable) {
         if (criteria != null && criteria.salesOrderId() != null) {
             return invoiceRepository.findBySalesOrderId(criteria.salesOrderId(), pageable).map(mapper::toResponse);

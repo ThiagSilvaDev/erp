@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.catalog.internal.usecase.category;
 
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class GetCategoryByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
     public CategoryResponse execute(UUID id) {
         Category category =
                 categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Category.class, id));

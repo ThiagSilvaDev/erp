@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.usecase.product;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,7 @@ public class CreateProductUseCase {
     }
 
     @Transactional
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
     public ProductResponse execute(CreateProductRequest request) {
         Sku sku = catalogMapper.toSku(request.sku());
 

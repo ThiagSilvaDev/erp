@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.sales.internal.usecase;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class ListSalesOrdersUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).READ)")
     public Page<SalesOrderResponse> execute(SalesOrderSearchCriteria criteria, Pageable pageable) {
         return orderRepository
                 .findAll(SalesOrderSpecification.withCriteria(criteria), pageable)

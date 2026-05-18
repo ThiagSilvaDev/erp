@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.customer.internal.usecase;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class CreateContactPersonUseCase {
     }
 
     @Transactional
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public ContactPersonResponse execute(CreateContactPersonRequest request) {
         customerRepository
                 .findById(request.customerId())

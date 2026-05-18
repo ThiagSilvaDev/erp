@@ -6,6 +6,7 @@ import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.CreateWarehouse
 import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseResponse;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,7 @@ public class CreateWarehouseUseCase {
     }
 
     @Transactional
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
     public WarehouseResponse execute(CreateWarehouseRequest request) {
         String code = Warehouse.normalizeCode(request.code());
         if (warehouseRepository.existsByCode(code)) {

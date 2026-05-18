@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.financial.internal.usecase.payment;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +22,7 @@ public class ListPaymentsUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public Page<PaymentResponse> execute(Pageable pageable) {
         return paymentRepository.findAll(pageable).map(mapper::toResponse);
     }

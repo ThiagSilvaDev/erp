@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.financial.internal.usecase.payment;
 
 import java.math.BigDecimal;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +39,7 @@ public class CreatePaymentUseCase {
     }
 
     @Transactional
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
     public PaymentResponse execute(CreatePaymentRequest request) {
         Invoice invoice = invoiceRepository
                 .findWithLockingById(request.invoiceId())

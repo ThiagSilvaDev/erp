@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.user.internal.usecase;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,7 @@ public class CreateUserUseCase {
     }
 
     @Transactional
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.user.api.UserPermissions).WRITE)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.user.api.UserPermissions).WRITE)")
     public UserResponse execute(CreateUserRequest request) {
         Contact contact = Contact.create(request.email(), request.phone());
 

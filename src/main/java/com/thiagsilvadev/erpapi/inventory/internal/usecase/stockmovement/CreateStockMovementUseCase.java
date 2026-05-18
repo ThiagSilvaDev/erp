@@ -5,6 +5,7 @@ import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.CreateStockMovementRequest;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,7 @@ public class CreateStockMovementUseCase {
     }
 
     @Transactional
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
     public StockMovementResponse execute(CreateStockMovementRequest request) {
         InventoryItem item =
                 inventoryService.applyMovement(request.productId(), request.warehouseId(), request.quantity());

@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.financial.internal.usecase.payment;
 
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ public class GetPaymentByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public PaymentResponse execute(UUID id) {
         return mapper.toResponse(
                 paymentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Payment.class, id)));
