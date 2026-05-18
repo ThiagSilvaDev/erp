@@ -2,7 +2,7 @@ package com.thiagsilvadev.erpapi.sales.internal.repository;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesDtos.SalesOrderSearchCriteria;
+import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderSearchCriteria;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 
 public class SalesOrderSpecification {

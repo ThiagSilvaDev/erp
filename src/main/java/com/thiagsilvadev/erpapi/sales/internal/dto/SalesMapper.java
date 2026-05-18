@@ -4,7 +4,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesDtos.*;
 import com.thiagsilvadev.erpapi.sales.internal.model.*;
 
 @Mapper(componentModel = "spring")

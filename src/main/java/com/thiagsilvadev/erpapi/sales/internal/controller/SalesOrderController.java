@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.sales.api.*;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesDtos.*;
+import com.thiagsilvadev.erpapi.sales.internal.dto.*;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 import com.thiagsilvadev.erpapi.sales.internal.usecase.*;
