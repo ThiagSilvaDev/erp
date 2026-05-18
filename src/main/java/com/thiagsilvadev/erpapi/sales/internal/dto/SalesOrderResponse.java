@@ -8,6 +8,7 @@ import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 
 public record SalesOrderResponse(
         UUID id,
+        Long orderNumber,
         UUID customerId,
         OrderStatus status,
         BigDecimal totalAmount,

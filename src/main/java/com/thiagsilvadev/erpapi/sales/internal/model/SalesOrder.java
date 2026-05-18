@@ -9,8 +9,13 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 
 @Entity
-@Table(name = "sales_orders")
+@Table(
+        name = "sales_orders",
+        uniqueConstraints = @UniqueConstraint(name = "uk_sales_order_order_number", columnNames = "order_number"))
 public class SalesOrder extends AbstractBaseEntity {
+
+    @Column(name = "order_number", nullable = false, updatable = false)
+    private Long orderNumber;
 
     @Column(nullable = false)
     private UUID customerId;
@@ -25,16 +30,17 @@ public class SalesOrder extends AbstractBaseEntity {
 
     protected SalesOrder() {}
 
-    private SalesOrder(UUID customerId, List<SalesOrderItem> items) {
+    private SalesOrder(Long orderNumber, UUID customerId, List<SalesOrderItem> items) {
+        this.orderNumber = Objects.requireNonNull(orderNumber, "Order number is required");
         this.customerId = Objects.requireNonNull(customerId, "Customer is required");
         this.items.addAll(items);
     }
 
-    public static SalesOrder create(UUID customerId, List<SalesOrderItem> items) {
+    public static SalesOrder create(Long orderNumber, UUID customerId, List<SalesOrderItem> items) {
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Sales order must have at least one item");
         }
-        return new SalesOrder(customerId, items);
+        return new SalesOrder(orderNumber, customerId, items);
     }
 
     public void confirm() {
@@ -61,6 +67,10 @@ public class SalesOrder extends AbstractBaseEntity {
 
     public UUID getCustomerId() {
         return customerId;
+    }
+
+    public Long getOrderNumber() {
+        return orderNumber;
     }
 
     public OrderStatus getStatus() {

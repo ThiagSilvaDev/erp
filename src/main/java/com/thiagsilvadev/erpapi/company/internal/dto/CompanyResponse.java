@@ -8,6 +8,7 @@ import com.thiagsilvadev.erpapi.company.api.CompanyType;
 
 public record CompanyResponse(
         UUID id,
+        Long companyCode,
         String legalName,
         String tradeName,
         Cnpj cnpj,

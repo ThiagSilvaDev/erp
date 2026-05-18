@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreatePaymentRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
@@ -26,16 +28,19 @@ public class CreatePaymentUseCase {
     private final PaymentRepository paymentRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
     private final FinancialMapper mapper;
+    private final BusinessNumberService businessNumberService;
 
     public CreatePaymentUseCase(
             InvoiceRepository invoiceRepository,
             PaymentRepository paymentRepository,
             LedgerEntryRepository ledgerEntryRepository,
-            FinancialMapper mapper) {
+            FinancialMapper mapper,
+            BusinessNumberService businessNumberService) {
         this.invoiceRepository = invoiceRepository;
         this.paymentRepository = paymentRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.mapper = mapper;
+        this.businessNumberService = businessNumberService;
     }
 
     @Transactional
@@ -52,8 +57,11 @@ public class CreatePaymentUseCase {
             throw new ConflictException("Payment amount exceeds the invoice balance.");
         }
 
-        Payment payment =
-                paymentRepository.save(Payment.create(request.invoiceId(), request.amount(), request.paidAt()));
+        Payment payment = paymentRepository.save(Payment.create(
+                businessNumberService.next(BusinessNumberType.PAYMENT),
+                request.invoiceId(),
+                request.amount(),
+                request.paidAt()));
 
         if (totalPaidAmount.compareTo(invoice.getAmount()) == 0) {
             invoice.markPaid();

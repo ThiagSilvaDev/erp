@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderItemRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderRequest;
@@ -26,16 +28,19 @@ public class CreateSalesOrderUseCase {
     private final CustomerFacade customerFacade;
     private final CatalogFacade catalogFacade;
     private final SalesMapper mapper;
+    private final BusinessNumberService businessNumberService;
 
     public CreateSalesOrderUseCase(
             SalesOrderRepository orderRepository,
             CustomerFacade customerFacade,
             CatalogFacade catalogFacade,
-            SalesMapper mapper) {
+            SalesMapper mapper,
+            BusinessNumberService businessNumberService) {
         this.orderRepository = orderRepository;
         this.customerFacade = customerFacade;
         this.catalogFacade = catalogFacade;
         this.mapper = mapper;
+        this.businessNumberService = businessNumberService;
     }
 
     @Transactional
@@ -66,6 +71,7 @@ public class CreateSalesOrderUseCase {
                             product.basePrice().getCurrencyCode());
                 })
                 .toList();
-        return mapper.toResponse(orderRepository.save(SalesOrder.create(request.customerId(), items)));
+        return mapper.toResponse(orderRepository.save(SalesOrder.create(
+                businessNumberService.next(BusinessNumberType.SALES_ORDER), request.customerId(), items)));
     }
 }

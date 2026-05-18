@@ -2,6 +2,7 @@
         allowedDependencies = {
             "common::model",
             "common::exception",
+            "common::numbering",
             "common::web",
             "catalog::api",
             "customer::api",

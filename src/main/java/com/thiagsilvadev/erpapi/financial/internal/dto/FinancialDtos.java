@@ -22,6 +22,7 @@ public final class FinancialDtos {
 
     public record InvoiceResponse(
             UUID id,
+            Long invoiceNumber,
             UUID customerId,
             UUID salesOrderId,
             BigDecimal amount,
@@ -34,7 +35,7 @@ public final class FinancialDtos {
     public record CreatePaymentRequest(
             @NotNull UUID invoiceId, @NotNull @Positive BigDecimal amount, @NotNull LocalDate paidAt) {}
 
-    public record PaymentResponse(UUID id, UUID invoiceId, BigDecimal amount, LocalDate paidAt) {}
+    public record PaymentResponse(UUID id, Long paymentNumber, UUID invoiceId, BigDecimal amount, LocalDate paidAt) {}
 
     public record LedgerEntryResponse(
             UUID id,

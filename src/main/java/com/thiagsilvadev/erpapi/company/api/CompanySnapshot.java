@@ -8,6 +8,7 @@ import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 
 public record CompanySnapshot(
         UUID id,
+        Long companyCode,
         String legalName,
         String tradeName,
         Cnpj cnpj,

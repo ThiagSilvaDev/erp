@@ -12,8 +12,14 @@ import com.thiagsilvadev.erpapi.company.api.CompanyType;
 @Entity
 @Table(
         name = "companies",
-        uniqueConstraints = {@UniqueConstraint(name = "uk_company_cnpj", columnNames = "cnpj")})
+        uniqueConstraints = {
+            @UniqueConstraint(name = "uk_company_cnpj", columnNames = "cnpj"),
+            @UniqueConstraint(name = "uk_company_company_code", columnNames = "company_code")
+        })
 public class Company extends AbstractBaseEntity {
+
+    @Column(name = "company_code", nullable = false, updatable = false)
+    private Long companyCode;
 
     @Column(nullable = false)
     private String legalName;
@@ -39,7 +45,15 @@ public class Company extends AbstractBaseEntity {
 
     protected Company() {}
 
-    private Company(String legalName, String tradeName, Cnpj cnpj, CompanyType type, Address address, Contact contact) {
+    private Company(
+            Long companyCode,
+            String legalName,
+            String tradeName,
+            Cnpj cnpj,
+            CompanyType type,
+            Address address,
+            Contact contact) {
+        this.companyCode = companyCode;
         this.legalName = legalName;
         this.tradeName = tradeName;
         this.cnpj = cnpj;
@@ -49,8 +63,14 @@ public class Company extends AbstractBaseEntity {
     }
 
     public static Company create(
-            String legalName, String tradeName, Cnpj cnpj, CompanyType type, Address address, Contact contact) {
-        return new Company(legalName, tradeName, cnpj, type, address, contact);
+            Long companyCode,
+            String legalName,
+            String tradeName,
+            Cnpj cnpj,
+            CompanyType type,
+            Address address,
+            Contact contact) {
+        return new Company(companyCode, legalName, tradeName, cnpj, type, address, contact);
     }
 
     public void updateNames(String legalName, String tradeName) {
@@ -89,6 +109,10 @@ public class Company extends AbstractBaseEntity {
 
     public String getLegalName() {
         return legalName;
+    }
+
+    public Long getCompanyCode() {
+        return companyCode;
     }
 
     public String getTradeName() {

@@ -15,6 +15,8 @@ import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.company.internal.dto.AddressRequest;
 import com.thiagsilvadev.erpapi.company.internal.dto.ContactRequest;
@@ -37,6 +39,9 @@ class CreateCompanyUseCaseTest {
     @Mock
     private CompanyEventPublisher eventPublisher;
 
+    @Mock
+    private BusinessNumberService businessNumberService;
+
     @Test
     void shouldRejectDuplicatedCnpj() {
         CreateCompanyRequest request = companyRequest();
@@ -44,7 +49,8 @@ class CreateCompanyUseCaseTest {
         when(companyMapper.toCnpj(request.cnpj())).thenReturn(cnpj);
         when(companyRepository.existsByCnpj(cnpj)).thenReturn(true);
 
-        CreateCompanyUseCase useCase = new CreateCompanyUseCase(companyRepository, companyMapper, eventPublisher);
+        CreateCompanyUseCase useCase =
+                new CreateCompanyUseCase(companyRepository, companyMapper, eventPublisher, businessNumberService);
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(CnpjAlreadyExistsException.class);
 
@@ -61,10 +67,12 @@ class CreateCompanyUseCaseTest {
         when(companyMapper.trimToNull(request.tradeName())).thenReturn(request.tradeName());
         when(companyMapper.toAddress(request.address())).thenReturn(address());
         when(companyMapper.toContact(request.contact())).thenReturn(Contact.create("company@example.com", null));
+        when(businessNumberService.next(BusinessNumberType.COMPANY)).thenReturn(1L);
         when(companyRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Company.class)))
                 .thenThrow(new DataIntegrityViolationException("uk_company_cnpj"));
 
-        CreateCompanyUseCase useCase = new CreateCompanyUseCase(companyRepository, companyMapper, eventPublisher);
+        CreateCompanyUseCase useCase =
+                new CreateCompanyUseCase(companyRepository, companyMapper, eventPublisher, businessNumberService);
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(CnpjAlreadyExistsException.class);
 

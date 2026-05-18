@@ -88,6 +88,7 @@ class UserDevSeederTest {
     private static CompanySnapshot company(UUID id) {
         return new CompanySnapshot(
                 id,
+                1L,
                 "Acme Industria Ltda",
                 "Acme",
                 Cnpj.create("11.222.333/0001-81"),

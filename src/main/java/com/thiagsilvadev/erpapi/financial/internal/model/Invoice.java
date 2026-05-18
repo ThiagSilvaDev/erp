@@ -11,9 +11,14 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 @Entity
 @Table(
         name = "financial_invoices",
-        uniqueConstraints =
-                @UniqueConstraint(name = "uk_financial_invoice_sales_order", columnNames = "sales_order_id"))
+        uniqueConstraints = {
+            @UniqueConstraint(name = "uk_financial_invoice_sales_order", columnNames = "sales_order_id"),
+            @UniqueConstraint(name = "uk_financial_invoice_invoice_number", columnNames = "invoice_number")
+        })
 public class Invoice extends AbstractBaseEntity {
+
+    @Column(name = "invoice_number", nullable = false, updatable = false)
+    private Long invoiceNumber;
 
     @Column(nullable = false)
     private UUID customerId;
@@ -36,7 +41,14 @@ public class Invoice extends AbstractBaseEntity {
 
     protected Invoice() {}
 
-    private Invoice(UUID customerId, UUID salesOrderId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
+    private Invoice(
+            Long invoiceNumber,
+            UUID customerId,
+            UUID salesOrderId,
+            BigDecimal amount,
+            String currencyCode,
+            LocalDate dueDate) {
+        this.invoiceNumber = invoiceNumber;
         this.customerId = customerId;
         this.salesOrderId = salesOrderId;
         this.amount = amount;
@@ -45,8 +57,13 @@ public class Invoice extends AbstractBaseEntity {
     }
 
     public static Invoice create(
-            UUID customerId, UUID salesOrderId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
-        return new Invoice(customerId, salesOrderId, amount, currencyCode, dueDate);
+            Long invoiceNumber,
+            UUID customerId,
+            UUID salesOrderId,
+            BigDecimal amount,
+            String currencyCode,
+            LocalDate dueDate) {
+        return new Invoice(invoiceNumber, customerId, salesOrderId, amount, currencyCode, dueDate);
     }
 
     public void markPaid() {
@@ -65,6 +82,10 @@ public class Invoice extends AbstractBaseEntity {
 
     public UUID getCustomerId() {
         return customerId;
+    }
+
+    public Long getInvoiceNumber() {
+        return invoiceNumber;
     }
 
     public UUID getSalesOrderId() {

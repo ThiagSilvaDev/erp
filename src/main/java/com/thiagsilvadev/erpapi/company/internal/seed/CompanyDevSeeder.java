@@ -12,6 +12,8 @@ import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.company.internal.model.Company;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
@@ -25,9 +27,11 @@ class CompanyDevSeeder implements ApplicationRunner {
     private static final String PARTNER_CNPJ = "17.018.282/0001-57";
 
     private final CompanyRepository companyRepository;
+    private final BusinessNumberService businessNumberService;
 
-    CompanyDevSeeder(CompanyRepository companyRepository) {
+    CompanyDevSeeder(CompanyRepository companyRepository, BusinessNumberService businessNumberService) {
         this.companyRepository = companyRepository;
+        this.businessNumberService = businessNumberService;
     }
 
     @Override
@@ -45,6 +49,7 @@ class CompanyDevSeeder implements ApplicationRunner {
         }
 
         Company company = Company.create(
+                businessNumberService.next(BusinessNumberType.COMPANY),
                 "Acme Industria Ltda",
                 "Acme",
                 cnpj,
@@ -72,6 +77,7 @@ class CompanyDevSeeder implements ApplicationRunner {
         }
 
         Company company = Company.create(
+                businessNumberService.next(BusinessNumberType.COMPANY),
                 "Parceiro Correspondente S.A.",
                 "Parceiro",
                 cnpj,

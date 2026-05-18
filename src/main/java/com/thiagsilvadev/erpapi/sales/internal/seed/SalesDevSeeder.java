@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
@@ -29,16 +31,19 @@ class SalesDevSeeder implements ApplicationRunner {
     private final CustomerFacade customerFacade;
     private final CatalogFacade catalogFacade;
     private final InventoryFacade inventoryFacade;
+    private final BusinessNumberService businessNumberService;
 
     SalesDevSeeder(
             SalesOrderRepository orderRepository,
             CustomerFacade customerFacade,
             CatalogFacade catalogFacade,
-            InventoryFacade inventoryFacade) {
+            InventoryFacade inventoryFacade,
+            BusinessNumberService businessNumberService) {
         this.orderRepository = orderRepository;
         this.customerFacade = customerFacade;
         this.catalogFacade = catalogFacade;
         this.inventoryFacade = inventoryFacade;
+        this.businessNumberService = businessNumberService;
     }
 
     @Override
@@ -57,6 +62,7 @@ class SalesDevSeeder implements ApplicationRunner {
                 .findWarehouseByCode(WAREHOUSE_CODE)
                 .orElseThrow(() -> new IllegalStateException("Seed warehouse must exist before seeding sales"));
         orderRepository.save(SalesOrder.create(
+                businessNumberService.next(BusinessNumberType.SALES_ORDER),
                 customer.id(),
                 List.of(SalesOrderItem.create(
                         product.id(),

@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreateInvoiceRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
@@ -26,18 +28,21 @@ public class CreateInvoiceUseCase {
     private final CustomerFacade customerFacade;
     private final SalesFacade salesFacade;
     private final FinancialMapper mapper;
+    private final BusinessNumberService businessNumberService;
 
     public CreateInvoiceUseCase(
             InvoiceRepository invoiceRepository,
             LedgerEntryRepository ledgerEntryRepository,
             CustomerFacade customerFacade,
             SalesFacade salesFacade,
-            FinancialMapper mapper) {
+            FinancialMapper mapper,
+            BusinessNumberService businessNumberService) {
         this.invoiceRepository = invoiceRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.customerFacade = customerFacade;
         this.salesFacade = salesFacade;
         this.mapper = mapper;
+        this.businessNumberService = businessNumberService;
     }
 
     @Transactional
@@ -55,6 +60,7 @@ public class CreateInvoiceUseCase {
         }
 
         Invoice invoice = invoiceRepository.save(Invoice.create(
+                businessNumberService.next(BusinessNumberType.INVOICE),
                 request.customerId(),
                 request.salesOrderId(),
                 request.amount(),

@@ -5,6 +5,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyRequest;
 import com.thiagsilvadev.erpapi.company.internal.event.CompanyEventPublisher;
@@ -19,12 +21,17 @@ public class CreateCompanyUseCase {
     private final CompanyRepository companyRepository;
     private final CompanyMapper companyMapper;
     private final CompanyEventPublisher eventPublisher;
+    private final BusinessNumberService businessNumberService;
 
     public CreateCompanyUseCase(
-            CompanyRepository companyRepository, CompanyMapper companyMapper, CompanyEventPublisher eventPublisher) {
+            CompanyRepository companyRepository,
+            CompanyMapper companyMapper,
+            CompanyEventPublisher eventPublisher,
+            BusinessNumberService businessNumberService) {
         this.companyRepository = companyRepository;
         this.companyMapper = companyMapper;
         this.eventPublisher = eventPublisher;
+        this.businessNumberService = businessNumberService;
     }
 
     @Transactional
@@ -37,6 +44,7 @@ public class CreateCompanyUseCase {
         }
 
         Company company = Company.create(
+                businessNumberService.next(BusinessNumberType.COMPANY),
                 companyMapper.trimToNull(request.legalName()),
                 companyMapper.trimToNull(request.tradeName()),
                 cnpj,
