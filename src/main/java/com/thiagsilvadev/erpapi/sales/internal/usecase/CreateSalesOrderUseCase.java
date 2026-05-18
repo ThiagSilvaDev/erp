@@ -1,12 +1,17 @@
 package com.thiagsilvadev.erpapi.sales.internal.usecase;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
+import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
+import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderItemRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
@@ -39,11 +44,18 @@ public class CreateSalesOrderUseCase {
         customerFacade
                 .findCustomerById(request.customerId())
                 .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.customerId()));
+        Set<UUID> productIds = request.items().stream()
+                .map(CreateSalesOrderItemRequest::productId)
+                .collect(Collectors.toSet());
+
+        Map<UUID, ProductSnapshot> productMap = catalogFacade.findAllProductsByIdIn(productIds).stream()
+                .collect(Collectors.toMap(ProductSnapshot::id, p -> p));
+
         var items = request.items().stream()
                 .map(item -> {
-                    var product = catalogFacade
-                            .findProductById(item.productId())
+                    ProductSnapshot product = Optional.ofNullable(productMap.get(item.productId()))
                             .orElseThrow(() -> new ResourceNotFoundException(Object.class, item.productId()));
+
                     return SalesOrderItem.create(
                             product.id(),
                             item.warehouseId(),

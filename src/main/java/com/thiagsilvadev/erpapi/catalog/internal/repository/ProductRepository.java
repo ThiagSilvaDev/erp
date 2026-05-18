@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,4 +15,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
     boolean existsBySkuValue(String sku);
 
     Optional<Product> findBySkuValue(String sku);
+
+    List<Product> findAllByIdIn(Collection<UUID> ids);
 }

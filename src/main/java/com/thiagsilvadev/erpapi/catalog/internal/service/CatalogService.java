@@ -1,7 +1,6 @@
 package com.thiagsilvadev.erpapi.catalog.internal.service;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +10,7 @@ import com.thiagsilvadev.erpapi.catalog.api.CategorySnapshot;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
+import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
@@ -39,6 +39,18 @@ public class CatalogService implements CatalogFacade {
     @Transactional(readOnly = true)
     public Optional<ProductSnapshot> findProductBySku(String sku) {
         return productRepository.findBySkuValue(Sku.create(sku).getValue()).map(catalogMapper::toSnapshot);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductSnapshot> findAllProductsByIdIn(Set<UUID> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Product> products = productRepository.findAllByIdIn((productIds));
+
+        return products.stream().map(catalogMapper::toSnapshot).toList();
     }
 
     @Override
