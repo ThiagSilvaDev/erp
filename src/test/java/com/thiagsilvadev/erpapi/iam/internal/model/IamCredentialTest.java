@@ -8,22 +8,20 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 class IamCredentialTest {
 
     @Test
     void shouldNormalizeCredentialEmailWithEmailValueObject() {
-        IamCredential credential =
-                IamCredential.create(UUID.randomUUID(), " User@Example.com ", "hash", UserRole.ADMIN);
+        IamCredential credential = IamCredential.create(UUID.randomUUID(), " User@Example.com ", "hash", "admin");
 
         assertThat(credential.getEmail()).isEqualTo("user@example.com");
-        assertThat(credential.getRole()).isEqualTo(UserRole.ADMIN);
+        assertThat(credential.getRole()).isEqualTo("ADMIN");
     }
 
     @Test
     void shouldRejectInvalidCredentialEmail() {
-        assertThatThrownBy(() -> IamCredential.create(UUID.randomUUID(), "invalid-email", "hash", UserRole.ADMIN))
+        assertThatThrownBy(() -> IamCredential.create(UUID.randomUUID(), "invalid-email", "hash", "ADMIN"))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessage("Invalid email format");
     }

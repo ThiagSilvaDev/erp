@@ -23,6 +23,8 @@ import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
+import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningFacade;
+import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
@@ -40,6 +42,9 @@ class UserDevSeederTest {
     @Mock
     private UserEventPublisher eventPublisher;
 
+    @Mock
+    private CredentialProvisioningFacade credentialProvisioningFacade;
+
     @Test
     void shouldSeedAdminUserAndCredentialWhenMissing() {
         UUID companyId = UUID.randomUUID();
@@ -47,16 +52,17 @@ class UserDevSeederTest {
         when(userRepository.existsByContactEmailValue(UserDevSeeder.ADMIN_EMAIL))
                 .thenReturn(false);
         when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(companyId)));
-        when(userRepository.save(org.mockito.ArgumentMatchers.any(User.class))).thenAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            ReflectionTestUtils.setField(user, "id", userId);
-            return user;
-        });
+        when(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(User.class)))
+                .thenAnswer(invocation -> {
+                    User user = invocation.getArgument(0);
+                    ReflectionTestUtils.setField(user, "id", userId);
+                    return user;
+                });
 
-        new UserDevSeeder(userRepository, companyFacade, eventPublisher).run(null);
+        new UserDevSeeder(userRepository, companyFacade, eventPublisher, credentialProvisioningFacade).run(null);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(userCaptor.capture());
+        verify(userRepository).saveAndFlush(userCaptor.capture());
 
         User user = userCaptor.getValue();
         assertThat(user.getFirstName()).isEqualTo("Admin");
@@ -64,7 +70,15 @@ class UserDevSeederTest {
         assertThat(user.getRole()).isEqualTo(UserRole.ADMIN);
         assertThat(user.getCompanyId()).isEqualTo(companyId);
 
-        verify(eventPublisher).userCreated(savedUser(userCaptor.getValue(), userId), UserDevSeeder.ADMIN_PASSWORD);
+        ArgumentCaptor<CredentialProvisioningRequest> credentialCaptor =
+                ArgumentCaptor.forClass(CredentialProvisioningRequest.class);
+        verify(credentialProvisioningFacade).provision(credentialCaptor.capture());
+        assertThat(credentialCaptor.getValue().userId()).isEqualTo(userId);
+        assertThat(credentialCaptor.getValue().email()).isEqualTo(UserDevSeeder.ADMIN_EMAIL);
+        assertThat(credentialCaptor.getValue().rawPassword()).isEqualTo(UserDevSeeder.ADMIN_PASSWORD);
+        assertThat(credentialCaptor.getValue().role()).isEqualTo("ADMIN");
+
+        verify(eventPublisher).userCreated(savedUser(userCaptor.getValue(), userId));
     }
 
     @Test
@@ -72,12 +86,12 @@ class UserDevSeederTest {
         when(userRepository.existsByContactEmailValue(UserDevSeeder.ADMIN_EMAIL))
                 .thenReturn(true);
 
-        new UserDevSeeder(userRepository, companyFacade, eventPublisher).run(null);
+        new UserDevSeeder(userRepository, companyFacade, eventPublisher, credentialProvisioningFacade).run(null);
 
         verify(companyFacade, never()).findByCnpj(org.mockito.ArgumentMatchers.anyString());
-        verify(userRepository, never()).save(org.mockito.ArgumentMatchers.any());
-        verify(eventPublisher, never())
-                .userCreated(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
+        verify(userRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+        verify(credentialProvisioningFacade, never()).provision(org.mockito.ArgumentMatchers.any());
+        verify(eventPublisher, never()).userCreated(org.mockito.ArgumentMatchers.any());
     }
 
     private static User savedUser(User user, UUID id) {

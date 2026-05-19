@@ -13,7 +13,6 @@ import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Email;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @Entity
 @Table(
@@ -36,9 +35,8 @@ public class IamCredential extends AbstractBaseEntity {
     @Column(nullable = false, length = 120)
     private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
-    private UserRole role;
+    private String role;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -46,14 +44,14 @@ public class IamCredential extends AbstractBaseEntity {
 
     protected IamCredential() {}
 
-    private IamCredential(UUID userId, String email, String passwordHash, UserRole role) {
+    private IamCredential(UUID userId, String email, String passwordHash, String role) {
         this.userId = requireUserId(userId);
         this.email = Email.create(email);
         this.passwordHash = requireText(passwordHash, "Password hash cannot be blank");
         this.role = requireRole(role);
     }
 
-    public static IamCredential create(UUID userId, String email, String passwordHash, UserRole role) {
+    public static IamCredential create(UUID userId, String email, String passwordHash, String role) {
         return new IamCredential(userId, email, passwordHash, role);
     }
 
@@ -81,7 +79,7 @@ public class IamCredential extends AbstractBaseEntity {
         return passwordHash;
     }
 
-    public UserRole getRole() {
+    public String getRole() {
         return role;
     }
 
@@ -96,11 +94,11 @@ public class IamCredential extends AbstractBaseEntity {
         return userId;
     }
 
-    private static UserRole requireRole(UserRole role) {
-        if (role == null) {
+    private static String requireRole(String role) {
+        if (role == null || role.isBlank()) {
             throw new IllegalArgumentException("Role cannot be null");
         }
-        return role;
+        return role.trim().toUpperCase(java.util.Locale.ROOT);
     }
 
     private static String requireText(String value, String message) {

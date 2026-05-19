@@ -23,7 +23,6 @@ import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
 import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserPermissions;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @ExtendWith(MockitoExtension.class)
 class IamUserDetailsServiceTest {
@@ -41,7 +40,7 @@ class IamUserDetailsServiceTest {
     @Test
     void shouldLoadCredentialByNormalizedEmail() {
         UUID userId = UUID.randomUUID();
-        IamCredential credential = IamCredential.create(userId, "user@example.com", "hash", UserRole.ADMIN);
+        IamCredential credential = IamCredential.create(userId, "user@example.com", "hash", "ADMIN");
         when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.of(credential));
 
         IamUserDetails userDetails = (IamUserDetails) userDetailsService.loadUserByUsername(" User@Example.com ");
@@ -75,8 +74,7 @@ class IamUserDetailsServiceTest {
 
     @Test
     void shouldDisableInactiveCredential() {
-        IamCredential credential =
-                IamCredential.create(UUID.randomUUID(), "user@example.com", "hash", UserRole.MANAGER);
+        IamCredential credential = IamCredential.create(UUID.randomUUID(), "user@example.com", "hash", "MANAGER");
         credential.deactivate();
         when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.of(credential));
 

@@ -11,7 +11,6 @@ import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
 import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserPermissions;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 class RolePermissionResolverTest {
 
@@ -19,7 +18,7 @@ class RolePermissionResolverTest {
 
     @Test
     void shouldResolveAdminPermissions() {
-        assertThat(resolver.resolve(UserRole.ADMIN))
+        assertThat(resolver.resolve("ADMIN"))
                 .containsAll(CatalogPermissions.ALL)
                 .containsAll(CompanyPermissions.ALL)
                 .containsAll(CustomerPermissions.ALL)
@@ -32,7 +31,7 @@ class RolePermissionResolverTest {
 
     @Test
     void shouldResolveManagerPermissions() {
-        assertThat(resolver.resolve(UserRole.MANAGER))
+        assertThat(resolver.resolve("MANAGER"))
                 .containsExactlyInAnyOrder(
                         CatalogPermissions.READ,
                         CatalogPermissions.WRITE,
@@ -43,7 +42,7 @@ class RolePermissionResolverTest {
 
     @Test
     void shouldResolveOperatorPermissions() {
-        assertThat(resolver.resolve(UserRole.OPERATOR))
+        assertThat(resolver.resolve("OPERATOR"))
                 .containsExactlyInAnyOrder(CatalogPermissions.READ, InventoryPermissions.READ);
     }
 

@@ -9,6 +9,8 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundExceptio
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
+import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningFacade;
+import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserResponse;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
@@ -24,16 +26,19 @@ public class CreateUserUseCase {
     private final CompanyFacade companyFacade;
     private final UserMapper userMapper;
     private final UserEventPublisher eventPublisher;
+    private final CredentialProvisioningFacade credentialProvisioningFacade;
 
     public CreateUserUseCase(
             UserRepository userRepository,
             CompanyFacade companyFacade,
             UserMapper userMapper,
-            UserEventPublisher eventPublisher) {
+            UserEventPublisher eventPublisher,
+            CredentialProvisioningFacade credentialProvisioningFacade) {
         this.userRepository = userRepository;
         this.companyFacade = companyFacade;
         this.userMapper = userMapper;
         this.eventPublisher = eventPublisher;
+        this.credentialProvisioningFacade = credentialProvisioningFacade;
     }
 
     @Transactional
@@ -62,7 +67,12 @@ public class CreateUserUseCase {
         } catch (DataIntegrityViolationException e) {
             throw new EmailAlreadyExistsException(contact.getEmail());
         }
-        eventPublisher.userCreated(savedUser, request.password());
+        credentialProvisioningFacade.provision(new CredentialProvisioningRequest(
+                savedUser.getId(),
+                savedUser.getContact().getEmail(),
+                request.password(),
+                savedUser.getRole().name()));
+        eventPublisher.userCreated(savedUser);
 
         return userMapper.toResponse(savedUser);
     }

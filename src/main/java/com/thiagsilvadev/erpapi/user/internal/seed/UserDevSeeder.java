@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
+import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningFacade;
+import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
@@ -30,11 +32,17 @@ class UserDevSeeder implements ApplicationRunner {
     private final UserRepository userRepository;
     private final CompanyFacade companyFacade;
     private final UserEventPublisher eventPublisher;
+    private final CredentialProvisioningFacade credentialProvisioningFacade;
 
-    UserDevSeeder(UserRepository userRepository, CompanyFacade companyFacade, UserEventPublisher eventPublisher) {
+    UserDevSeeder(
+            UserRepository userRepository,
+            CompanyFacade companyFacade,
+            UserEventPublisher eventPublisher,
+            CredentialProvisioningFacade credentialProvisioningFacade) {
         this.userRepository = userRepository;
         this.companyFacade = companyFacade;
         this.eventPublisher = eventPublisher;
+        this.credentialProvisioningFacade = credentialProvisioningFacade;
     }
 
     @Override
@@ -50,7 +58,12 @@ class UserDevSeeder implements ApplicationRunner {
                 .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding users"));
 
         User user = User.create("Admin", "Acme", contact, LocalDate.of(1990, 1, 1), UserRole.ADMIN, company.id());
-        User savedUser = userRepository.save(user);
-        eventPublisher.userCreated(savedUser, ADMIN_PASSWORD);
+        User savedUser = userRepository.saveAndFlush(user);
+        credentialProvisioningFacade.provision(new CredentialProvisioningRequest(
+                savedUser.getId(),
+                savedUser.getContact().getEmail(),
+                ADMIN_PASSWORD,
+                savedUser.getRole().name()));
+        eventPublisher.userCreated(savedUser);
     }
 }

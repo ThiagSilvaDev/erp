@@ -2,6 +2,8 @@ package com.thiagsilvadev.erpapi.user.internal.event;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.thiagsilvadev.erpapi.user.api.UserCreatedEvent;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
@@ -15,8 +17,20 @@ public class UserEventPublisher {
         this.eventPublisher = eventPublisher;
     }
 
-    public void userCreated(User user, String rawPassword) {
-        eventPublisher.publishEvent(new UserCreatedEvent(
-                user.getId(), user.getContact().getEmail(), user.getCompanyId(), rawPassword, user.getRole()));
+    public void userCreated(User user) {
+        UserCreatedEvent event =
+                new UserCreatedEvent(user.getId(), user.getContact().getEmail(), user.getCompanyId(), user.getRole());
+
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            eventPublisher.publishEvent(event);
+            return;
+        }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                eventPublisher.publishEvent(event);
+            }
+        });
     }
 }
