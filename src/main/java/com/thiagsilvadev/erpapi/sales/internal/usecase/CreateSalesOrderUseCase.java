@@ -3,6 +3,8 @@ package com.thiagsilvadev.erpapi.sales.internal.usecase;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.thiagsilvadev.erpapi.common.domain.model.GeoLocation;
+import com.thiagsilvadev.erpapi.sales.internal.dto.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +20,6 @@ import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
-import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderItemRequest;
-import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderRequest;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.model.DeliveryRoute;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrderItem;
@@ -80,21 +78,7 @@ public class CreateSalesOrderUseCase {
                 })
                 .toList();
 
-        DeliveryRoute deliveryRoute = request.deliveryRoute() != null
-                ? DeliveryRoute.delivery(
-                        request.deliveryRoute().routeName(),
-                        request.deliveryRoute().originWarehouseId(),
-                        request.deliveryRoute().destinationDescription(),
-                        request.deliveryRoute().destinationLocation() != null
-                                ? com.thiagsilvadev.erpapi.common.domain.model.GeoLocation.of(
-                                        request.deliveryRoute()
-                                                .destinationLocation()
-                                                .latitude(),
-                                        request.deliveryRoute()
-                                                .destinationLocation()
-                                                .longitude())
-                                : null)
-                : null;
+        DeliveryRoute deliveryRoute = toDeliveryRoute(request.deliveryRoute());
 
         SalesOrder order = SalesOrder.create(
                 businessNumberService.next(BusinessNumberType.SALES_ORDER),
@@ -163,5 +147,25 @@ public class CreateSalesOrderUseCase {
         if (!request.sellerCompanyId().equals(customer.ownerCompanyId())) {
             throw new IllegalArgumentException("B2C customer must belong to the seller company");
         }
+    }
+
+    private DeliveryRoute toDeliveryRoute(DeliveryRouteRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        return DeliveryRoute.delivery(
+                request.routeName(),
+                request.originWarehouseId(),
+                request.destinationDescription(),
+                toGeoLocation(request.destinationLocation()));
+    }
+
+    private GeoLocation toGeoLocation(GeoLocationRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        return GeoLocation.of(request.latitude(), request.longitude());
     }
 }
