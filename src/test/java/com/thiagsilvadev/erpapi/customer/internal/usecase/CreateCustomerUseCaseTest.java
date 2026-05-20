@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.customer.internal.usecase;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -45,7 +46,10 @@ class CreateCustomerUseCaseTest {
 
         CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
 
-        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ResourceNotFoundException.class);
+        assertThatThrownBy(() -> useCase.execute(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
+                        .containsEntry("resourceName", "Company"));
 
         verify(customerRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
     }

@@ -71,7 +71,10 @@ class CreateUserUseCaseTest {
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
         when(companyFacade.findById(request.companyId())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ResourceNotFoundException.class);
+        assertThatThrownBy(() -> useCase.execute(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
+                        .containsEntry("resourceName", "Company"));
 
         verify(userRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
         verify(credentialProvisioningFacade, never()).provision(org.mockito.ArgumentMatchers.any());

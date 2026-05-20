@@ -74,9 +74,7 @@ public class InventoryService implements InventoryFacade {
 
     @Transactional
     public InventoryItem applyMovement(UUID productId, UUID warehouseId, int quantity) {
-        catalogFacade
-                .findProductById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, productId));
+        catalogFacade.findProductById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", productId));
         Warehouse warehouse = warehouseRepository
                 .findById(warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, warehouseId));

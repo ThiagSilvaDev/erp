@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
@@ -122,6 +123,38 @@ class CreateSalesOrderUseCaseTest {
                 .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID())));
 
         assertThatThrownBy(() -> useCase().execute(request)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldReportMissingProductResourceName() {
+        UUID sellerCompanyId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        CreateSalesOrderRequest request = request(SaleType.B2C, sellerCompanyId, null, customerId);
+        givenCompany(sellerCompanyId, CompanyType.FACTORY);
+        when(customerFacade.findCustomerById(customerId))
+                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", sellerCompanyId)));
+        when(catalogFacade.findAllProductsByIdIn(
+                        java.util.Set.of(request.items().getFirst().productId())))
+                .thenReturn(List.of());
+
+        assertThatThrownBy(() -> useCase().execute(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
+                        .containsEntry("resourceName", "Product"));
+    }
+
+    @Test
+    void shouldReportMissingCustomerResourceName() {
+        UUID sellerCompanyId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        CreateSalesOrderRequest request = request(SaleType.B2C, sellerCompanyId, null, customerId);
+        givenCompany(sellerCompanyId, CompanyType.FACTORY);
+        when(customerFacade.findCustomerById(customerId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> useCase().execute(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
+                        .containsEntry("resourceName", "Customer"));
     }
 
     private CreateSalesOrderUseCase useCase() {

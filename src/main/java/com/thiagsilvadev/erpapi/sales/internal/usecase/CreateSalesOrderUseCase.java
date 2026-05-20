@@ -66,7 +66,7 @@ public class CreateSalesOrderUseCase {
         var items = request.items().stream()
                 .map(item -> {
                     ProductSnapshot product = Optional.ofNullable(productMap.get(item.productId()))
-                            .orElseThrow(() -> new ResourceNotFoundException(Object.class, item.productId()));
+                            .orElseThrow(() -> new ResourceNotFoundException("Product", item.productId()));
 
                     return SalesOrderItem.create(
                             product.id(),
@@ -94,7 +94,7 @@ public class CreateSalesOrderUseCase {
     private void validateParties(CreateSalesOrderRequest request) {
         CompanySnapshot seller = companyFacade
                 .findById(request.sellerCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.sellerCompanyId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Company", request.sellerCompanyId()));
 
         if (request.saleType() == SaleType.B2B) {
             validateB2b(request, seller);
@@ -120,7 +120,7 @@ public class CreateSalesOrderUseCase {
 
         CompanySnapshot buyer = companyFacade
                 .findById(request.buyerCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.buyerCompanyId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Company", request.buyerCompanyId()));
         if (buyer.type() != CompanyType.CORRESPONDENT) {
             throw new IllegalArgumentException("B2B buyer company must be a correspondent");
         }
@@ -139,7 +139,7 @@ public class CreateSalesOrderUseCase {
 
         CustomerSnapshot customer = customerFacade
                 .findCustomerById(request.customerId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.customerId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
         if (!request.sellerCompanyId().equals(customer.ownerCompanyId())) {
             throw new IllegalArgumentException("B2C customer must belong to the seller company");
         }

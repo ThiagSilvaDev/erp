@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
@@ -128,6 +129,33 @@ class CreateInvoiceUseCaseTest {
                         "BRL")));
 
         assertThatThrownBy(() -> useCase().execute(request)).isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void shouldReportMissingSalesOrderResourceName() {
+        UUID customerId = UUID.randomUUID();
+        UUID salesOrderId = UUID.randomUUID();
+        CreateInvoiceRequest request = request(BillingPartyType.CUSTOMER, customerId, salesOrderId);
+        when(customerFacade.findCustomerById(customerId))
+                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID())));
+        when(salesFacade.findOrderById(salesOrderId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> useCase().execute(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
+                        .containsEntry("resourceName", "SalesOrder"));
+    }
+
+    @Test
+    void shouldReportMissingCompanyBillingPartyResourceName() {
+        UUID companyId = UUID.randomUUID();
+        CreateInvoiceRequest request = request(BillingPartyType.COMPANY, companyId, null);
+        when(companyFacade.findById(companyId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> useCase().execute(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
+                        .containsEntry("resourceName", "Company"));
     }
 
     private CreateInvoiceUseCase useCase() {

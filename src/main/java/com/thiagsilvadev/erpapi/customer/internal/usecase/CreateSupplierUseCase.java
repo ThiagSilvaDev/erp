@@ -35,7 +35,7 @@ public class CreateSupplierUseCase {
     public SupplierResponse execute(CreateSupplierRequest request) {
         companyFacade
                 .findById(request.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.companyId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Company", request.companyId()));
 
         String document = Supplier.normalizeDocument(request.document());
         if (supplierRepository.existsByDocument(document)) {

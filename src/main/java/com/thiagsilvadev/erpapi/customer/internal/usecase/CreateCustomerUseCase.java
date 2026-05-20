@@ -35,7 +35,7 @@ public class CreateCustomerUseCase {
     public CustomerResponse execute(CreateCustomerRequest request) {
         companyFacade
                 .findById(request.ownerCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.ownerCompanyId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Company", request.ownerCompanyId()));
 
         String document = Customer.normalizeDocument(request.document());
         if (customerRepository.existsByDocument(document)) {

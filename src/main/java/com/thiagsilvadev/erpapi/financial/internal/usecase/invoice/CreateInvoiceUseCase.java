@@ -60,7 +60,7 @@ public class CreateInvoiceUseCase {
         if (request.salesOrderId() != null) {
             SalesOrderSnapshot order = salesFacade
                     .findOrderById(request.salesOrderId())
-                    .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.salesOrderId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", request.salesOrderId()));
             validateSalesOrderInvoice(request, order);
         }
 
@@ -107,12 +107,12 @@ public class CreateInvoiceUseCase {
         if (billingPartyType == BillingPartyType.CUSTOMER) {
             customerFacade
                     .findCustomerById(billingPartyId)
-                    .orElseThrow(() -> new ResourceNotFoundException(Object.class, billingPartyId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer", billingPartyId));
             return;
         }
 
         companyFacade
                 .findById(billingPartyId)
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, billingPartyId));
+                .orElseThrow(() -> new ResourceNotFoundException("Company", billingPartyId));
     }
 }

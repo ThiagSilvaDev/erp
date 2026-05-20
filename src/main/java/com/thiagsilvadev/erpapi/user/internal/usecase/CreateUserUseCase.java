@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
-import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningFacade;
 import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
@@ -52,7 +51,7 @@ public class CreateUserUseCase {
 
         companyFacade
                 .findById(request.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException(CompanySnapshot.class, request.companyId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Company", request.companyId()));
 
         User user = User.create(
                 request.firstName(),
