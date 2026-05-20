@@ -10,9 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreateFinancialAccountRequest;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.FinancialAccountResponse;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.FinancialEntryResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.account.CreateFinancialAccountRequest;
+import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.entry.FinancialEntryResponse;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.account.CreateFinancialAccountUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.account.GetFinancialAccountByIdUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.account.ListFinancialAccountsUseCase;

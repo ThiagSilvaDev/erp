@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
+import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.model.Payment;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 

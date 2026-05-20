@@ -11,9 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreateInvoiceRequest;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceSearchCriteria;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.CreateInvoiceRequest;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceSearchCriteria;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

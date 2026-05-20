@@ -2,7 +2,11 @@ package com.thiagsilvadev.erpapi.financial.internal.dto;
 
 import org.mapstruct.Mapper;
 
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.*;
+import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.entry.FinancialEntryResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.ledgerentry.LedgerEntryResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.model.*;
 
 @Mapper(componentModel = "spring")

@@ -10,8 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreatePaymentRequest;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.PaymentResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.payment.CreatePaymentRequest;
+import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.CreatePaymentUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.GetPaymentByIdUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.ListPaymentsUseCase;

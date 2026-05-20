@@ -6,8 +6,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
+import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 
 @Component

@@ -6,9 +6,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceSearchCriteria;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceSearchCriteria;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 
 @Component

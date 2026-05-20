@@ -10,9 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.CreateInvoiceRequest;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceResponse;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.InvoiceSearchCriteria;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.CreateInvoiceRequest;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceSearchCriteria;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.CreateInvoiceUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.GetInvoiceByIdUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.ListInvoicesUseCase;
