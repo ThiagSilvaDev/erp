@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import com.thiagsilvadev.erpapi.financial.internal.model.*;
+import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 
 public final class FinancialDtos {
 
@@ -35,9 +36,26 @@ public final class FinancialDtos {
     public record InvoiceSearchCriteria(UUID salesOrderId) {}
 
     public record CreatePaymentRequest(
-            @NotNull UUID invoiceId, @NotNull @Positive BigDecimal amount, @NotNull LocalDate paidAt) {}
+            @NotNull UUID salesOrderId,
+            @NotNull UUID customerId,
+            UUID invoiceId,
+            @NotNull @Positive BigDecimal amount,
+            @NotNull PaymentMethod method,
+            @NotNull PaymentStatus status,
+            LocalDate dueDate,
+            LocalDate paidAt) {}
 
-    public record PaymentResponse(UUID id, Long paymentNumber, UUID invoiceId, BigDecimal amount, LocalDate paidAt) {}
+    public record PaymentResponse(
+            UUID id,
+            Long paymentNumber,
+            UUID salesOrderId,
+            UUID customerId,
+            UUID invoiceId,
+            BigDecimal amount,
+            PaymentMethod method,
+            PaymentStatus status,
+            LocalDate dueDate,
+            LocalDate paidAt) {}
 
     public record LedgerEntryResponse(
             UUID id,

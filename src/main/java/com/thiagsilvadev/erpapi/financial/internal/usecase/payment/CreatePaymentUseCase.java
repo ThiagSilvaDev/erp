@@ -17,6 +17,7 @@ import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
 import com.thiagsilvadev.erpapi.financial.internal.model.InvoiceStatus;
 import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
 import com.thiagsilvadev.erpapi.financial.internal.model.Payment;
+import com.thiagsilvadev.erpapi.financial.internal.model.PaymentStatus;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
@@ -59,9 +60,17 @@ public class CreatePaymentUseCase {
 
         Payment payment = paymentRepository.save(Payment.create(
                 businessNumberService.next(BusinessNumberType.PAYMENT),
+                request.salesOrderId(),
+                request.customerId(),
                 request.invoiceId(),
                 request.amount(),
-                request.paidAt()));
+                request.method(),
+                request.status(),
+                request.dueDate()));
+
+        if (request.status() == PaymentStatus.PAID) {
+            payment.markAsPaid(request.paidAt() != null ? request.paidAt() : java.time.LocalDate.now());
+        }
 
         if (totalPaidAmount.compareTo(invoice.getAmount()) == 0) {
             invoice.markPaid();

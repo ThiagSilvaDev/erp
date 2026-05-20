@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
 import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
+import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 
 public record SalesOrderResponse(
@@ -13,6 +14,7 @@ public record SalesOrderResponse(
         Long orderNumber,
         SaleType saleType,
         FulfillmentType fulfillmentType,
+        PaymentMethod paymentMethod,
         DeliveryRouteRequest deliveryRoute,
         UUID sellerCompanyId,
         UUID buyerCompanyId,

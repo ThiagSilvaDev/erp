@@ -100,6 +100,7 @@ public class CreateSalesOrderUseCase {
                 businessNumberService.next(BusinessNumberType.SALES_ORDER),
                 request.saleType(),
                 request.fulfillmentType(),
+                request.paymentMethod(),
                 deliveryRoute,
                 request.sellerCompanyId(),
                 request.buyerCompanyId(),

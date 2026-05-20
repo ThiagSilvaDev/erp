@@ -8,6 +8,7 @@ public record SalesOrderSnapshot(
         Long orderNumber,
         SaleType saleType,
         FulfillmentType fulfillmentType,
+        PaymentMethod paymentMethod,
         UUID sellerCompanyId,
         UUID buyerCompanyId,
         UUID customerId,

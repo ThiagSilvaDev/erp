@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
 import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
+import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 
 @Entity
@@ -26,6 +27,10 @@ public class SalesOrder extends AbstractBaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "fulfillment_type", nullable = false)
     private FulfillmentType fulfillmentType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false, length = 30)
+    private PaymentMethod paymentMethod;
 
     @Embedded
     private DeliveryRoute deliveryRoute;
@@ -53,6 +58,7 @@ public class SalesOrder extends AbstractBaseEntity {
             Long orderNumber,
             SaleType saleType,
             FulfillmentType fulfillmentType,
+            PaymentMethod paymentMethod,
             DeliveryRoute deliveryRoute,
             UUID sellerCompanyId,
             UUID buyerCompanyId,
@@ -61,6 +67,7 @@ public class SalesOrder extends AbstractBaseEntity {
         this.orderNumber = Objects.requireNonNull(orderNumber, "Order number is required");
         this.saleType = Objects.requireNonNull(saleType, "Sale type is required");
         this.fulfillmentType = Objects.requireNonNull(fulfillmentType, "Fulfillment type is required");
+        this.paymentMethod = Objects.requireNonNull(paymentMethod, "Payment method is required");
         this.deliveryRoute = deliveryRoute;
         this.sellerCompanyId = Objects.requireNonNull(sellerCompanyId, "Seller company is required");
         this.buyerCompanyId = buyerCompanyId;
@@ -72,6 +79,7 @@ public class SalesOrder extends AbstractBaseEntity {
             Long orderNumber,
             SaleType saleType,
             FulfillmentType fulfillmentType,
+            PaymentMethod paymentMethod,
             DeliveryRoute deliveryRoute,
             UUID sellerCompanyId,
             UUID buyerCompanyId,
@@ -87,6 +95,7 @@ public class SalesOrder extends AbstractBaseEntity {
                 orderNumber,
                 saleType,
                 fulfillmentType,
+                paymentMethod,
                 deliveryRoute,
                 sellerCompanyId,
                 buyerCompanyId,
@@ -151,6 +160,10 @@ public class SalesOrder extends AbstractBaseEntity {
 
     public FulfillmentType getFulfillmentType() {
         return fulfillmentType;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
     }
 
     public DeliveryRoute getDeliveryRoute() {

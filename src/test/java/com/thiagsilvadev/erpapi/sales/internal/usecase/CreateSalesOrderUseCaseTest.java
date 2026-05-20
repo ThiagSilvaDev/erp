@@ -30,6 +30,7 @@ import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
+import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderItemRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderRequest;
@@ -187,6 +188,7 @@ class CreateSalesOrderUseCaseTest {
                 saleType,
                 FulfillmentType.PICKUP,
                 null,
+                PaymentMethod.PIX,
                 sellerCompanyId,
                 buyerCompanyId,
                 customerId,

@@ -13,13 +13,13 @@ import com.thiagsilvadev.erpapi.common.domain.model.GeoLocation;
 @Embeddable
 public class DeliveryRoute {
 
-    @Column(name = "route_name", nullable = false, length = 120)
+    @Column(name = "route_name", length = 120)
     private String routeName;
 
-    @Column(name = "origin_warehouse_id", nullable = false)
+    @Column(name = "origin_warehouse_id")
     private UUID originWarehouseId;
 
-    @Column(name = "destination_description", nullable = false, length = 500)
+    @Column(name = "destination_description", length = 500)
     private String destinationDescription;
 
     @Embedded
@@ -37,9 +37,15 @@ public class DeliveryRoute {
 
     private DeliveryRoute(
             String routeName, UUID originWarehouseId, String destinationDescription, GeoLocation destinationLocation) {
-        this.routeName = routeName;
-        this.originWarehouseId = originWarehouseId;
-        this.destinationDescription = destinationDescription;
+        if (routeName == null || routeName.isBlank()) {
+            throw new IllegalArgumentException("Route name cannot be blank");
+        }
+        if (destinationDescription == null || destinationDescription.isBlank()) {
+            throw new IllegalArgumentException("Destination description cannot be blank");
+        }
+        this.routeName = routeName.trim();
+        this.originWarehouseId = java.util.Objects.requireNonNull(originWarehouseId, "Origin warehouse ID is required");
+        this.destinationDescription = destinationDescription.trim();
         this.destinationLocation = destinationLocation;
     }
 
