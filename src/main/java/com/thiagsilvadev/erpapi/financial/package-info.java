@@ -4,6 +4,7 @@
             "common::exception",
             "common::numbering",
             "common::web",
+            "company::api",
             "customer::api",
             "sales::api"
         })

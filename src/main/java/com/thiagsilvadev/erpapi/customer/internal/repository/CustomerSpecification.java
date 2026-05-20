@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerSearchCriteria;
+import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierSearchCriteria;
 import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
 import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;
 
@@ -15,10 +16,10 @@ public class CustomerSpecification {
     public static Specification<Customer> customers(CustomerSearchCriteria criteria) {
         return Specification.where(customerName(criteria.name()))
                 .and(customerDocument(criteria.document()))
-                .and(customerCompany(criteria.companyId()));
+                .and(customerOwnerCompany(criteria.ownerCompanyId()));
     }
 
-    public static Specification<Supplier> suppliers(CustomerSearchCriteria criteria) {
+    public static Specification<Supplier> suppliers(SupplierSearchCriteria criteria) {
         return Specification.where(supplierName(criteria.name()))
                 .and(supplierDocument(criteria.document()))
                 .and(supplierCompany(criteria.companyId()));
@@ -44,8 +45,9 @@ public class CustomerSpecification {
                 : cb.equal(root.get("document"), Supplier.normalizeDocument(document));
     }
 
-    private static Specification<Customer> customerCompany(UUID companyId) {
-        return (root, query, cb) -> companyId == null ? null : cb.equal(root.get("companyId"), companyId);
+    private static Specification<Customer> customerOwnerCompany(UUID ownerCompanyId) {
+        return (root, query, cb) ->
+                ownerCompanyId == null ? null : cb.equal(root.get("ownerCompanyId"), ownerCompanyId);
     }
 
     private static Specification<Supplier> supplierCompany(UUID companyId) {

@@ -5,6 +5,7 @@
             "common::numbering",
             "common::web",
             "catalog::api",
+            "company::api",
             "customer::api",
             "inventory::api"
         })

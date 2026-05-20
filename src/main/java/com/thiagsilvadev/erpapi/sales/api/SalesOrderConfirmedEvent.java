@@ -5,4 +5,11 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record SalesOrderConfirmedEvent(
-        UUID salesOrderId, UUID customerId, BigDecimal totalAmount, String currencyCode, LocalDate confirmedAt) {}
+        UUID salesOrderId,
+        SaleType saleType,
+        UUID sellerCompanyId,
+        UUID buyerCompanyId,
+        UUID customerId,
+        BigDecimal totalAmount,
+        String currencyCode,
+        LocalDate confirmedAt) {}

@@ -7,11 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
 import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
+import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderCancelledEvent;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderConfirmedEvent;
 
@@ -45,7 +47,8 @@ public class SalesOrderFinancialListener {
 
         Invoice invoice = invoiceRepository.save(Invoice.create(
                 businessNumberService.next(BusinessNumberType.INVOICE),
-                event.customerId(),
+                event.saleType() == SaleType.B2B ? BillingPartyType.COMPANY : BillingPartyType.CUSTOMER,
+                event.saleType() == SaleType.B2B ? event.buyerCompanyId() : event.customerId(),
                 event.salesOrderId(),
                 event.totalAmount(),
                 event.currencyCode(),

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
-import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerSearchCriteria;
 import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierResponse;
+import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierSearchCriteria;
 import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerSpecification;
 import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
 
@@ -25,7 +25,7 @@ public class ListSuppliersUseCase {
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
-    public Page<SupplierResponse> execute(CustomerSearchCriteria criteria, Pageable pageable) {
+    public Page<SupplierResponse> execute(SupplierSearchCriteria criteria, Pageable pageable) {
         return supplierRepository
                 .findAll(CustomerSpecification.suppliers(criteria), pageable)
                 .map(mapper::toResponse);

@@ -25,7 +25,7 @@ public class Customer extends AbstractBaseEntity {
     private String document;
 
     @Column(nullable = false)
-    private UUID companyId;
+    private UUID ownerCompanyId;
 
     @Embedded
     private Contact contact;
@@ -35,16 +35,16 @@ public class Customer extends AbstractBaseEntity {
 
     protected Customer() {}
 
-    private Customer(String name, String document, UUID companyId, Contact contact, Address address) {
+    private Customer(String name, String document, UUID ownerCompanyId, Contact contact, Address address) {
         this.name = required(name, "Customer name cannot be blank");
         this.document = normalizeDocument(document);
-        this.companyId = requireCompanyId(companyId);
+        this.ownerCompanyId = requireOwnerCompanyId(ownerCompanyId);
         this.contact = contact;
         this.address = address;
     }
 
-    public static Customer create(String name, String document, UUID companyId, Contact contact, Address address) {
-        return new Customer(name, document, companyId, contact, address);
+    public static Customer create(String name, String document, UUID ownerCompanyId, Contact contact, Address address) {
+        return new Customer(name, document, ownerCompanyId, contact, address);
     }
 
     public String getName() {
@@ -55,8 +55,8 @@ public class Customer extends AbstractBaseEntity {
         return document;
     }
 
-    public UUID getCompanyId() {
-        return companyId;
+    public UUID getOwnerCompanyId() {
+        return ownerCompanyId;
     }
 
     public Contact getContact() {
@@ -71,11 +71,11 @@ public class Customer extends AbstractBaseEntity {
         return required(document, "Customer document cannot be blank").replaceAll("\\D", "");
     }
 
-    private static UUID requireCompanyId(UUID companyId) {
-        if (companyId == null) {
-            throw new IllegalArgumentException("Customer company cannot be null");
+    private static UUID requireOwnerCompanyId(UUID ownerCompanyId) {
+        if (ownerCompanyId == null) {
+            throw new IllegalArgumentException("Customer owner company cannot be null");
         }
-        return companyId;
+        return ownerCompanyId;
     }
 
     static String required(String value, String message) {

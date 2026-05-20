@@ -9,6 +9,6 @@ import jakarta.validation.constraints.NotNull;
 public record CreateCustomerRequest(
         @NotBlank String name,
         @NotBlank String document,
-        @NotNull UUID companyId,
+        @NotNull UUID ownerCompanyId,
         @Valid ContactRequest contact,
         @Valid AddressRequest address) {}

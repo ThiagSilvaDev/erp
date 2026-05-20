@@ -41,7 +41,7 @@ class SupplierController implements SupplierApi {
     }
 
     @Override
-    public Page<SupplierResponse> listSuppliers(CustomerSearchCriteria criteria, Pageable pageable) {
+    public Page<SupplierResponse> listSuppliers(SupplierSearchCriteria criteria, Pageable pageable) {
         return listSuppliersUseCase.execute(criteria, pageable);
     }
 }

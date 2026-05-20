@@ -41,7 +41,7 @@ class CreateCustomerUseCaseTest {
     @Test
     void shouldRejectMissingCompany() {
         CreateCustomerRequest request = customerRequest();
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.empty());
+        when(companyFacade.findById(request.ownerCompanyId())).thenReturn(Optional.empty());
 
         CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
 
@@ -53,7 +53,7 @@ class CreateCustomerUseCaseTest {
     @Test
     void shouldRejectDuplicatedDocument() {
         CreateCustomerRequest request = customerRequest();
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(companyFacade.findById(request.ownerCompanyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
         when(customerRepository.existsByDocument("12345678900")).thenReturn(true);
 
         CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
@@ -68,7 +68,7 @@ class CreateCustomerUseCaseTest {
         CreateCustomerRequest request = customerRequest();
         Contact contact = Contact.create("customer@example.com", "11912345678");
         Address address = address();
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(companyFacade.findById(request.ownerCompanyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
         when(customerRepository.existsByDocument("12345678900")).thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(contact);
         when(mapper.toAddress(request.address())).thenReturn(address);
@@ -86,7 +86,7 @@ class CreateCustomerUseCaseTest {
     @Test
     void shouldTranslateDuplicateDocumentRace() {
         CreateCustomerRequest request = customerRequest();
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(companyFacade.findById(request.ownerCompanyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
         when(customerRepository.existsByDocument("12345678900")).thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(Contact.create("customer@example.com", "11912345678"));
         when(mapper.toAddress(request.address())).thenReturn(address());

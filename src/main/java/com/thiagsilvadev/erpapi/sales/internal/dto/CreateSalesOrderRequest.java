@@ -7,5 +7,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import com.thiagsilvadev.erpapi.sales.api.SaleType;
+
 public record CreateSalesOrderRequest(
-        @NotNull UUID customerId, @Valid @NotEmpty List<CreateSalesOrderItemRequest> items) {}
+        @NotNull SaleType saleType,
+        @NotNull UUID sellerCompanyId,
+        UUID buyerCompanyId,
+        UUID customerId,
+        @Valid @NotEmpty List<CreateSalesOrderItemRequest> items) {}

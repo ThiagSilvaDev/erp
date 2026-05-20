@@ -14,7 +14,8 @@ public final class FinancialDtos {
     private FinancialDtos() {}
 
     public record CreateInvoiceRequest(
-            @NotNull UUID customerId,
+            @NotNull BillingPartyType billingPartyType,
+            @NotNull UUID billingPartyId,
             UUID salesOrderId,
             @NotNull @Positive BigDecimal amount,
             @NotNull String currencyCode,
@@ -23,7 +24,8 @@ public final class FinancialDtos {
     public record InvoiceResponse(
             UUID id,
             Long invoiceNumber,
-            UUID customerId,
+            BillingPartyType billingPartyType,
+            UUID billingPartyId,
             UUID salesOrderId,
             BigDecimal amount,
             String currencyCode,

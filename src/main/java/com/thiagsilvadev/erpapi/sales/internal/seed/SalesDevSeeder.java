@@ -14,6 +14,7 @@ import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
+import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrderItem;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
@@ -63,6 +64,9 @@ class SalesDevSeeder implements ApplicationRunner {
                 .orElseThrow(() -> new IllegalStateException("Seed warehouse must exist before seeding sales"));
         orderRepository.save(SalesOrder.create(
                 businessNumberService.next(BusinessNumberType.SALES_ORDER),
+                SaleType.B2C,
+                customer.ownerCompanyId(),
+                null,
                 customer.id(),
                 List.of(SalesOrderItem.create(
                         product.id(),

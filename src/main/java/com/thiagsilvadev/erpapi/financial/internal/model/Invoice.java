@@ -20,8 +20,12 @@ public class Invoice extends AbstractBaseEntity {
     @Column(name = "invoice_number", nullable = false, updatable = false)
     private Long invoiceNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UUID customerId;
+    private BillingPartyType billingPartyType;
+
+    @Column(nullable = false)
+    private UUID billingPartyId;
 
     @Column(name = "sales_order_id")
     private UUID salesOrderId;
@@ -43,13 +47,15 @@ public class Invoice extends AbstractBaseEntity {
 
     private Invoice(
             Long invoiceNumber,
-            UUID customerId,
+            BillingPartyType billingPartyType,
+            UUID billingPartyId,
             UUID salesOrderId,
             BigDecimal amount,
             String currencyCode,
             LocalDate dueDate) {
         this.invoiceNumber = invoiceNumber;
-        this.customerId = customerId;
+        this.billingPartyType = billingPartyType;
+        this.billingPartyId = billingPartyId;
         this.salesOrderId = salesOrderId;
         this.amount = amount;
         this.currencyCode = currencyCode;
@@ -58,12 +64,14 @@ public class Invoice extends AbstractBaseEntity {
 
     public static Invoice create(
             Long invoiceNumber,
-            UUID customerId,
+            BillingPartyType billingPartyType,
+            UUID billingPartyId,
             UUID salesOrderId,
             BigDecimal amount,
             String currencyCode,
             LocalDate dueDate) {
-        return new Invoice(invoiceNumber, customerId, salesOrderId, amount, currencyCode, dueDate);
+        return new Invoice(
+                invoiceNumber, billingPartyType, billingPartyId, salesOrderId, amount, currencyCode, dueDate);
     }
 
     public void markPaid() {
@@ -80,8 +88,12 @@ public class Invoice extends AbstractBaseEntity {
         this.status = InvoiceStatus.CANCELLED;
     }
 
-    public UUID getCustomerId() {
-        return customerId;
+    public BillingPartyType getBillingPartyType() {
+        return billingPartyType;
+    }
+
+    public UUID getBillingPartyId() {
+        return billingPartyId;
     }
 
     public Long getInvoiceNumber() {

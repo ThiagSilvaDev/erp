@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
+import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
 import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
@@ -51,6 +52,7 @@ class FinancialDevSeeder implements ApplicationRunner {
                 .orElseThrow(() -> new IllegalStateException("Seed customer must exist before seeding finance"));
         Invoice invoice = invoiceRepository.save(Invoice.create(
                 businessNumberService.next(BusinessNumberType.INVOICE),
+                BillingPartyType.CUSTOMER,
                 customer.id(),
                 null,
                 new java.math.BigDecimal("21.00"),

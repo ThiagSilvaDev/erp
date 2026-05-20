@@ -34,8 +34,8 @@ public class CreateCustomerUseCase {
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public CustomerResponse execute(CreateCustomerRequest request) {
         companyFacade
-                .findById(request.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.companyId()));
+                .findById(request.ownerCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.ownerCompanyId()));
 
         String document = Customer.normalizeDocument(request.document());
         if (customerRepository.existsByDocument(document)) {
@@ -45,7 +45,7 @@ public class CreateCustomerUseCase {
         Customer customer = Customer.create(
                 request.name(),
                 request.document(),
-                request.companyId(),
+                request.ownerCompanyId(),
                 mapper.toContact(request.contact()),
                 mapper.toAddress(request.address()));
 

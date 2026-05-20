@@ -23,7 +23,14 @@ public class SalesOrderEventPublisher {
 
     public void salesOrderConfirmed(SalesOrder order) {
         eventPublisher.publishEvent(new SalesOrderConfirmedEvent(
-                order.getId(), order.getCustomerId(), order.totalAmount(), order.currencyCode(), LocalDate.now(clock)));
+                order.getId(),
+                order.getSaleType(),
+                order.getSellerCompanyId(),
+                order.getBuyerCompanyId(),
+                order.getCustomerId(),
+                order.totalAmount(),
+                order.currencyCode(),
+                LocalDate.now(clock)));
     }
 
     public void salesOrderCancelled(SalesOrder order) {

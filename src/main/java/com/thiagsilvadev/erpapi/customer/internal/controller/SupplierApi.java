@@ -35,5 +35,5 @@ public interface SupplierApi {
     @Operation(operationId = "listSuppliers")
     @ApiResponse(responseCode = "200")
     Page<SupplierResponse> listSuppliers(
-            @ParameterObject CustomerSearchCriteria criteria, @ParameterObject Pageable pageable);
+            @ParameterObject SupplierSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

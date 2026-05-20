@@ -12,7 +12,12 @@ import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
+import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
+import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
+import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderItemRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
@@ -26,6 +31,7 @@ public class CreateSalesOrderUseCase {
 
     private final SalesOrderRepository orderRepository;
     private final CustomerFacade customerFacade;
+    private final CompanyFacade companyFacade;
     private final CatalogFacade catalogFacade;
     private final SalesMapper mapper;
     private final BusinessNumberService businessNumberService;
@@ -33,11 +39,13 @@ public class CreateSalesOrderUseCase {
     public CreateSalesOrderUseCase(
             SalesOrderRepository orderRepository,
             CustomerFacade customerFacade,
+            CompanyFacade companyFacade,
             CatalogFacade catalogFacade,
             SalesMapper mapper,
             BusinessNumberService businessNumberService) {
         this.orderRepository = orderRepository;
         this.customerFacade = customerFacade;
+        this.companyFacade = companyFacade;
         this.catalogFacade = catalogFacade;
         this.mapper = mapper;
         this.businessNumberService = businessNumberService;
@@ -46,9 +54,8 @@ public class CreateSalesOrderUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).WRITE)")
     public SalesOrderResponse execute(CreateSalesOrderRequest request) {
-        customerFacade
-                .findCustomerById(request.customerId())
-                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.customerId()));
+        validateParties(request);
+
         Set<UUID> productIds = request.items().stream()
                 .map(CreateSalesOrderItemRequest::productId)
                 .collect(Collectors.toSet());
@@ -71,7 +78,70 @@ public class CreateSalesOrderUseCase {
                             product.basePrice().getCurrencyCode());
                 })
                 .toList();
-        return mapper.toResponse(orderRepository.save(SalesOrder.create(
-                businessNumberService.next(BusinessNumberType.SALES_ORDER), request.customerId(), items)));
+
+        SalesOrder order = SalesOrder.create(
+                businessNumberService.next(BusinessNumberType.SALES_ORDER),
+                request.saleType(),
+                request.sellerCompanyId(),
+                request.buyerCompanyId(),
+                request.customerId(),
+                items);
+        orderRepository.save(order);
+
+        return mapper.toResponse(order);
+    }
+
+    private void validateParties(CreateSalesOrderRequest request) {
+        CompanySnapshot seller = companyFacade
+                .findById(request.sellerCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.sellerCompanyId()));
+
+        if (request.saleType() == SaleType.B2B) {
+            validateB2b(request, seller);
+            return;
+        }
+
+        validateB2c(request, seller);
+    }
+
+    private void validateB2b(CreateSalesOrderRequest request, CompanySnapshot seller) {
+        if (request.buyerCompanyId() == null) {
+            throw new IllegalArgumentException("Buyer company is required for B2B sales");
+        }
+        if (request.customerId() != null) {
+            throw new IllegalArgumentException("Customer must be null for B2B sales");
+        }
+        if (seller.type() != CompanyType.FACTORY) {
+            throw new IllegalArgumentException("B2B seller must be a factory");
+        }
+        if (request.sellerCompanyId().equals(request.buyerCompanyId())) {
+            throw new IllegalArgumentException("B2B buyer company cannot be the seller company");
+        }
+
+        CompanySnapshot buyer = companyFacade
+                .findById(request.buyerCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.buyerCompanyId()));
+        if (buyer.type() != CompanyType.CORRESPONDENT) {
+            throw new IllegalArgumentException("B2B buyer company must be a correspondent");
+        }
+    }
+
+    private void validateB2c(CreateSalesOrderRequest request, CompanySnapshot seller) {
+        if (request.buyerCompanyId() != null) {
+            throw new IllegalArgumentException("Buyer company must be null for B2C sales");
+        }
+        if (request.customerId() == null) {
+            throw new IllegalArgumentException("Customer is required for B2C sales");
+        }
+        if (seller.type() != CompanyType.FACTORY && seller.type() != CompanyType.CORRESPONDENT) {
+            throw new IllegalArgumentException("B2C seller must be a factory or correspondent");
+        }
+
+        CustomerSnapshot customer = customerFacade
+                .findCustomerById(request.customerId())
+                .orElseThrow(() -> new ResourceNotFoundException(Object.class, request.customerId()));
+        if (!request.sellerCompanyId().equals(customer.ownerCompanyId())) {
+            throw new IllegalArgumentException("B2C customer must belong to the seller company");
+        }
     }
 }
