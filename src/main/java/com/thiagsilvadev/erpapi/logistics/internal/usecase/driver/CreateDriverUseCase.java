@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.logistics.internal.usecase;
+package com.thiagsilvadev.erpapi.logistics.internal.usecase.driver;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.logistics.internal.dto.*;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverRequest;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
 

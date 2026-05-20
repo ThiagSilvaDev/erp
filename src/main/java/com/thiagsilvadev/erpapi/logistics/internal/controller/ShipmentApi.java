@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import com.thiagsilvadev.erpapi.logistics.internal.dto.*;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

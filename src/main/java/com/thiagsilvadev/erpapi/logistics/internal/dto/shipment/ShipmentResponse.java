@@ -1,9 +1,11 @@
-package com.thiagsilvadev.erpapi.logistics.internal.dto;
+package com.thiagsilvadev.erpapi.logistics.internal.dto.shipment;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.vehicle.VehicleResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.model.ShipmentStatus;
 
 public record ShipmentResponse(

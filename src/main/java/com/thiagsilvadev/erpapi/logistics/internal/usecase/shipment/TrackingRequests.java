@@ -1,9 +1,9 @@
-package com.thiagsilvadev.erpapi.logistics.internal.usecase;
+package com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment;
 
 import java.time.Clock;
 import java.time.Instant;
 
-import com.thiagsilvadev.erpapi.logistics.internal.dto.CreateTrackingEventRequest;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.CreateTrackingEventRequest;
 
 final class TrackingRequests {
 

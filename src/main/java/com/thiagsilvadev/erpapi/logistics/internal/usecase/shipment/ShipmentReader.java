@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.logistics.internal.usecase;
+package com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment;
 
 import java.util.UUID;
 
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
-import com.thiagsilvadev.erpapi.logistics.internal.dto.ShipmentResponse;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.ShipmentResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Shipment;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentTrackingEventRepository;

@@ -7,8 +7,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
 
-import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
-
 @Embeddable
 public class Contact {
 
@@ -16,14 +14,15 @@ public class Contact {
     @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false, length = 255))
     private Email email;
 
-    @Column(length = 11)
-    private String phone;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "phone", length = 11))
+    private Phone phone;
 
     protected Contact() {}
 
     private Contact(String email, String phone) {
         this.email = Email.create(email);
-        this.phone = processPhone(phone);
+        this.phone = Phone.optional(phone);
     }
 
     public static Contact create(String email, String phone) {
@@ -31,22 +30,11 @@ public class Contact {
     }
 
     public Contact changeEmail(String newEmail) {
-        return new Contact(newEmail, this.phone);
+        return new Contact(newEmail, getPhone());
     }
 
     public Contact changePhone(String newPhone) {
         return new Contact(this.email.getValue(), newPhone);
-    }
-
-    private static String processPhone(String rawPhone) {
-        if (rawPhone == null || rawPhone.isBlank()) {
-            return null;
-        }
-
-        String normalizedPhone = rawPhone.replaceAll("\\D", "");
-
-        DomainAssert.lengthBetween(normalizedPhone, 10, 11, "Phone with area code must contain 10 or 11 digits");
-        return normalizedPhone;
     }
 
     public String getEmail() {
@@ -54,7 +42,7 @@ public class Contact {
     }
 
     public String getPhone() {
-        return phone;
+        return phone == null ? null : phone.getValue();
     }
 
     @Override

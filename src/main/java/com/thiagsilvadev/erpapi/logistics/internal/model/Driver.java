@@ -1,10 +1,11 @@
 package com.thiagsilvadev.erpapi.logistics.internal.model;
 
+import java.util.Locale;
+
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
-
-import java.util.Locale;
+import com.thiagsilvadev.erpapi.common.domain.model.Phone;
 
 @Entity
 @Table(
@@ -13,14 +14,15 @@ import java.util.Locale;
                 @UniqueConstraint(name = "uk_logistics_driver_license_number", columnNames = "license_number"))
 public class Driver extends AbstractBaseEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 120)
     private String name;
 
     @Column(name = "license_number", nullable = false, length = 60)
     private String licenseNumber;
 
-    @Column(nullable = false, length = 40)
-    private String phone;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "phone", nullable = false, length = 11))
+    private Phone phone;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -31,7 +33,7 @@ public class Driver extends AbstractBaseEntity {
     private Driver(String name, String licenseNumber, String phone) {
         this.name = required(name, "Driver name cannot be blank");
         this.licenseNumber = normalize(licenseNumber, "Driver license number cannot be blank");
-        this.phone = required(phone, "Driver phone cannot be blank");
+        this.phone = Phone.of(phone);
     }
 
     public static Driver create(String name, String licenseNumber, String phone) {
@@ -47,7 +49,7 @@ public class Driver extends AbstractBaseEntity {
     }
 
     public String getPhone() {
-        return phone;
+        return phone.getValue();
     }
 
     public LogisticsResourceStatus getStatus() {

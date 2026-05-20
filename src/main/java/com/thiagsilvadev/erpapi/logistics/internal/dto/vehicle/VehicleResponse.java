@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.logistics.internal.dto;
+package com.thiagsilvadev.erpapi.logistics.internal.dto.vehicle;
 
 import java.util.UUID;
 

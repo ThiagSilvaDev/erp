@@ -8,8 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-import com.thiagsilvadev.erpapi.logistics.internal.dto.*;
-import com.thiagsilvadev.erpapi.logistics.internal.usecase.*;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.*;
+import com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment.*;
 
 @RestController
 class ShipmentController implements ShipmentApi {

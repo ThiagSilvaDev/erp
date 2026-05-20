@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.logistics.internal.usecase;
+package com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment;
 
 import java.util.UUID;
 
@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
-import com.thiagsilvadev.erpapi.logistics.internal.dto.AssignDispatchRequest;
-import com.thiagsilvadev.erpapi.logistics.internal.dto.ShipmentResponse;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.AssignDispatchRequest;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.ShipmentResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.model.*;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.*;
 

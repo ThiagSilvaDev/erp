@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.logistics.internal.dto;
+package com.thiagsilvadev.erpapi.logistics.internal.dto.shipment;
 
 import java.time.Instant;
 import java.util.UUID;

@@ -2,7 +2,7 @@ package com.thiagsilvadev.erpapi.logistics.internal.repository;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.thiagsilvadev.erpapi.logistics.internal.dto.ShipmentSearchCriteria;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.ShipmentSearchCriteria;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Shipment;
 
 public class ShipmentSpecification {

@@ -10,8 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
-import com.thiagsilvadev.erpapi.logistics.internal.dto.*;
-import com.thiagsilvadev.erpapi.logistics.internal.usecase.*;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverRequest;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
+import com.thiagsilvadev.erpapi.logistics.internal.usecase.driver.CreateDriverUseCase;
+import com.thiagsilvadev.erpapi.logistics.internal.usecase.driver.GetDriverByIdUseCase;
+import com.thiagsilvadev.erpapi.logistics.internal.usecase.driver.ListDriversUseCase;
 
 @RestController
 class DriverController implements DriverApi {

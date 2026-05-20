@@ -11,7 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.thiagsilvadev.erpapi.logistics.internal.dto.*;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverRequest;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

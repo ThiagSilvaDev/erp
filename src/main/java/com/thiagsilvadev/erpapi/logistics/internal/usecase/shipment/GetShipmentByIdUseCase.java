@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.logistics.internal.usecase;
+package com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment;
 
 import java.util.UUID;
 
@@ -6,7 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.logistics.internal.dto.ShipmentResponse;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.ShipmentResponse;
 
 @Component
 public class GetShipmentByIdUseCase {

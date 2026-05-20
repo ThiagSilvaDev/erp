@@ -10,8 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
-import com.thiagsilvadev.erpapi.logistics.internal.dto.*;
-import com.thiagsilvadev.erpapi.logistics.internal.usecase.*;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.vehicle.CreateVehicleRequest;
+import com.thiagsilvadev.erpapi.logistics.internal.dto.vehicle.VehicleResponse;
+import com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle.CreateVehicleUseCase;
+import com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle.GetVehicleByIdUseCase;
+import com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle.ListVehiclesUseCase;
 
 @RestController
 class VehicleController implements VehicleApi {
