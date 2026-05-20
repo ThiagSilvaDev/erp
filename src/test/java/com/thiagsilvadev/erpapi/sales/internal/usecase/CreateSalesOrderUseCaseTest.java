@@ -29,6 +29,7 @@ import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
+import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderItemRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderRequest;
@@ -184,6 +185,8 @@ class CreateSalesOrderUseCaseTest {
             SaleType saleType, UUID sellerCompanyId, UUID buyerCompanyId, UUID customerId) {
         return new CreateSalesOrderRequest(
                 saleType,
+                FulfillmentType.PICKUP,
+                null,
                 sellerCompanyId,
                 buyerCompanyId,
                 customerId,

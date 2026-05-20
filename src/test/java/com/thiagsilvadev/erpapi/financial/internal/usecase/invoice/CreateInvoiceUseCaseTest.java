@@ -32,10 +32,7 @@ import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
-import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
-import com.thiagsilvadev.erpapi.sales.api.SaleType;
-import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
-import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
+import com.thiagsilvadev.erpapi.sales.api.*;
 
 @ExtendWith(MockitoExtension.class)
 class CreateInvoiceUseCaseTest {
@@ -90,6 +87,7 @@ class CreateInvoiceUseCaseTest {
                         salesOrderId,
                         100L,
                         SaleType.B2B,
+                        FulfillmentType.PICKUP,
                         UUID.randomUUID(),
                         buyerCompanyId,
                         null,
@@ -121,6 +119,7 @@ class CreateInvoiceUseCaseTest {
                         salesOrderId,
                         100L,
                         SaleType.B2C,
+                        FulfillmentType.PICKUP,
                         UUID.randomUUID(),
                         null,
                         customerId,

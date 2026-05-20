@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +39,8 @@ class SalesOrderLogisticsListenerTest {
     private BusinessNumberService businessNumberService;
 
     @Test
-    void shouldCreateShipmentWhenSalesOrderIsConfirmed() {
-        SalesOrderConfirmedEvent event = event();
+    void shouldCreateShipmentWhenSalesOrderDeliveryIsRequested() {
+        SalesOrderDeliveryRequestedEvent event = event();
         when(shipmentRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(false);
         when(businessNumberService.next(BusinessNumberType.SHIPMENT)).thenReturn(500L);
         when(shipmentRepository.save(any(Shipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -54,12 +53,13 @@ class SalesOrderLogisticsListenerTest {
         assertThat(shipment.getShipmentNumber()).isEqualTo(500L);
         assertThat(shipment.getSalesOrderId()).isEqualTo(event.salesOrderId());
         assertThat(shipment.getItems()).hasSize(1);
+        assertThat(shipment.getRouteName()).isEqualTo("Route A");
         verify(trackingEventRepository).save(any());
     }
 
     @Test
-    void shouldIgnoreDuplicateConfirmedEvent() {
-        SalesOrderConfirmedEvent event = event();
+    void shouldIgnoreDuplicateDeliveryRequestedEvent() {
+        SalesOrderDeliveryRequestedEvent event = event();
         when(shipmentRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(true);
 
         listener().on(event);
@@ -91,16 +91,17 @@ class SalesOrderLogisticsListenerTest {
                 shipmentRepository, trackingEventRepository, businessNumberService, clock);
     }
 
-    private SalesOrderConfirmedEvent event() {
-        return new SalesOrderConfirmedEvent(
+    private SalesOrderDeliveryRequestedEvent event() {
+        return new SalesOrderDeliveryRequestedEvent(
                 UUID.randomUUID(),
-                SaleType.B2C,
                 UUID.randomUUID(),
                 null,
                 UUID.randomUUID(),
-                new java.math.BigDecimal("20.00"),
-                "BRL",
-                LocalDate.of(2026, 1, 1),
-                List.of(new SalesOrderConfirmedItem(UUID.randomUUID(), UUID.randomUUID(), "SKU-1", "Product", 2)));
+                "Route A",
+                UUID.randomUUID(),
+                "Customer HQ",
+                List.of(new SalesOrderDeliveryRequestedEvent.Item(
+                        UUID.randomUUID(), UUID.randomUUID(), "SKU-1", "Product", 2)),
+                Instant.now(clock));
     }
 }

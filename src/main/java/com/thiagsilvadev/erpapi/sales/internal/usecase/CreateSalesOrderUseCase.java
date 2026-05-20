@@ -22,6 +22,7 @@ import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderItemRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
+import com.thiagsilvadev.erpapi.sales.internal.model.DeliveryRoute;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrderItem;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
@@ -79,9 +80,18 @@ public class CreateSalesOrderUseCase {
                 })
                 .toList();
 
+        DeliveryRoute deliveryRoute = request.deliveryRoute() != null
+                ? DeliveryRoute.create(
+                        request.deliveryRoute().routeName(),
+                        request.deliveryRoute().originWarehouseId(),
+                        request.deliveryRoute().destinationDescription())
+                : null;
+
         SalesOrder order = SalesOrder.create(
                 businessNumberService.next(BusinessNumberType.SALES_ORDER),
                 request.saleType(),
+                request.fulfillmentType(),
+                deliveryRoute,
                 request.sellerCompanyId(),
                 request.buyerCompanyId(),
                 request.customerId(),

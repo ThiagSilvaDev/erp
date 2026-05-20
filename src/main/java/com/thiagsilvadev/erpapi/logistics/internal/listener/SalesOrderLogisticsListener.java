@@ -14,7 +14,7 @@ import com.thiagsilvadev.erpapi.logistics.internal.model.*;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentTrackingEventRepository;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderCancelledEvent;
-import com.thiagsilvadev.erpapi.sales.api.SalesOrderConfirmedEvent;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderDeliveryRequestedEvent;
 
 @Component
 public class SalesOrderLogisticsListener {
@@ -37,11 +37,11 @@ public class SalesOrderLogisticsListener {
 
     @EventListener
     @Transactional
-    public void on(SalesOrderConfirmedEvent event) {
+    public void on(SalesOrderDeliveryRequestedEvent event) {
         if (shipmentRepository.existsBySalesOrderId(event.salesOrderId())) {
             return;
         }
-        Shipment shipment = shipmentRepository.save(Shipment.create(
+        Shipment shipment = Shipment.create(
                 businessNumberService.next(BusinessNumberType.SHIPMENT),
                 event.salesOrderId(),
                 event.sellerCompanyId(),
@@ -49,14 +49,18 @@ public class SalesOrderLogisticsListener {
                 event.customerId(),
                 event.items().stream()
                         .map(item -> ShipmentItem.create(
-                                item.productId(),
-                                item.warehouseId(),
-                                item.productSku(),
-                                item.productName(),
-                                item.quantity()))
-                        .toList()));
+                                item.productId(), item.warehouseId(), item.sku(), item.name(), item.quantity()))
+                        .toList());
+
+        shipment.assignRoute(event.routeName(), event.originWarehouseId(), event.destinationDescription());
+        shipment = shipmentRepository.save(shipment);
+
         trackingEventRepository.save(ShipmentTrackingEvent.create(
-                shipment, ShipmentStatus.CREATED, Instant.now(clock), null, "Shipment created from sales order"));
+                shipment,
+                ShipmentStatus.CREATED,
+                Instant.now(clock),
+                null,
+                "Shipment created from delivery sales order"));
     }
 
     @EventListener

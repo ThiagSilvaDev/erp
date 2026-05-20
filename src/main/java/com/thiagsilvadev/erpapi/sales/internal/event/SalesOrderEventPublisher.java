@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderCancelledEvent;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderConfirmedEvent;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderDeliveryRequestedEvent;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 
 @Component
@@ -39,6 +40,26 @@ public class SalesOrderEventPublisher {
                                 item.getProductName(),
                                 item.getQuantity()))
                         .toList()));
+    }
+
+    public void salesOrderDeliveryRequested(SalesOrder order) {
+        eventPublisher.publishEvent(new SalesOrderDeliveryRequestedEvent(
+                order.getId(),
+                order.getSellerCompanyId(),
+                order.getBuyerCompanyId(),
+                order.getCustomerId(),
+                order.getDeliveryRoute().getRouteName(),
+                order.getDeliveryRoute().getOriginWarehouseId(),
+                order.getDeliveryRoute().getDestinationDescription(),
+                order.getItems().stream()
+                        .map(item -> new SalesOrderDeliveryRequestedEvent.Item(
+                                item.getProductId(),
+                                item.getWarehouseId(),
+                                item.getProductSku(),
+                                item.getProductName(),
+                                item.getQuantity()))
+                        .toList(),
+                clock.instant()));
     }
 
     public void salesOrderCancelled(SalesOrder order) {

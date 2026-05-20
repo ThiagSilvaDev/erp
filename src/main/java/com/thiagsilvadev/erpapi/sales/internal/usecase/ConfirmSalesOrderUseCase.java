@@ -44,6 +44,11 @@ public class ConfirmSalesOrderUseCase {
             inventoryFacade.reserve(item.getProductId(), item.getWarehouseId(), item.getQuantity(), order.getId());
         }
         eventPublisher.salesOrderConfirmed(order);
+
+        if (order.isDelivery()) {
+            eventPublisher.salesOrderDeliveryRequested(order);
+        }
+
         return mapper.toResponse(order);
     }
 }

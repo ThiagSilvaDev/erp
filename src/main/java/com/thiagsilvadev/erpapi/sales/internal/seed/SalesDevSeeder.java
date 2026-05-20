@@ -14,6 +14,7 @@ import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
+import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrderItem;
@@ -65,6 +66,8 @@ class SalesDevSeeder implements ApplicationRunner {
         orderRepository.save(SalesOrder.create(
                 businessNumberService.next(BusinessNumberType.SALES_ORDER),
                 SaleType.B2C,
+                FulfillmentType.PICKUP,
+                null,
                 customer.ownerCompanyId(),
                 null,
                 customer.id(),

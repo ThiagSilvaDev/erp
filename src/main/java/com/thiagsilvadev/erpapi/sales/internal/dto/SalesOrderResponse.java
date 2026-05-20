@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
 import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 
@@ -11,6 +12,8 @@ public record SalesOrderResponse(
         UUID id,
         Long orderNumber,
         SaleType saleType,
+        FulfillmentType fulfillmentType,
+        DeliveryRouteRequest deliveryRoute,
         UUID sellerCompanyId,
         UUID buyerCompanyId,
         UUID customerId,

@@ -7,6 +7,7 @@ public record SalesOrderSnapshot(
         UUID id,
         Long orderNumber,
         SaleType saleType,
+        FulfillmentType fulfillmentType,
         UUID sellerCompanyId,
         UUID buyerCompanyId,
         UUID customerId,

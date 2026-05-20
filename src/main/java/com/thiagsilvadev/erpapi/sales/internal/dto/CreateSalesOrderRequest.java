@@ -7,10 +7,13 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 
 public record CreateSalesOrderRequest(
         @NotNull SaleType saleType,
+        @NotNull FulfillmentType fulfillmentType,
+        @Valid DeliveryRouteRequest deliveryRoute,
         @NotNull UUID sellerCompanyId,
         UUID buyerCompanyId,
         UUID customerId,

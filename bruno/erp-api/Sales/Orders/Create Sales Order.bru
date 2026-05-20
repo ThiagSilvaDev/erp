@@ -21,6 +21,12 @@ headers {
 body:json {
   {
     "saleType": "B2C",
+    "fulfillmentType": "DELIVERY",
+    "deliveryRoute": {
+      "routeName": "Standard Route 1",
+      "originWarehouseId": "{{warehouseId}}",
+      "destinationDescription": "Customer Address 123"
+    },
     "sellerCompanyId": "{{companyId}}",
     "buyerCompanyId": null,
     "customerId": "{{customerId}}",

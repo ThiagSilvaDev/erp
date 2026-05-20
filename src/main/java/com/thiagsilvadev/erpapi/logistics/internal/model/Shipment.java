@@ -98,15 +98,40 @@ public class Shipment extends AbstractBaseEntity {
         return new Shipment(shipmentNumber, salesOrderId, sellerCompanyId, buyerCompanyId, customerId, items);
     }
 
+    public void assignRoute(String routeName, UUID originWarehouseId, String destinationDescription) {
+        requireStatus(ShipmentStatus.CREATED);
+        this.routeName = Objects.requireNonNull(routeName, "Route name is required");
+        this.originWarehouseId = Objects.requireNonNull(originWarehouseId, "Origin warehouse is required");
+        this.destinationDescription =
+                Objects.requireNonNull(destinationDescription, "Destination description is required");
+    }
+
     public void assignDispatch(
             Driver driver, Vehicle vehicle, String routeName, UUID originWarehouseId, String destinationDescription) {
         requireStatus(ShipmentStatus.CREATED, ShipmentStatus.DISPATCH_ASSIGNED);
         this.driver = Objects.requireNonNull(driver, "Driver is required");
         this.vehicle = Objects.requireNonNull(vehicle, "Vehicle is required");
-        this.routeName = Driver.required(routeName, "Route name cannot be blank");
-        this.originWarehouseId = Objects.requireNonNull(originWarehouseId, "Origin warehouse is required");
-        this.destinationDescription =
-                Driver.required(destinationDescription, "Destination description cannot be blank");
+
+        if (routeName != null) {
+            this.routeName = routeName;
+        }
+        if (originWarehouseId != null) {
+            this.originWarehouseId = originWarehouseId;
+        }
+        if (destinationDescription != null) {
+            this.destinationDescription = destinationDescription;
+        }
+
+        if (this.routeName == null || this.routeName.isBlank()) {
+            throw new IllegalArgumentException("Route name is required");
+        }
+        if (this.originWarehouseId == null) {
+            throw new IllegalArgumentException("Origin warehouse is required");
+        }
+        if (this.destinationDescription == null || this.destinationDescription.isBlank()) {
+            throw new IllegalArgumentException("Destination description is required");
+        }
+
         this.status = ShipmentStatus.DISPATCH_ASSIGNED;
     }
 

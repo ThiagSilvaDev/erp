@@ -6,6 +6,7 @@ import java.util.*;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
 import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 
@@ -21,6 +22,13 @@ public class SalesOrder extends AbstractBaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SaleType saleType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fulfillment_type", nullable = false)
+    private FulfillmentType fulfillmentType;
+
+    @Embedded
+    private DeliveryRoute deliveryRoute;
 
     @Column(nullable = false)
     private UUID sellerCompanyId;
@@ -44,12 +52,16 @@ public class SalesOrder extends AbstractBaseEntity {
     private SalesOrder(
             Long orderNumber,
             SaleType saleType,
+            FulfillmentType fulfillmentType,
+            DeliveryRoute deliveryRoute,
             UUID sellerCompanyId,
             UUID buyerCompanyId,
             UUID customerId,
             List<SalesOrderItem> items) {
         this.orderNumber = Objects.requireNonNull(orderNumber, "Order number is required");
         this.saleType = Objects.requireNonNull(saleType, "Sale type is required");
+        this.fulfillmentType = Objects.requireNonNull(fulfillmentType, "Fulfillment type is required");
+        this.deliveryRoute = deliveryRoute;
         this.sellerCompanyId = Objects.requireNonNull(sellerCompanyId, "Seller company is required");
         this.buyerCompanyId = buyerCompanyId;
         this.customerId = customerId;
@@ -59,6 +71,8 @@ public class SalesOrder extends AbstractBaseEntity {
     public static SalesOrder create(
             Long orderNumber,
             SaleType saleType,
+            FulfillmentType fulfillmentType,
+            DeliveryRoute deliveryRoute,
             UUID sellerCompanyId,
             UUID buyerCompanyId,
             UUID customerId,
@@ -66,7 +80,39 @@ public class SalesOrder extends AbstractBaseEntity {
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Sales order must have at least one item");
         }
-        return new SalesOrder(orderNumber, saleType, sellerCompanyId, buyerCompanyId, customerId, items);
+
+        validateFulfillment(fulfillmentType, deliveryRoute, items);
+
+        return new SalesOrder(
+                orderNumber,
+                saleType,
+                fulfillmentType,
+                deliveryRoute,
+                sellerCompanyId,
+                buyerCompanyId,
+                customerId,
+                items);
+    }
+
+    private static void validateFulfillment(
+            FulfillmentType fulfillmentType, DeliveryRoute deliveryRoute, List<SalesOrderItem> items) {
+        if (fulfillmentType == FulfillmentType.DELIVERY && deliveryRoute == null) {
+            throw new IllegalArgumentException("Delivery route is required for delivery orders.");
+        }
+
+        if (fulfillmentType == FulfillmentType.PICKUP && deliveryRoute != null) {
+            throw new IllegalArgumentException("Pickup orders must not have delivery route.");
+        }
+
+        if (fulfillmentType == FulfillmentType.DELIVERY) {
+            boolean hasDifferentWarehouse = items.stream()
+                    .anyMatch(item -> !item.getWarehouseId().equals(deliveryRoute.getOriginWarehouseId()));
+
+            if (hasDifferentWarehouse) {
+                throw new IllegalArgumentException(
+                        "Delivery orders currently support items from only one origin warehouse.");
+            }
+        }
     }
 
     public void confirm() {
@@ -83,6 +129,14 @@ public class SalesOrder extends AbstractBaseEntity {
         status = OrderStatus.CANCELLED;
     }
 
+    public boolean isDelivery() {
+        return fulfillmentType == FulfillmentType.DELIVERY;
+    }
+
+    public boolean isPickup() {
+        return fulfillmentType == FulfillmentType.PICKUP;
+    }
+
     public BigDecimal totalAmount() {
         return items.stream().map(SalesOrderItem::lineTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -93,6 +147,14 @@ public class SalesOrder extends AbstractBaseEntity {
 
     public SaleType getSaleType() {
         return saleType;
+    }
+
+    public FulfillmentType getFulfillmentType() {
+        return fulfillmentType;
+    }
+
+    public DeliveryRoute getDeliveryRoute() {
+        return deliveryRoute;
     }
 
     public UUID getSellerCompanyId() {
