@@ -15,4 +15,5 @@ public record CompanyResponse(
         CompanyStatus status,
         CompanyType type,
         ContactResponse contact,
-        AddressResponse address) {}
+        AddressResponse address,
+        CompanyContactResponse primaryContact) {}

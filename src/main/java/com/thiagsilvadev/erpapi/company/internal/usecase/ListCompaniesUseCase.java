@@ -1,5 +1,9 @@
 package com.thiagsilvadev.erpapi.company.internal.usecase;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -9,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;
 import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
+import com.thiagsilvadev.erpapi.company.internal.model.CompanyContact;
+import com.thiagsilvadev.erpapi.company.internal.repository.CompanyContactRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanySpecification;
 
@@ -16,18 +22,30 @@ import com.thiagsilvadev.erpapi.company.internal.repository.CompanySpecification
 public class ListCompaniesUseCase {
 
     private final CompanyRepository companyRepository;
+    private final CompanyContactRepository companyContactRepository;
     private final CompanyMapper companyMapper;
 
-    public ListCompaniesUseCase(CompanyRepository companyRepository, CompanyMapper companyMapper) {
+    public ListCompaniesUseCase(
+            CompanyRepository companyRepository,
+            CompanyContactRepository companyContactRepository,
+            CompanyMapper companyMapper) {
         this.companyRepository = companyRepository;
+        this.companyContactRepository = companyContactRepository;
         this.companyMapper = companyMapper;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.company.api.CompanyPermissions).READ)")
     public Page<CompanyResponse> execute(CompanySearchCriteria criteria, Pageable pageable) {
-        return companyRepository
-                .findAll(CompanySpecification.withCriteria(criteria), pageable)
-                .map(companyMapper::toResponse);
+        var companies = companyRepository.findAll(CompanySpecification.withCriteria(criteria), pageable);
+        Map<UUID, CompanyContact> primaryContactsByCompanyId =
+                companyContactRepository
+                        .findByCompanyIdInAndPrimaryContactTrue(
+                                companies.map(company -> company.getId()).toList())
+                        .stream()
+                        .collect(Collectors.toMap(CompanyContact::getCompanyId, companyContact -> companyContact));
+
+        return companies.map(
+                company -> companyMapper.toResponse(company, primaryContactsByCompanyId.get(company.getId())));
     }
 }

@@ -117,6 +117,7 @@ class UserDevSeederTest {
                         .city("Sao Paulo")
                         .region("SP")
                         .country(Country.BR)
-                        .build());
+                        .build(),
+                null);
     }
 }

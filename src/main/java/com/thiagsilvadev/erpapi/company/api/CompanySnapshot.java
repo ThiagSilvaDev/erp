@@ -15,4 +15,5 @@ public record CompanySnapshot(
         CompanyStatus status,
         CompanyType type,
         Contact contact,
-        Address address) {}
+        Address address,
+        CompanyContactSnapshot primaryContact) {}

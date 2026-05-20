@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberSequenceRepository;
+import com.thiagsilvadev.erpapi.company.internal.repository.CompanyContactRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 import com.thiagsilvadev.erpapi.customer.internal.repository.ContactPersonRepository;
 import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
@@ -48,6 +49,11 @@ class ErpApiApplicationTests {
         @Bean
         CompanyRepository companyRepository() {
             return mock(CompanyRepository.class);
+        }
+
+        @Bean
+        CompanyContactRepository companyContactRepository() {
+            return mock(CompanyContactRepository.class);
         }
 
         @Bean

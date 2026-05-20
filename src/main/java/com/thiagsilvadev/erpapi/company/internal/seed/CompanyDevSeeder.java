@@ -16,6 +16,8 @@ import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.company.internal.model.Company;
+import com.thiagsilvadev.erpapi.company.internal.model.CompanyContact;
+import com.thiagsilvadev.erpapi.company.internal.repository.CompanyContactRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 
 @Component
@@ -27,10 +29,15 @@ class CompanyDevSeeder implements ApplicationRunner {
     private static final String PARTNER_CNPJ = "17.018.282/0001-57";
 
     private final CompanyRepository companyRepository;
+    private final CompanyContactRepository companyContactRepository;
     private final BusinessNumberService businessNumberService;
 
-    CompanyDevSeeder(CompanyRepository companyRepository, BusinessNumberService businessNumberService) {
+    CompanyDevSeeder(
+            CompanyRepository companyRepository,
+            CompanyContactRepository companyContactRepository,
+            BusinessNumberService businessNumberService) {
         this.companyRepository = companyRepository;
+        this.companyContactRepository = companyContactRepository;
         this.businessNumberService = businessNumberService;
     }
 
@@ -44,10 +51,12 @@ class CompanyDevSeeder implements ApplicationRunner {
     private void seedAcme() {
         Cnpj cnpj = Cnpj.create(ACME_CNPJ);
 
-        if (companyRepository.existsByCnpj(cnpj)) {
-            return;
-        }
+        Company company = companyRepository.findByCnpj(cnpj).orElseGet(() -> createAcme(cnpj));
 
+        seedAcmeContacts(company);
+    }
+
+    private Company createAcme(Cnpj cnpj) {
         Company company = Company.create(
                 businessNumberService.next(BusinessNumberType.COMPANY),
                 "Acme Industria Ltda",
@@ -66,16 +75,18 @@ class CompanyDevSeeder implements ApplicationRunner {
                         .build(),
                 Contact.create("financeiro@acme.example", "11912345678"));
 
-        companyRepository.save(company);
+        return companyRepository.save(company);
     }
 
     private void seedPartner() {
         Cnpj cnpj = Cnpj.create(PARTNER_CNPJ);
 
-        if (companyRepository.existsByCnpj(cnpj)) {
-            return;
-        }
+        Company company = companyRepository.findByCnpj(cnpj).orElseGet(() -> createPartner(cnpj));
 
+        seedPartnerContacts(company);
+    }
+
+    private Company createPartner(Cnpj cnpj) {
         Company company = Company.create(
                 businessNumberService.next(BusinessNumberType.COMPANY),
                 "Parceiro Correspondente S.A.",
@@ -94,6 +105,38 @@ class CompanyDevSeeder implements ApplicationRunner {
                         .build(),
                 Contact.create("contato@parceiro.example", "11987654321"));
 
-        companyRepository.save(company);
+        return companyRepository.save(company);
+    }
+
+    private void seedAcmeContacts(Company company) {
+        if (companyContactRepository.existsByCompanyId(company.getId())) {
+            return;
+        }
+
+        companyContactRepository.save(CompanyContact.create(
+                company.getId(),
+                "Mariana Costa",
+                "financial contact",
+                Contact.create("mariana.costa@acme.example", "11922223333"),
+                true));
+        companyContactRepository.save(CompanyContact.create(
+                company.getId(),
+                "Rafael Almeida",
+                "buyer",
+                Contact.create("rafael.almeida@acme.example", "11933334444"),
+                false));
+    }
+
+    private void seedPartnerContacts(Company company) {
+        if (companyContactRepository.existsByCompanyId(company.getId())) {
+            return;
+        }
+
+        companyContactRepository.save(CompanyContact.create(
+                company.getId(),
+                "Camila Souza",
+                "manager",
+                Contact.create("camila.souza@parceiro.example", "11944445555"),
+                true));
     }
 }

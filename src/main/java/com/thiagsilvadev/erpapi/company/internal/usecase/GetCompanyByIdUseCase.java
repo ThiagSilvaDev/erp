@@ -10,16 +10,22 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundExceptio
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
 import com.thiagsilvadev.erpapi.company.internal.model.Company;
+import com.thiagsilvadev.erpapi.company.internal.repository.CompanyContactRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 
 @Component
 public class GetCompanyByIdUseCase {
 
     private final CompanyRepository companyRepository;
+    private final CompanyContactRepository companyContactRepository;
     private final CompanyMapper companyMapper;
 
-    public GetCompanyByIdUseCase(CompanyRepository companyRepository, CompanyMapper companyMapper) {
+    public GetCompanyByIdUseCase(
+            CompanyRepository companyRepository,
+            CompanyContactRepository companyContactRepository,
+            CompanyMapper companyMapper) {
         this.companyRepository = companyRepository;
+        this.companyContactRepository = companyContactRepository;
         this.companyMapper = companyMapper;
     }
 
@@ -29,6 +35,10 @@ public class GetCompanyByIdUseCase {
         Company company =
                 companyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Company.class, id));
 
-        return companyMapper.toResponse(company);
+        return companyMapper.toResponse(
+                company,
+                companyContactRepository
+                        .findByCompanyIdAndPrimaryContactTrue(id)
+                        .orElse(null));
     }
 }
