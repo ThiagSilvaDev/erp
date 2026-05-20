@@ -2,31 +2,50 @@ package com.thiagsilvadev.erpapi.sales.internal.model;
 
 import java.util.UUID;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
+
+import com.thiagsilvadev.erpapi.common.domain.model.GeoLocation;
 
 @Embeddable
 public class DeliveryRoute {
 
-    @Column(name = "delivery_route_name")
+    @Column(name = "route_name", nullable = false, length = 120)
     private String routeName;
 
-    @Column(name = "delivery_origin_warehouse_id")
+    @Column(name = "origin_warehouse_id", nullable = false)
     private UUID originWarehouseId;
 
-    @Column(name = "delivery_destination_description")
+    @Column(name = "destination_description", nullable = false, length = 500)
     private String destinationDescription;
+
+    @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(
+                name = "latitude",
+                column = @Column(name = "destination_latitude", precision = 10, scale = 7)),
+        @AttributeOverride(
+                name = "longitude",
+                column = @Column(name = "destination_longitude", precision = 10, scale = 7))
+    })
+    private GeoLocation destinationLocation;
 
     protected DeliveryRoute() {}
 
-    private DeliveryRoute(String routeName, UUID originWarehouseId, String destinationDescription) {
+    private DeliveryRoute(
+            String routeName, UUID originWarehouseId, String destinationDescription, GeoLocation destinationLocation) {
         this.routeName = routeName;
         this.originWarehouseId = originWarehouseId;
         this.destinationDescription = destinationDescription;
+        this.destinationLocation = destinationLocation;
     }
 
-    public static DeliveryRoute create(String routeName, UUID originWarehouseId, String destinationDescription) {
-        return new DeliveryRoute(routeName, originWarehouseId, destinationDescription);
+    public static DeliveryRoute delivery(
+            String routeName, UUID originWarehouseId, String destinationDescription, GeoLocation destinationLocation) {
+        return new DeliveryRoute(routeName, originWarehouseId, destinationDescription, destinationLocation);
     }
 
     public String getRouteName() {
@@ -39,5 +58,9 @@ public class DeliveryRoute {
 
     public String getDestinationDescription() {
         return destinationDescription;
+    }
+
+    public GeoLocation getDestinationLocation() {
+        return destinationLocation;
     }
 }

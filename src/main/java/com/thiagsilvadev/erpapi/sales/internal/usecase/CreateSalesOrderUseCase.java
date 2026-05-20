@@ -81,10 +81,19 @@ public class CreateSalesOrderUseCase {
                 .toList();
 
         DeliveryRoute deliveryRoute = request.deliveryRoute() != null
-                ? DeliveryRoute.create(
+                ? DeliveryRoute.delivery(
                         request.deliveryRoute().routeName(),
                         request.deliveryRoute().originWarehouseId(),
-                        request.deliveryRoute().destinationDescription())
+                        request.deliveryRoute().destinationDescription(),
+                        request.deliveryRoute().destinationLocation() != null
+                                ? com.thiagsilvadev.erpapi.common.domain.model.GeoLocation.of(
+                                        request.deliveryRoute()
+                                                .destinationLocation()
+                                                .latitude(),
+                                        request.deliveryRoute()
+                                                .destinationLocation()
+                                                .longitude())
+                                : null)
                 : null;
 
         SalesOrder order = SalesOrder.create(
