@@ -21,6 +21,7 @@ import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
+import com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions;
 import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 
@@ -58,6 +59,7 @@ class IamUserDetailsServiceTest {
                 .containsAll(CustomerPermissions.ALL)
                 .containsAll(FinancialPermissions.ALL)
                 .containsAll(InventoryPermissions.ALL)
+                .containsAll(LogisticsPermissions.ALL)
                 .containsAll(SalesPermissions.ALL)
                 .containsAll(UserPermissions.ALL)
                 .doesNotContain("*");
@@ -88,6 +90,10 @@ class IamUserDetailsServiceTest {
                         CatalogPermissions.WRITE,
                         InventoryPermissions.READ,
                         InventoryPermissions.WRITE,
+                        LogisticsPermissions.READ,
+                        LogisticsPermissions.WRITE,
+                        LogisticsPermissions.DISPATCH,
+                        LogisticsPermissions.TRACK,
                         FinancialPermissions.READ);
         assertThat(userDetails.isEnabled()).isFalse();
     }

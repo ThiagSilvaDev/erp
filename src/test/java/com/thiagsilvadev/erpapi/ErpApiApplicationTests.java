@@ -24,6 +24,10 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepos
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryReservationRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
+import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
+import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository;
+import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentTrackingEventRepository;
+import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
@@ -134,6 +138,26 @@ class ErpApiApplicationTests {
         @Bean
         BusinessNumberSequenceRepository businessNumberSequenceRepository() {
             return mock(BusinessNumberSequenceRepository.class);
+        }
+
+        @Bean
+        DriverRepository driverRepository() {
+            return mock(DriverRepository.class);
+        }
+
+        @Bean
+        VehicleRepository vehicleRepository() {
+            return mock(VehicleRepository.class);
+        }
+
+        @Bean
+        ShipmentRepository shipmentRepository() {
+            return mock(ShipmentRepository.class);
+        }
+
+        @Bean
+        ShipmentTrackingEventRepository shipmentTrackingEventRepository() {
+            return mock(ShipmentTrackingEventRepository.class);
         }
     }
 }

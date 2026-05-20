@@ -12,4 +12,6 @@ public interface InventoryFacade {
     InventoryReservationSnapshot reserve(UUID productId, UUID warehouseId, int quantity, UUID salesOrderId);
 
     void releaseBySalesOrderId(UUID salesOrderId);
+
+    void consumeReservationsForSalesOrder(UUID salesOrderId);
 }

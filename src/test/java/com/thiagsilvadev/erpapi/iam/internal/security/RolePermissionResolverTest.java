@@ -9,6 +9,7 @@ import com.thiagsilvadev.erpapi.company.api.CompanyPermissions;
 import com.thiagsilvadev.erpapi.customer.api.CustomerPermissions;
 import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
+import com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions;
 import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 
@@ -24,6 +25,7 @@ class RolePermissionResolverTest {
                 .containsAll(CustomerPermissions.ALL)
                 .containsAll(FinancialPermissions.ALL)
                 .containsAll(InventoryPermissions.ALL)
+                .containsAll(LogisticsPermissions.ALL)
                 .containsAll(SalesPermissions.ALL)
                 .containsAll(UserPermissions.ALL)
                 .doesNotContain("*");
@@ -37,13 +39,21 @@ class RolePermissionResolverTest {
                         CatalogPermissions.WRITE,
                         InventoryPermissions.READ,
                         InventoryPermissions.WRITE,
+                        LogisticsPermissions.READ,
+                        LogisticsPermissions.WRITE,
+                        LogisticsPermissions.DISPATCH,
+                        LogisticsPermissions.TRACK,
                         FinancialPermissions.READ);
     }
 
     @Test
     void shouldResolveOperatorPermissions() {
         assertThat(resolver.resolve("OPERATOR"))
-                .containsExactlyInAnyOrder(CatalogPermissions.READ, InventoryPermissions.READ);
+                .containsExactlyInAnyOrder(
+                        CatalogPermissions.READ,
+                        InventoryPermissions.READ,
+                        LogisticsPermissions.READ,
+                        LogisticsPermissions.TRACK);
     }
 
     @Test

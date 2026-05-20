@@ -1,0 +1,23 @@
+meta {
+  name: Deliver Shipment
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/v1/logistics/shipments/{{shipmentId}}/deliver
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  { "location": "Customer delivery dock", "notes": "Shipment delivered" }
+}

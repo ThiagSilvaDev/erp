@@ -9,6 +9,7 @@ import com.thiagsilvadev.erpapi.company.api.CompanyPermissions;
 import com.thiagsilvadev.erpapi.customer.api.CustomerPermissions;
 import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
+import com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions;
 import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 
@@ -47,6 +48,16 @@ class ModulePermissionsTest {
         assertThat(InventoryPermissions.ALL)
                 .containsExactlyInAnyOrder(
                         InventoryPermissions.READ, InventoryPermissions.WRITE, InventoryPermissions.ADJUST_STOCK);
+    }
+
+    @Test
+    void shouldExposeLogisticsPermissions() {
+        assertThat(LogisticsPermissions.ALL)
+                .containsExactlyInAnyOrder(
+                        LogisticsPermissions.READ,
+                        LogisticsPermissions.WRITE,
+                        LogisticsPermissions.DISPATCH,
+                        LogisticsPermissions.TRACK);
     }
 
     @Test

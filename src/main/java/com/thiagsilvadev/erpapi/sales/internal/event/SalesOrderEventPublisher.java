@@ -30,7 +30,15 @@ public class SalesOrderEventPublisher {
                 order.getCustomerId(),
                 order.totalAmount(),
                 order.currencyCode(),
-                LocalDate.now(clock)));
+                LocalDate.now(clock),
+                order.getItems().stream()
+                        .map(item -> new com.thiagsilvadev.erpapi.sales.api.SalesOrderConfirmedItem(
+                                item.getProductId(),
+                                item.getWarehouseId(),
+                                item.getProductSku(),
+                                item.getProductName(),
+                                item.getQuantity()))
+                        .toList()));
     }
 
     public void salesOrderCancelled(SalesOrder order) {

@@ -1,0 +1,23 @@
+meta {
+  name: Load Shipment
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/logistics/shipments/{{shipmentId}}/load
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  { "location": "Main Warehouse", "notes": "Shipment loaded" }
+}

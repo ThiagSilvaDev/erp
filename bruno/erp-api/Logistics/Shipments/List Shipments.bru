@@ -1,0 +1,22 @@
+meta {
+  name: List Shipments
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/logistics/shipments
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:post-response {
+  const first = res.body?.content?.[0];
+  if (res.status === 200 && first?.id) {
+    bru.setEnvVar("shipmentId", first.id);
+  }
+}

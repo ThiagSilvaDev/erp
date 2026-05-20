@@ -1,0 +1,29 @@
+meta {
+  name: Assign Dispatch
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/logistics/shipments/{{shipmentId}}/dispatch-assignment
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "driverId": "{{driverId}}",
+    "vehicleId": "{{vehicleId}}",
+    "routeName": "Main delivery route",
+    "originWarehouseId": "{{warehouseId}}",
+    "destinationDescription": "Customer delivery dock"
+  }
+}

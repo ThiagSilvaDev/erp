@@ -72,6 +72,19 @@ public class InventoryService implements InventoryFacade {
         }
     }
 
+    @Override
+    @Transactional
+    public void consumeReservationsForSalesOrder(UUID salesOrderId) {
+        for (InventoryReservation reservation : reservationRepository.findBySalesOrderId(salesOrderId)) {
+            InventoryItem item = itemRepository
+                    .findByProductIdAndWarehouseId(reservation.getProductId(), reservation.getWarehouseId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            InventoryItem.class, reservation.getProductId() + "/" + reservation.getWarehouseId()));
+            item.consumeReserved(reservation.getQuantity());
+            reservationRepository.delete(reservation);
+        }
+    }
+
     @Transactional
     public InventoryItem applyMovement(UUID productId, UUID warehouseId, int quantity) {
         catalogFacade.findProductById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", productId));

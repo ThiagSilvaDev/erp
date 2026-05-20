@@ -11,6 +11,7 @@ import com.thiagsilvadev.erpapi.company.api.CompanyPermissions;
 import com.thiagsilvadev.erpapi.customer.api.CustomerPermissions;
 import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
+import com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions;
 import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
 
 @Component
@@ -27,8 +28,17 @@ public class RolePermissionResolver {
                         CatalogPermissions.WRITE,
                         InventoryPermissions.READ,
                         InventoryPermissions.WRITE,
+                        LogisticsPermissions.READ,
+                        LogisticsPermissions.WRITE,
+                        LogisticsPermissions.DISPATCH,
+                        LogisticsPermissions.TRACK,
                         FinancialPermissions.READ);
-            case "OPERATOR" -> Set.of(CatalogPermissions.READ, InventoryPermissions.READ);
+            case "OPERATOR" ->
+                Set.of(
+                        CatalogPermissions.READ,
+                        InventoryPermissions.READ,
+                        LogisticsPermissions.READ,
+                        LogisticsPermissions.TRACK);
             default -> Set.of();
         };
     }
@@ -47,6 +57,7 @@ public class RolePermissionResolver {
         permissions.addAll(CustomerPermissions.ALL);
         permissions.addAll(FinancialPermissions.ALL);
         permissions.addAll(InventoryPermissions.ALL);
+        permissions.addAll(LogisticsPermissions.ALL);
         permissions.addAll(SalesPermissions.ALL);
         permissions.addAll(USER_PERMISSIONS);
         return Set.copyOf(permissions);

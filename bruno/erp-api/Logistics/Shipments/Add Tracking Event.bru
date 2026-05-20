@@ -1,0 +1,23 @@
+meta {
+  name: Add Tracking Event
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/logistics/shipments/{{shipmentId}}/tracking-events
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  { "location": "In transit", "notes": "Shipment on route" }
+}

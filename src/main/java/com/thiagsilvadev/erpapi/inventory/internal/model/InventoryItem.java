@@ -59,6 +59,15 @@ public class InventoryItem extends AbstractBaseEntity {
         this.reservedQuantity = Math.max(0, this.reservedQuantity - quantity);
     }
 
+    public void consumeReserved(int quantity) {
+        requirePositive(quantity);
+        if (reservedQuantity < quantity) {
+            throw new IllegalArgumentException("Insufficient reserved inventory");
+        }
+        reservedQuantity -= quantity;
+        quantityOnHand -= quantity;
+    }
+
     public int availableQuantity() {
         return quantityOnHand - reservedQuantity;
     }

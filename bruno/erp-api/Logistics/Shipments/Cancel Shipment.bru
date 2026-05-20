@@ -1,0 +1,23 @@
+meta {
+  name: Cancel Shipment
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/logistics/shipments/{{shipmentId}}/cancel
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  { "notes": "Cancelled before loading" }
+}

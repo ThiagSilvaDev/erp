@@ -1,0 +1,23 @@
+meta {
+  name: Dispatch Shipment
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/logistics/shipments/{{shipmentId}}/dispatch
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  { "location": "Main Warehouse", "notes": "Shipment dispatched" }
+}

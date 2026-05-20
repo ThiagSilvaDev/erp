@@ -5,5 +5,6 @@ public enum BusinessNumberType {
     SALES_ORDER,
     INVOICE,
     PAYMENT,
-    STOCK_MOVEMENT
+    STOCK_MOVEMENT,
+    SHIPMENT
 }

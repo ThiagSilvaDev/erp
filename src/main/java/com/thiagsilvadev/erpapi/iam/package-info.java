@@ -8,6 +8,7 @@
             "customer::api",
             "financial::api",
             "inventory::api",
+            "logistics::api",
             "sales::api",
             "user::api"
         })

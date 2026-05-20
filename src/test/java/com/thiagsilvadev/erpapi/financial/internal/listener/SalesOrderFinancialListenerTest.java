@@ -50,7 +50,8 @@ class SalesOrderFinancialListenerTest {
                 null,
                 new BigDecimal("20.00"),
                 "BRL",
-                LocalDate.now());
+                LocalDate.now(),
+                java.util.List.of());
         when(invoiceRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(false);
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(300L);
         when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
@@ -75,7 +76,8 @@ class SalesOrderFinancialListenerTest {
                 customerId,
                 new BigDecimal("20.00"),
                 "BRL",
-                LocalDate.now());
+                LocalDate.now(),
+                java.util.List.of());
         when(invoiceRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(false);
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(301L);
         when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
