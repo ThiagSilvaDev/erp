@@ -28,6 +28,9 @@ public class Payment extends AbstractBaseEntity {
     @Column(name = "invoice_id")
     private UUID invoiceId;
 
+    @Column(name = "destination_account_id")
+    private UUID destinationAccountId;
+
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
@@ -52,6 +55,7 @@ public class Payment extends AbstractBaseEntity {
             UUID salesOrderId,
             UUID customerId,
             UUID invoiceId,
+            UUID destinationAccountId,
             BigDecimal amount,
             PaymentMethod method,
             PaymentStatus status,
@@ -61,6 +65,7 @@ public class Payment extends AbstractBaseEntity {
         this.salesOrderId = salesOrderId;
         this.customerId = customerId;
         this.invoiceId = invoiceId;
+        this.destinationAccountId = destinationAccountId;
         this.amount = amount;
         this.method = method;
         this.status = status;
@@ -73,11 +78,22 @@ public class Payment extends AbstractBaseEntity {
             UUID salesOrderId,
             UUID customerId,
             UUID invoiceId,
+            UUID destinationAccountId,
             BigDecimal amount,
             PaymentMethod method,
             PaymentStatus status,
             LocalDate dueDate) {
-        return new Payment(paymentNumber, salesOrderId, customerId, invoiceId, amount, method, status, dueDate, null);
+        return new Payment(
+                paymentNumber,
+                salesOrderId,
+                customerId,
+                invoiceId,
+                destinationAccountId,
+                amount,
+                method,
+                status,
+                dueDate,
+                null);
     }
 
     public void markAsPaid(LocalDate paidAt) {
@@ -99,6 +115,10 @@ public class Payment extends AbstractBaseEntity {
 
     public UUID getInvoiceId() {
         return invoiceId;
+    }
+
+    public UUID getDestinationAccountId() {
+        return destinationAccountId;
     }
 
     public BigDecimal getAmount() {

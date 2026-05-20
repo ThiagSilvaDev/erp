@@ -13,8 +13,11 @@ import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
+import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccount;
+import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccountType;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
 import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialAccountRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 
@@ -27,16 +30,19 @@ class FinancialDevSeeder implements ApplicationRunner {
 
     private final InvoiceRepository invoiceRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+    private final FinancialAccountRepository accountRepository;
     private final CustomerFacade customerFacade;
     private final BusinessNumberService businessNumberService;
 
     FinancialDevSeeder(
             InvoiceRepository invoiceRepository,
             LedgerEntryRepository ledgerEntryRepository,
+            FinancialAccountRepository accountRepository,
             CustomerFacade customerFacade,
             BusinessNumberService businessNumberService) {
         this.invoiceRepository = invoiceRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
+        this.accountRepository = accountRepository;
         this.customerFacade = customerFacade;
         this.businessNumberService = businessNumberService;
     }
@@ -44,6 +50,13 @@ class FinancialDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        if (accountRepository.count() == 0) {
+            accountRepository.save(FinancialAccount.create(
+                    "Caixa Loja Principal", FinancialAccountType.CASH_REGISTER, "Caixa físico da loja"));
+            accountRepository.save(
+                    FinancialAccount.create("Itaú PJ", FinancialAccountType.BANK_ACCOUNT, "Conta corrente principal"));
+        }
+
         if (invoiceRepository.count() > 0) {
             return;
         }

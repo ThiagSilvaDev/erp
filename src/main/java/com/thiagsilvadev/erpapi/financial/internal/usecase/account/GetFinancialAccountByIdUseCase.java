@@ -1,0 +1,33 @@
+package com.thiagsilvadev.erpapi.financial.internal.usecase.account;
+
+import java.util.UUID;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialDtos.FinancialAccountResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
+import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccount;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialAccountRepository;
+
+@Component
+public class GetFinancialAccountByIdUseCase {
+
+    private final FinancialAccountRepository accountRepository;
+    private final FinancialMapper mapper;
+
+    public GetFinancialAccountByIdUseCase(FinancialAccountRepository accountRepository, FinancialMapper mapper) {
+        this.accountRepository = accountRepository;
+        this.mapper = mapper;
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    public FinancialAccountResponse execute(UUID id) {
+        return mapper.toResponse(accountRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(FinancialAccount.class, id)));
+    }
+}
