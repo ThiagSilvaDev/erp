@@ -2,7 +2,6 @@ package com.thiagsilvadev.erpapi.company.internal.repository;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;
@@ -32,8 +31,14 @@ public class CompanySpecification {
             if (cnpjStr == null || cnpjStr.isBlank()) {
                 return null;
             }
-            Cnpj cnpj = Cnpj.create(cnpjStr);
-            return cb.equal(root.get("cnpj"), cnpj);
+
+            String digits = cnpjStr.replaceAll("\\D", "");
+
+            if (digits.isBlank()) {
+                return null;
+            }
+
+            return cb.like(root.get("cnpj").get("number"), digits + "%");
         };
     }
 

@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,7 +42,7 @@ public class ListCompaniesUseCase {
         Map<UUID, CompanyContact> primaryContactsByCompanyId =
                 companyContactRepository
                         .findByCompanyIdInAndPrimaryContactTrue(
-                                companies.map(company -> company.getId()).toList())
+                                companies.map(AbstractBaseEntity::getId).toList())
                         .stream()
                         .collect(Collectors.toMap(CompanyContact::getCompanyId, companyContact -> companyContact));
 
