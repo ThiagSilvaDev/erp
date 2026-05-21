@@ -31,7 +31,6 @@ public abstract class InventoryMapper {
 
     public abstract WarehouseResponse toResponse(Warehouse warehouse);
 
-    @Mapping(target = "warehouseId", source = "warehouse.id")
     @Mapping(target = "availableQuantity", expression = "java(item.availableQuantity())")
     @Mapping(target = "product", expression = "java(mapInventoryItemProduct(item.getProductId()))")
     public abstract InventoryItemResponse toResponse(InventoryItem item);
