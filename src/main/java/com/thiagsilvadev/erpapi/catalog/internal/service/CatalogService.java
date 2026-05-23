@@ -14,6 +14,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 
 @Service
 public class CatalogService implements CatalogFacade {
@@ -39,6 +40,13 @@ public class CatalogService implements CatalogFacade {
     @Transactional(readOnly = true)
     public Optional<ProductSnapshot> findProductBySku(String sku) {
         return productRepository.findBySkuValue(Sku.create(sku).getValue()).map(catalogMapper::toSnapshot);
+    }
+
+    @Override
+    public void requireProductExistsById(UUID id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException(Product.class, id);
+        }
     }
 
     @Override

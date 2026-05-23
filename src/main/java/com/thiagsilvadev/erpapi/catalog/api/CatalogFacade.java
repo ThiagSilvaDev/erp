@@ -11,6 +11,8 @@ public interface CatalogFacade {
 
     Optional<ProductSnapshot> findProductBySku(String sku);
 
+    void requireProductExistsById(UUID id);
+
     List<ProductSnapshot> findAllProductsByIdIn(Set<UUID> productIds);
 
     Optional<CategorySnapshot> findCategoryById(UUID id);
