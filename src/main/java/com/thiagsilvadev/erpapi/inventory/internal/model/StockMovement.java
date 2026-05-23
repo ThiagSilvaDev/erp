@@ -27,22 +27,39 @@ public class StockMovement extends AbstractBaseEntity {
     @Column(nullable = false)
     private int quantity;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String reason;
+    private StockMovementType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StockMovementReason reason;
 
     protected StockMovement() {}
 
-    private StockMovement(Long movementNumber, UUID productId, UUID warehouseId, int quantity, String reason) {
+    private StockMovement(
+            Long movementNumber,
+            UUID productId,
+            UUID warehouseId,
+            int quantity,
+            StockMovementType type,
+            StockMovementReason reason) {
         this.movementNumber = movementNumber;
         this.productId = productId;
         this.warehouseId = warehouseId;
         this.quantity = quantity;
-        this.reason = Warehouse.required(reason, "Stock movement reason cannot be blank");
+        this.type = java.util.Objects.requireNonNull(type, "Stock movement type is required");
+        this.reason = java.util.Objects.requireNonNull(reason, "Stock movement reason is required");
     }
 
     public static StockMovement create(
-            Long movementNumber, UUID productId, UUID warehouseId, int quantity, String reason) {
-        return new StockMovement(movementNumber, productId, warehouseId, quantity, reason);
+            Long movementNumber,
+            UUID productId,
+            UUID warehouseId,
+            int quantity,
+            StockMovementType type,
+            StockMovementReason reason) {
+        return new StockMovement(movementNumber, productId, warehouseId, quantity, type, reason);
     }
 
     public Long getMovementNumber() {
@@ -61,7 +78,11 @@ public class StockMovement extends AbstractBaseEntity {
         return quantity;
     }
 
-    public String getReason() {
+    public StockMovementType getType() {
+        return type;
+    }
+
+    public StockMovementReason getReason() {
         return reason;
     }
 }

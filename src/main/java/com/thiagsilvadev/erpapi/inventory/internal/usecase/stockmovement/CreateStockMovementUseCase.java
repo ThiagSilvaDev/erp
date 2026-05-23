@@ -43,6 +43,7 @@ public class CreateStockMovementUseCase {
                 item.getProductId(),
                 item.getWarehouse().getId(),
                 request.quantity(),
+                request.type(),
                 request.reason()));
         return mapper.toResponse(movement);
     }
