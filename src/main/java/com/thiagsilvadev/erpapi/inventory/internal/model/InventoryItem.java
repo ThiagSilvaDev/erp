@@ -1,10 +1,14 @@
 package com.thiagsilvadev.erpapi.inventory.internal.model;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
+import com.thiagsilvadev.erpapi.inventory.internal.exception.InsufficientInventoryAvailableException;
+import com.thiagsilvadev.erpapi.inventory.internal.exception.InsufficientReservedInventoryException;
 
 @Entity
 @Table(
@@ -12,29 +16,29 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_inventory_item_product_warehouse",
-                    columnNames = {"productId", "warehouse_id"})
+                    columnNames = {"product_id", "warehouse_id"})
         })
 public class InventoryItem extends AbstractBaseEntity {
 
-    @Column(nullable = false)
+    @Column(name = "product_id", nullable = false, updatable = false)
     private UUID productId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "warehouse_id", nullable = false)
+    @JoinColumn(name = "warehouse_id", nullable = false, updatable = false)
     private Warehouse warehouse;
 
-    @Column(nullable = false)
+    @Column(name = "quantity_on_hand", nullable = false)
     private int quantityOnHand;
 
-    @Column(nullable = false)
+    @Column(name = "reserved_quantity", nullable = false)
     private int reservedQuantity;
 
     protected InventoryItem() {}
 
     private InventoryItem(UUID productId, Warehouse warehouse, int quantityOnHand) {
-        this.productId = productId;
-        this.warehouse = warehouse;
-        increase(quantityOnHand);
+        this.productId = Objects.requireNonNull(productId, "Product ID is required");
+        this.warehouse = Objects.requireNonNull(warehouse, "Warehouse is required");
+        this.quantityOnHand = DomainAssert.requireNonNegative(quantityOnHand, "Quantity on hand must be non-negative");
     }
 
     public static InventoryItem create(UUID productId, Warehouse warehouse, int quantityOnHand) {
@@ -42,42 +46,41 @@ public class InventoryItem extends AbstractBaseEntity {
     }
 
     public void increase(int quantity) {
-        requirePositive(quantity);
+        DomainAssert.requirePositive(quantity, "Quantity to increase must be positive");
         this.quantityOnHand += quantity;
     }
 
     public void decrease(int quantity) {
-        requirePositive(quantity);
-        if (availableQuantity() < quantity) {
-            throw new IllegalArgumentException("Insufficient inventory available");
-        }
+        DomainAssert.requirePositive(quantity, "Quantity to decrease must be positive");
+        requireAvailable(quantity);
         this.quantityOnHand -= quantity;
     }
 
     public void reserve(int quantity) {
-        requirePositive(quantity);
-        if (availableQuantity() < quantity) {
-            throw new IllegalArgumentException("Insufficient inventory available");
-        }
+        DomainAssert.requirePositive(quantity, "Quantity to reserve must be positive");
+        requireAvailable(quantity);
         this.reservedQuantity += quantity;
     }
 
     public void release(int quantity) {
-        requirePositive(quantity);
-        this.reservedQuantity = Math.max(0, this.reservedQuantity - quantity);
+        DomainAssert.requirePositive(quantity, "Quantity to release must be positive");
+        if (this.reservedQuantity < quantity) {
+            throw new InsufficientReservedInventoryException();
+        }
+        this.reservedQuantity -= quantity;
     }
 
     public void consumeReserved(int quantity) {
-        requirePositive(quantity);
-        if (reservedQuantity < quantity) {
-            throw new IllegalArgumentException("Insufficient reserved inventory");
+        DomainAssert.requirePositive(quantity, "Quantity to consume must be positive");
+        if (this.reservedQuantity < quantity) {
+            throw new InsufficientReservedInventoryException();
         }
-        reservedQuantity -= quantity;
-        quantityOnHand -= quantity;
+        this.reservedQuantity -= quantity;
+        this.quantityOnHand -= quantity;
     }
 
     public int availableQuantity() {
-        return quantityOnHand - reservedQuantity;
+        return this.quantityOnHand - this.reservedQuantity;
     }
 
     public UUID getProductId() {
@@ -96,9 +99,9 @@ public class InventoryItem extends AbstractBaseEntity {
         return reservedQuantity;
     }
 
-    private static void requirePositive(int quantity) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantity must be positive");
+    private void requireAvailable(int quantity) {
+        if (availableQuantity() < quantity) {
+            throw new InsufficientInventoryAvailableException();
         }
     }
 }

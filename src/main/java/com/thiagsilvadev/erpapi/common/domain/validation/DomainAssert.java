@@ -49,4 +49,17 @@ public final class DomainAssert {
             throw new DomainValidationException(message);
         }
     }
+
+    public static int requireNonNegative(int value, String message) {
+        if (value < 0) {
+            throw new DomainValidationException(message);
+        }
+        return value;
+    }
+
+    public static void requirePositive(int value, String message) {
+        if (value <= 0) {
+            throw new DomainValidationException(message);
+        }
+    }
 }
