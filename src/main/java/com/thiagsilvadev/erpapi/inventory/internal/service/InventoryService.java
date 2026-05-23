@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.inventory.api.*;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
@@ -19,19 +18,16 @@ public class InventoryService implements InventoryFacade {
     private final InventoryItemRepository itemRepository;
     private final InventoryReservationRepository reservationRepository;
     private final WarehouseRepository warehouseRepository;
-    private final CatalogFacade catalogFacade;
     private final InventoryMapper mapper;
 
     public InventoryService(
             InventoryItemRepository itemRepository,
             InventoryReservationRepository reservationRepository,
             WarehouseRepository warehouseRepository,
-            CatalogFacade catalogFacade,
             InventoryMapper mapper) {
         this.itemRepository = itemRepository;
         this.reservationRepository = reservationRepository;
         this.warehouseRepository = warehouseRepository;
-        this.catalogFacade = catalogFacade;
         this.mapper = mapper;
     }
 
@@ -83,44 +79,5 @@ public class InventoryService implements InventoryFacade {
             item.consumeReserved(reservation.getQuantity());
             reservationRepository.delete(reservation);
         }
-    }
-
-    @Transactional
-    public InventoryItem applyMovement(UUID productId, UUID warehouseId, int quantity, StockMovementType type) {
-        catalogFacade.findProductById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", productId));
-        Warehouse warehouse = warehouseRepository
-                .findById(warehouseId)
-                .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, warehouseId));
-        return switch (type) {
-            case IN, TRANSFER_IN, ADJUSTMENT ->
-                itemRepository
-                        .findByProductIdAndWarehouseId(productId, warehouseId)
-                        .map(item -> {
-                            item.increase(quantity);
-                            return item;
-                        })
-                        .orElseGet(() -> itemRepository.save(InventoryItem.create(productId, warehouse, quantity)));
-            case OUT, TRANSFER_OUT -> {
-                InventoryItem item = getExistingItem(productId, warehouseId);
-                item.decrease(quantity);
-                yield item;
-            }
-            case RESERVE -> {
-                InventoryItem item = getExistingItem(productId, warehouseId);
-                item.reserve(quantity);
-                yield item;
-            }
-            case RELEASE_RESERVATION -> {
-                InventoryItem item = getExistingItem(productId, warehouseId);
-                item.release(quantity);
-                yield item;
-            }
-        };
-    }
-
-    private InventoryItem getExistingItem(UUID productId, UUID warehouseId) {
-        return itemRepository
-                .findByProductIdAndWarehouseId(productId, warehouseId)
-                .orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId));
     }
 }

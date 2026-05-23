@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.inventory.internal.seed;
 
-import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovementType;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -9,10 +8,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
+import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovementType;
 import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
-import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryService;
+import com.thiagsilvadev.erpapi.inventory.internal.usecase.stockmovement.ApplyMovementUseCase;
 
 @Component
 @Profile("dev")
@@ -25,17 +25,17 @@ class InventoryDevSeeder implements ApplicationRunner {
     private final WarehouseRepository warehouseRepository;
     private final StockMovementRepository movementRepository;
     private final CatalogFacade catalogFacade;
-    private final InventoryService inventoryService;
+    private final ApplyMovementUseCase applyMovementUseCase;
 
     InventoryDevSeeder(
             WarehouseRepository warehouseRepository,
             StockMovementRepository movementRepository,
             CatalogFacade catalogFacade,
-            InventoryService inventoryService) {
+            ApplyMovementUseCase applyMovementUseCase) {
         this.warehouseRepository = warehouseRepository;
         this.movementRepository = movementRepository;
         this.catalogFacade = catalogFacade;
-        this.inventoryService = inventoryService;
+        this.applyMovementUseCase = applyMovementUseCase;
     }
 
     @Override
@@ -50,6 +50,6 @@ class InventoryDevSeeder implements ApplicationRunner {
         var product = catalogFacade
                 .findProductBySku(INDUSTRIAL_WIDGET_SKU)
                 .orElseThrow(() -> new IllegalStateException("Seed product must exist before seeding inventory"));
-        inventoryService.applyMovement(product.id(), warehouse.getId(), 100, StockMovementType.IN);
+        applyMovementUseCase.execute(product.id(), warehouse.getId(), 100, StockMovementType.IN);
     }
 }
