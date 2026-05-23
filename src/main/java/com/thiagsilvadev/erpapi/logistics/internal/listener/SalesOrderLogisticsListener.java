@@ -3,9 +3,8 @@ package com.thiagsilvadev.erpapi.logistics.internal.listener;
 import java.time.Clock;
 import java.time.Instant;
 
-import org.springframework.context.event.EventListener;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
@@ -35,8 +34,7 @@ public class SalesOrderLogisticsListener {
         this.clock = clock;
     }
 
-    @EventListener
-    @Transactional
+    @ApplicationModuleListener
     public void on(SalesOrderDeliveryRequestedEvent event) {
         if (shipmentRepository.existsBySalesOrderId(event.salesOrderId())) {
             return;
@@ -63,8 +61,7 @@ public class SalesOrderLogisticsListener {
                 "Shipment created from delivery sales order"));
     }
 
-    @EventListener
-    @Transactional
+    @ApplicationModuleListener
     public void on(SalesOrderCancelledEvent event) {
         shipmentRepository.findBySalesOrderId(event.salesOrderId()).ifPresent(shipment -> {
             try {

@@ -1,8 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.listener;
 
-import org.springframework.context.event.EventListener;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
@@ -38,8 +37,7 @@ public class SalesOrderFinancialListener {
         this.businessNumberService = businessNumberService;
     }
 
-    @EventListener
-    @Transactional
+    @ApplicationModuleListener
     public void on(SalesOrderConfirmedEvent event) {
         if (invoiceRepository.existsBySalesOrderId(event.salesOrderId())) {
             return;
@@ -58,8 +56,7 @@ public class SalesOrderFinancialListener {
                 invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
     }
 
-    @EventListener
-    @Transactional
+    @ApplicationModuleListener
     public void on(SalesOrderCancelledEvent event) {
         invoiceRepository.findWithLockingBySalesOrderId(event.salesOrderId()).ifPresent(invoice -> {
             if (paymentRepository.existsByInvoiceId(invoice.getId())) {
