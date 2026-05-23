@@ -86,17 +86,41 @@ public class InventoryService implements InventoryFacade {
     }
 
     @Transactional
-    public InventoryItem applyMovement(UUID productId, UUID warehouseId, int quantity) {
+    public InventoryItem applyMovement(UUID productId, UUID warehouseId, int quantity, StockMovementType type) {
         catalogFacade.findProductById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", productId));
         Warehouse warehouse = warehouseRepository
                 .findById(warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, warehouseId));
+        return switch (type) {
+            case IN, TRANSFER_IN, ADJUSTMENT ->
+                itemRepository
+                        .findByProductIdAndWarehouseId(productId, warehouseId)
+                        .map(item -> {
+                            item.increase(quantity);
+                            return item;
+                        })
+                        .orElseGet(() -> itemRepository.save(InventoryItem.create(productId, warehouse, quantity)));
+            case OUT, TRANSFER_OUT -> {
+                InventoryItem item = getExistingItem(productId, warehouseId);
+                item.decrease(quantity);
+                yield item;
+            }
+            case RESERVE -> {
+                InventoryItem item = getExistingItem(productId, warehouseId);
+                item.reserve(quantity);
+                yield item;
+            }
+            case RELEASE_RESERVATION -> {
+                InventoryItem item = getExistingItem(productId, warehouseId);
+                item.release(quantity);
+                yield item;
+            }
+        };
+    }
+
+    private InventoryItem getExistingItem(UUID productId, UUID warehouseId) {
         return itemRepository
                 .findByProductIdAndWarehouseId(productId, warehouseId)
-                .map(item -> {
-                    item.increase(quantity);
-                    return item;
-                })
-                .orElseGet(() -> itemRepository.save(InventoryItem.create(productId, warehouse, quantity)));
+                .orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId));
     }
 }

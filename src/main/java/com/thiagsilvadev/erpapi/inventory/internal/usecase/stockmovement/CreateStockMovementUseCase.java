@@ -36,8 +36,8 @@ public class CreateStockMovementUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
     public StockMovementResponse execute(CreateStockMovementRequest request) {
-        InventoryItem item =
-                inventoryService.applyMovement(request.productId(), request.warehouseId(), request.quantity());
+        InventoryItem item = inventoryService.applyMovement(
+                request.productId(), request.warehouseId(), request.quantity(), request.type());
         StockMovement movement = movementRepository.save(StockMovement.create(
                 businessNumberService.next(BusinessNumberType.STOCK_MOVEMENT),
                 item.getProductId(),

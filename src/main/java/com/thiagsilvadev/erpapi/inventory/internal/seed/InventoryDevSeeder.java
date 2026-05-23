@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.inventory.internal.seed;
 
+import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovementType;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -49,6 +50,6 @@ class InventoryDevSeeder implements ApplicationRunner {
         var product = catalogFacade
                 .findProductBySku(INDUSTRIAL_WIDGET_SKU)
                 .orElseThrow(() -> new IllegalStateException("Seed product must exist before seeding inventory"));
-        inventoryService.applyMovement(product.id(), warehouse.getId(), 100);
+        inventoryService.applyMovement(product.id(), warehouse.getId(), 100, StockMovementType.IN);
     }
 }

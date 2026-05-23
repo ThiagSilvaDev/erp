@@ -46,6 +46,14 @@ public class InventoryItem extends AbstractBaseEntity {
         this.quantityOnHand += quantity;
     }
 
+    public void decrease(int quantity) {
+        requirePositive(quantity);
+        if (availableQuantity() < quantity) {
+            throw new IllegalArgumentException("Insufficient inventory available");
+        }
+        this.quantityOnHand -= quantity;
+    }
+
     public void reserve(int quantity) {
         requirePositive(quantity);
         if (availableQuantity() < quantity) {
