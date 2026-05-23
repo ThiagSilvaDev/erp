@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 import com.thiagsilvadev.erpapi.inventory.internal.exception.InsufficientInventoryAvailableException;
 import com.thiagsilvadev.erpapi.inventory.internal.exception.InsufficientReservedInventoryException;
+import com.thiagsilvadev.erpapi.inventory.internal.exception.InventoryErrorCode;
 
 class InventoryItemTest {
 
@@ -34,7 +35,8 @@ class InventoryItemTest {
     void shouldRejectNegativeInitialQuantity() {
         assertThatThrownBy(() -> InventoryItem.create(productId, warehouse, -1))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessage("Quantity on hand must be non-negative");
+                .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
+                .isEqualTo(InventoryErrorCode.QUANTITY_ON_HAND_MUST_BE_NON_NEGATIVE);
     }
 
     @Test
@@ -143,19 +145,24 @@ class InventoryItemTest {
         assertSoftly(softly -> {
             softly.assertThatThrownBy(() -> item.increase(invalidQuantity))
                     .isInstanceOf(DomainValidationException.class)
-                    .hasMessage("Quantity to increase must be positive");
+                    .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
+                    .isEqualTo(InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
             softly.assertThatThrownBy(() -> item.decrease(invalidQuantity))
                     .isInstanceOf(DomainValidationException.class)
-                    .hasMessage("Quantity to decrease must be positive");
+                    .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
+                    .isEqualTo(InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
             softly.assertThatThrownBy(() -> item.reserve(invalidQuantity))
                     .isInstanceOf(DomainValidationException.class)
-                    .hasMessage("Quantity to reserve must be positive");
+                    .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
+                    .isEqualTo(InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
             softly.assertThatThrownBy(() -> item.release(invalidQuantity))
                     .isInstanceOf(DomainValidationException.class)
-                    .hasMessage("Quantity to release must be positive");
+                    .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
+                    .isEqualTo(InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
             softly.assertThatThrownBy(() -> item.consumeReserved(invalidQuantity))
                     .isInstanceOf(DomainValidationException.class)
-                    .hasMessage("Quantity to consume must be positive");
+                    .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
+                    .isEqualTo(InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
         });
     }
 }

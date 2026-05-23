@@ -9,9 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.DomainErrorCode;
 import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 
 class DomainAssertTest {
+
+    private enum TestErrorCode implements DomainErrorCode {
+        VALUE_MUST_BE_POSITIVE
+    }
 
     @Test
     void shouldRejectNullValue() {
@@ -74,6 +79,15 @@ class DomainAssertTest {
         assertThatThrownBy(() -> DomainAssert.isTrue(condition, "Invalid condition"))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessage("Invalid condition");
+    }
+
+    @Test
+    void shouldRejectWithErrorCode() {
+        assertThatThrownBy(() -> DomainAssert.requirePositive(0, TestErrorCode.VALUE_MUST_BE_POSITIVE))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessage(TestErrorCode.VALUE_MUST_BE_POSITIVE.name())
+                .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
+                .isEqualTo(TestErrorCode.VALUE_MUST_BE_POSITIVE);
     }
 
     @Test

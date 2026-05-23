@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.DomainErrorCode;
 import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 
 import tools.jackson.databind.exc.InvalidFormatException;
@@ -59,6 +60,11 @@ public class ValidationExceptionHandler {
 
     @ExceptionHandler(DomainValidationException.class)
     public ProblemDetail handleDomainValidationException(DomainValidationException ex) {
+        DomainErrorCode errorCode = ex.getErrorCode();
+        if (errorCode != null) {
+            return problemDetails.create(
+                    HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage(), Map.of("error_code", errorCode.name()));
+        }
         return problemDetails.create(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
     }
 

@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.DomainErrorCode;
 import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 import com.thiagsilvadev.erpapi.support.FixedClockTestConfiguration;
 
@@ -141,6 +142,15 @@ class ValidationExceptionHandlerTest {
                     .andExpect(jsonPath("$.instance").value("/test-validation/domain"))
                     .andExpect(jsonPath("$.timestamp").exists());
         }
+
+        @Test
+        void shouldHandleDomainValidationErrorCode() throws Exception {
+            mockMvc.perform(get("/test-validation/domain-code"))
+                    .andExpect(status().isUnprocessableContent())
+                    .andExpect(jsonPath("$.detail").value(DummyController.TestErrorCode.VALUE_MUST_BE_POSITIVE.name()))
+                    .andExpect(jsonPath("$.error_code")
+                            .value(DummyController.TestErrorCode.VALUE_MUST_BE_POSITIVE.name()));
+        }
     }
 
     @RestController
@@ -152,6 +162,10 @@ class ValidationExceptionHandlerTest {
         enum Role {
             ADMIN,
             USER
+        }
+
+        enum TestErrorCode implements DomainErrorCode {
+            VALUE_MUST_BE_POSITIVE
         }
 
         record DummyEnumDto(Role role) {}
@@ -184,6 +198,11 @@ class ValidationExceptionHandlerTest {
         @GetMapping("/domain")
         ResponseEntity<Void> testDomain() {
             throw new DomainValidationException("Country is required");
+        }
+
+        @GetMapping("/domain-code")
+        ResponseEntity<Void> testDomainCode() {
+            throw new DomainValidationException(TestErrorCode.VALUE_MUST_BE_POSITIVE);
         }
     }
 }

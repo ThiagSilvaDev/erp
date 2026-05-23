@@ -9,6 +9,7 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.inventory.internal.exception.InsufficientInventoryAvailableException;
 import com.thiagsilvadev.erpapi.inventory.internal.exception.InsufficientReservedInventoryException;
+import com.thiagsilvadev.erpapi.inventory.internal.exception.InventoryErrorCode;
 
 @Entity
 @Table(
@@ -38,7 +39,8 @@ public class InventoryItem extends AbstractBaseEntity {
     private InventoryItem(UUID productId, Warehouse warehouse, int quantityOnHand) {
         this.productId = Objects.requireNonNull(productId, "Product ID is required");
         this.warehouse = Objects.requireNonNull(warehouse, "Warehouse is required");
-        this.quantityOnHand = DomainAssert.requireNonNegative(quantityOnHand, "Quantity on hand must be non-negative");
+        this.quantityOnHand = DomainAssert.requireNonNegative(
+                quantityOnHand, InventoryErrorCode.QUANTITY_ON_HAND_MUST_BE_NON_NEGATIVE);
     }
 
     public static InventoryItem create(UUID productId, Warehouse warehouse, int quantityOnHand) {
@@ -46,24 +48,24 @@ public class InventoryItem extends AbstractBaseEntity {
     }
 
     public void increase(int quantity) {
-        DomainAssert.requirePositive(quantity, "Quantity to increase must be positive");
+        DomainAssert.requirePositive(quantity, InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
         this.quantityOnHand += quantity;
     }
 
     public void decrease(int quantity) {
-        DomainAssert.requirePositive(quantity, "Quantity to decrease must be positive");
+        DomainAssert.requirePositive(quantity, InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
         requireAvailable(quantity);
         this.quantityOnHand -= quantity;
     }
 
     public void reserve(int quantity) {
-        DomainAssert.requirePositive(quantity, "Quantity to reserve must be positive");
+        DomainAssert.requirePositive(quantity, InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
         requireAvailable(quantity);
         this.reservedQuantity += quantity;
     }
 
     public void release(int quantity) {
-        DomainAssert.requirePositive(quantity, "Quantity to release must be positive");
+        DomainAssert.requirePositive(quantity, InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
         if (this.reservedQuantity < quantity) {
             throw new InsufficientReservedInventoryException();
         }
@@ -71,7 +73,7 @@ public class InventoryItem extends AbstractBaseEntity {
     }
 
     public void consumeReserved(int quantity) {
-        DomainAssert.requirePositive(quantity, "Quantity to consume must be positive");
+        DomainAssert.requirePositive(quantity, InventoryErrorCode.QUANTITY_MUST_BE_POSITIVE);
         if (this.reservedQuantity < quantity) {
             throw new InsufficientReservedInventoryException();
         }
