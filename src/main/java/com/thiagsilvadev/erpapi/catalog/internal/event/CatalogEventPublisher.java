@@ -22,7 +22,7 @@ public class CatalogEventPublisher {
     }
 
     public void productCreated(Product product) {
-        ProductCreatedEvent event = new ProductCreatedEvent(product.getId(), product.getSku());
+        ProductCreatedEvent event = ProductCreatedEvent.created(product.getId(), product.getSku());
 
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             publish(event);

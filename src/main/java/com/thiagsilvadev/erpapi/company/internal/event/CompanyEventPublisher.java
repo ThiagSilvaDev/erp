@@ -23,7 +23,7 @@ public class CompanyEventPublisher {
 
     public void companyCreated(Company company) {
         CompanyCreatedEvent event =
-                new CompanyCreatedEvent(company.getId(), company.getCnpj().getNumber());
+                CompanyCreatedEvent.created(company.getId(), company.getCnpj().getNumber());
 
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             publish(event);

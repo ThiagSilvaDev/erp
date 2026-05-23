@@ -18,8 +18,8 @@ public class UserEventPublisher {
     }
 
     public void userCreated(User user) {
-        UserCreatedEvent event =
-                new UserCreatedEvent(user.getId(), user.getContact().getEmail(), user.getCompanyId(), user.getRole());
+        UserCreatedEvent event = UserCreatedEvent.created(
+                user.getId(), user.getContact().getEmail(), user.getCompanyId(), user.getRole());
 
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             eventPublisher.publishEvent(event);

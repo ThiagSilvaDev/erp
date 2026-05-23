@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderCancelledEvent;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderConfirmedEvent;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderConfirmedItem;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderDeliveryRequestedEvent;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 
@@ -23,7 +24,7 @@ public class SalesOrderEventPublisher {
     }
 
     public void salesOrderConfirmed(SalesOrder order) {
-        eventPublisher.publishEvent(new SalesOrderConfirmedEvent(
+        eventPublisher.publishEvent(SalesOrderConfirmedEvent.confirmed(
                 order.getId(),
                 order.getSaleType(),
                 order.getSellerCompanyId(),
@@ -33,7 +34,7 @@ public class SalesOrderEventPublisher {
                 order.currencyCode(),
                 LocalDate.now(clock),
                 order.getItems().stream()
-                        .map(item -> new com.thiagsilvadev.erpapi.sales.api.SalesOrderConfirmedItem(
+                        .map(item -> SalesOrderConfirmedItem.created(
                                 item.getProductId(),
                                 item.getWarehouseId(),
                                 item.getProductSku(),
@@ -43,7 +44,7 @@ public class SalesOrderEventPublisher {
     }
 
     public void salesOrderDeliveryRequested(SalesOrder order) {
-        eventPublisher.publishEvent(new SalesOrderDeliveryRequestedEvent(
+        eventPublisher.publishEvent(SalesOrderDeliveryRequestedEvent.requested(
                 order.getId(),
                 order.getSellerCompanyId(),
                 order.getBuyerCompanyId(),
@@ -52,7 +53,7 @@ public class SalesOrderEventPublisher {
                 order.getDeliveryRoute().getOriginWarehouseId(),
                 order.getDeliveryRoute().getDestinationDescription(),
                 order.getItems().stream()
-                        .map(item -> new SalesOrderDeliveryRequestedEvent.Item(
+                        .map(item -> SalesOrderDeliveryRequestedEvent.Item.created(
                                 item.getProductId(),
                                 item.getWarehouseId(),
                                 item.getProductSku(),
@@ -63,6 +64,6 @@ public class SalesOrderEventPublisher {
     }
 
     public void salesOrderCancelled(SalesOrder order) {
-        eventPublisher.publishEvent(new SalesOrderCancelledEvent(order.getId()));
+        eventPublisher.publishEvent(SalesOrderCancelledEvent.cancelled(order.getId()));
     }
 }

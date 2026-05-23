@@ -14,4 +14,27 @@ public record SalesOrderConfirmedEvent(
         BigDecimal totalAmount,
         String currencyCode,
         LocalDate confirmedAt,
-        List<SalesOrderConfirmedItem> items) {}
+        List<SalesOrderConfirmedItem> items) {
+
+    public static SalesOrderConfirmedEvent confirmed(
+            UUID salesOrderId,
+            SaleType saleType,
+            UUID sellerCompanyId,
+            UUID buyerCompanyId,
+            UUID customerId,
+            BigDecimal totalAmount,
+            String currencyCode,
+            LocalDate confirmedAt,
+            List<SalesOrderConfirmedItem> items) {
+        return new SalesOrderConfirmedEvent(
+                salesOrderId,
+                saleType,
+                sellerCompanyId,
+                buyerCompanyId,
+                customerId,
+                totalAmount,
+                currencyCode,
+                confirmedAt,
+                items);
+    }
+}
