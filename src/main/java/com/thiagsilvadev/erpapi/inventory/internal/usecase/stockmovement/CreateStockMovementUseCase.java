@@ -12,22 +12,23 @@ import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMoveme
 import com.thiagsilvadev.erpapi.inventory.internal.model.InventoryItem;
 import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovement;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
+import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryBalanceService;
 
 @Component
 public class CreateStockMovementUseCase {
 
     private final StockMovementRepository movementRepository;
-    private final ApplyMovementUseCase applyMovementUseCase;
+    private final InventoryBalanceService inventoryBalanceService;
     private final InventoryMapper mapper;
     private final BusinessNumberService businessNumberService;
 
     public CreateStockMovementUseCase(
             StockMovementRepository movementRepository,
-            ApplyMovementUseCase applyMovementUseCase,
+            InventoryBalanceService inventoryBalanceService,
             InventoryMapper mapper,
             BusinessNumberService businessNumberService) {
         this.movementRepository = movementRepository;
-        this.applyMovementUseCase = applyMovementUseCase;
+        this.inventoryBalanceService = inventoryBalanceService;
         this.mapper = mapper;
         this.businessNumberService = businessNumberService;
     }
@@ -35,7 +36,7 @@ public class CreateStockMovementUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
     public StockMovementResponse execute(CreateStockMovementRequest request) {
-        InventoryItem item = applyMovementUseCase.execute(
+        InventoryItem item = inventoryBalanceService.applyMovement(
                 request.productId(), request.warehouseId(), request.quantity(), request.type());
         StockMovement movement = movementRepository.save(StockMovement.create(
                 businessNumberService.next(BusinessNumberType.STOCK_MOVEMENT),

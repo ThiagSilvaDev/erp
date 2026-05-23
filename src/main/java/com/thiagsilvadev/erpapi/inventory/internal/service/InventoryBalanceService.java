@@ -1,8 +1,8 @@
-package com.thiagsilvadev.erpapi.inventory.internal.usecase.stockmovement;
+package com.thiagsilvadev.erpapi.inventory.internal.service;
 
 import java.util.UUID;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
@@ -13,14 +13,14 @@ import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
 
-@Component
-public class ApplyMovementUseCase {
+@Service
+public class InventoryBalanceService {
 
     private final InventoryItemRepository itemRepository;
     private final WarehouseRepository warehouseRepository;
     private final CatalogFacade catalogFacade;
 
-    public ApplyMovementUseCase(
+    public InventoryBalanceService(
             InventoryItemRepository itemRepository,
             WarehouseRepository warehouseRepository,
             CatalogFacade catalogFacade) {
@@ -30,7 +30,7 @@ public class ApplyMovementUseCase {
     }
 
     @Transactional
-    public InventoryItem execute(UUID productId, UUID warehouseId, int quantity, StockMovementType type) {
+    public InventoryItem applyMovement(UUID productId, UUID warehouseId, int quantity, StockMovementType type) {
         catalogFacade.requireProductExistsById(productId);
         Warehouse warehouse = warehouseRepository
                 .findById(warehouseId)
@@ -44,19 +44,9 @@ public class ApplyMovementUseCase {
                             return item;
                         })
                         .orElseGet(() -> itemRepository.save(InventoryItem.create(productId, warehouse, quantity)));
-            case OUT, TRANSFER_OUT -> {
+            case OUT, TRANSFER_OUT, RESERVE, RELEASE_RESERVATION -> {
                 InventoryItem item = getExistingItem(productId, warehouseId);
-                item.decrease(quantity);
-                yield item;
-            }
-            case RESERVE -> {
-                InventoryItem item = getExistingItem(productId, warehouseId);
-                item.reserve(quantity);
-                yield item;
-            }
-            case RELEASE_RESERVATION -> {
-                InventoryItem item = getExistingItem(productId, warehouseId);
-                item.release(quantity);
+                applyExistingItemMovement(item, quantity, type);
                 yield item;
             }
         };
@@ -66,5 +56,15 @@ public class ApplyMovementUseCase {
         return itemRepository
                 .findByProductIdAndWarehouseId(productId, warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId));
+    }
+
+    private void applyExistingItemMovement(InventoryItem item, int quantity, StockMovementType type) {
+        switch (type) {
+            case OUT, TRANSFER_OUT -> item.decrease(quantity);
+            case RESERVE -> item.reserve(quantity);
+            case RELEASE_RESERVATION -> item.release(quantity);
+            case IN, TRANSFER_IN, ADJUSTMENT ->
+                throw new IllegalArgumentException("Movement type does not require existing item: " + type);
+        }
     }
 }

@@ -12,7 +12,7 @@ import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovementType;
 import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
-import com.thiagsilvadev.erpapi.inventory.internal.usecase.stockmovement.ApplyMovementUseCase;
+import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryBalanceService;
 
 @Component
 @Profile("dev")
@@ -25,17 +25,17 @@ class InventoryDevSeeder implements ApplicationRunner {
     private final WarehouseRepository warehouseRepository;
     private final StockMovementRepository movementRepository;
     private final CatalogFacade catalogFacade;
-    private final ApplyMovementUseCase applyMovementUseCase;
+    private final InventoryBalanceService inventoryBalanceService;
 
     InventoryDevSeeder(
             WarehouseRepository warehouseRepository,
             StockMovementRepository movementRepository,
             CatalogFacade catalogFacade,
-            ApplyMovementUseCase applyMovementUseCase) {
+            InventoryBalanceService inventoryBalanceService) {
         this.warehouseRepository = warehouseRepository;
         this.movementRepository = movementRepository;
         this.catalogFacade = catalogFacade;
-        this.applyMovementUseCase = applyMovementUseCase;
+        this.inventoryBalanceService = inventoryBalanceService;
     }
 
     @Override
@@ -50,6 +50,6 @@ class InventoryDevSeeder implements ApplicationRunner {
         var product = catalogFacade
                 .findProductBySku(INDUSTRIAL_WIDGET_SKU)
                 .orElseThrow(() -> new IllegalStateException("Seed product must exist before seeding inventory"));
-        applyMovementUseCase.execute(product.id(), warehouse.getId(), 100, StockMovementType.IN);
+        inventoryBalanceService.applyMovement(product.id(), warehouse.getId(), 100, StockMovementType.IN);
     }
 }
