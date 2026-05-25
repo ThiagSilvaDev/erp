@@ -24,7 +24,7 @@ public class DomainValidationException extends RuntimeException {
     }
 
     public DomainValidationException(DomainErrorCode errorCode) {
-        super(errorCode.name());
+        super(errorCode.code());
         this.errorCode = errorCode;
     }
 

@@ -65,9 +65,25 @@ public final class DomainAssert {
         return value;
     }
 
-    public static void requirePositive(int value, DomainErrorCode errorCode) {
+    public static <T> T requireNonNull(T value, DomainErrorCode errorCode) {
+        if (value == null) {
+            throw new DomainValidationException(errorCode);
+        }
+        return value;
+    }
+
+    public static String requireNonBlank(String value, DomainErrorCode errorCode) {
+        requireNonNull(value, errorCode);
+        if (value.isBlank()) {
+            throw new DomainValidationException(errorCode);
+        }
+        return value.trim();
+    }
+
+    public static int requirePositive(int value, DomainErrorCode errorCode) {
         if (value <= 0) {
             throw new DomainValidationException(errorCode);
         }
+        return value;
     }
 }

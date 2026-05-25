@@ -18,6 +18,7 @@ Always run `./mvnw verify` before finishing code changes.
 - Use `common` only for validation, exception handling, security primitives, generic value objects, and
   utilities reused by 3+ modules. Domain-specific value objects stay in their owning module. When unsure,
   keep code in the owning module and ask before adding shared abstractions.
+- Use smart factories and dumb constructors for domain objects.
 
 ## Packaging
 Use `internal/controller`, `internal/dto`, `internal/usecase`, `internal/model`, `internal/repository`, and
@@ -53,6 +54,66 @@ when Flyway is introduced. Do not rely on Hibernate auto-DDL in production.
 Use JUnit 5, AssertJ, Mockito, Spring test support, and Spring Modulith tests. Add focused tests for changed
 use cases, domain rules, security, and listeners. Add integration tests for facade/event boundaries when
 module interactions change. `ApplicationModularityTests` must keep passing.
+### Exception assertions
+
+For AssertJ exception tests, the throwing lambda must contain only the method invocation expected to throw. Prepare collaborators, use cases, requests, and test data before the assertion.
+
+Prefer:
+
+```java
+var useCase = useCase();
+
+var exception = catchThrowableOfType(
+        ResourceNotFoundException.class,
+        () -> useCase.execute(request)
+);
+
+assertThat(exception.getProperties())
+        .containsEntry("resourceName", "Company");
+```
+
+### Isolate Exception-Throwing Invocations
+
+When asserting exceptions with AssertJ, keep the throwing lambda focused on the **single action expected to fail**.
+
+This applies to APIs such as:
+
+- `assertThatThrownBy(...)`
+- `assertThatExceptionOfType(...).isThrownBy(...)`
+- `catchThrowableOfType(...)`
+
+Do not create objects, generate UUIDs, parse strings, build value objects, or call helper/factory methods inside the exception lambda. Those extra calls may also throw runtime exceptions, which can hide the real failure source and trigger SonarQube warnings.
+
+Prepare all test data before the assertion. The lambda should contain only the target invocation.
+
+Avoid:
+
+```java
+assertThatThrownBy(() -> SalesOrderItem.create(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "SKU-001",
+                " ",
+                1,
+                Money.of(new BigDecimal("10.00"), "BRL")))
+        .isInstanceOf(DomainValidationException.class)
+        .satisfies(exception -> assertThat(((DomainValidationException) exception).getErrorCode())
+                .isEqualTo(SalesOrderItemErrorCode.PRODUCT_NAME_REQUIRED));
+```
+Prefer:
+
+```java
+var orderId = UUID.randomUUID();
+var productId = UUID.randomUUID();
+var price = Money.of(new BigDecimal("10.00"), "BRL");
+
+var exception = catchThrowableOfType(
+        DomainValidationException.class,
+        () -> SalesOrderItem.create(orderId, productId, "SKU-001", " ", 1, price));
+
+assertThat(exception.getErrorCode())
+        .isEqualTo(SalesOrderItemErrorCode.PRODUCT_NAME_REQUIRED);
+```
 
 ## Commit and Pull Request Guidelines
 Use Conventional Commits, for example `feat(logistics): add shipment workflow` or

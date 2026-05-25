@@ -147,9 +147,9 @@ class ValidationExceptionHandlerTest {
         void shouldHandleDomainValidationErrorCode() throws Exception {
             mockMvc.perform(get("/test-validation/domain-code"))
                     .andExpect(status().isUnprocessableContent())
-                    .andExpect(jsonPath("$.detail").value(DummyController.TestErrorCode.VALUE_MUST_BE_POSITIVE.name()))
+                    .andExpect(jsonPath("$.detail").value(DummyController.TestErrorCode.VALUE_MUST_BE_POSITIVE.code()))
                     .andExpect(jsonPath("$.error_code")
-                            .value(DummyController.TestErrorCode.VALUE_MUST_BE_POSITIVE.name()));
+                            .value(DummyController.TestErrorCode.VALUE_MUST_BE_POSITIVE.code()));
         }
     }
 
@@ -165,7 +165,12 @@ class ValidationExceptionHandlerTest {
         }
 
         enum TestErrorCode implements DomainErrorCode {
-            VALUE_MUST_BE_POSITIVE
+            VALUE_MUST_BE_POSITIVE;
+
+            @Override
+            public String code() {
+                return "TEST_" + name();
+            }
         }
 
         record DummyEnumDto(Role role) {}

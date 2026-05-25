@@ -73,23 +73,34 @@ public class CreateSalesOrderUseCase {
                             product.sku(),
                             product.name(),
                             item.quantity(),
-                            product.basePrice().getAmount(),
-                            product.basePrice().getCurrencyCode());
+                            product.basePrice());
                 })
-                .toList();
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         DeliveryRoute deliveryRoute = toDeliveryRoute(request.deliveryRoute());
 
-        SalesOrder order = SalesOrder.create(
-                businessNumberService.next(BusinessNumberType.SALES_ORDER),
-                request.saleType(),
-                request.fulfillmentType(),
-                request.paymentMethod(),
-                deliveryRoute,
-                request.sellerCompanyId(),
-                request.buyerCompanyId(),
-                request.customerId(),
-                items);
+        Long orderNumber = businessNumberService.next(BusinessNumberType.SALES_ORDER);
+        SalesOrder order =
+                switch (request.saleType()) {
+                    case B2B ->
+                        SalesOrder.createB2B(
+                                orderNumber,
+                                request.fulfillmentType(),
+                                request.paymentMethod(),
+                                deliveryRoute,
+                                request.sellerCompanyId(),
+                                request.buyerCompanyId(),
+                                items);
+                    case B2C ->
+                        SalesOrder.createB2C(
+                                orderNumber,
+                                request.fulfillmentType(),
+                                request.paymentMethod(),
+                                deliveryRoute,
+                                request.sellerCompanyId(),
+                                request.customerId(),
+                                items);
+                };
         orderRepository.save(order);
 
         return mapper.toResponse(order);

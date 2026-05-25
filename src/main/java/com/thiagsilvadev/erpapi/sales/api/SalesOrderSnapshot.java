@@ -1,7 +1,10 @@
 package com.thiagsilvadev.erpapi.sales.api;
 
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
+
+import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderItemResponse;
 
 public record SalesOrderSnapshot(
         UUID id,
@@ -14,4 +17,5 @@ public record SalesOrderSnapshot(
         UUID customerId,
         OrderStatus status,
         BigDecimal totalAmount,
-        String currencyCode) {}
+        String currencyCode,
+        Set<SalesOrderItemResponse> items) {}

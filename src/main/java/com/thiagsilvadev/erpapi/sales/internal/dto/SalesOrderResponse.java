@@ -1,7 +1,7 @@
 package com.thiagsilvadev.erpapi.sales.internal.dto;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
@@ -22,4 +22,4 @@ public record SalesOrderResponse(
         OrderStatus status,
         BigDecimal totalAmount,
         String currencyCode,
-        List<SalesOrderItemResponse> items) {}
+        Set<SalesOrderItemResponse> items) {}

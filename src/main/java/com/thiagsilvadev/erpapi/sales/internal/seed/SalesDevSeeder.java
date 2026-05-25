@@ -1,6 +1,6 @@
 package com.thiagsilvadev.erpapi.sales.internal.seed;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -16,7 +16,6 @@ import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
-import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrderItem;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
@@ -64,22 +63,14 @@ class SalesDevSeeder implements ApplicationRunner {
         var warehouse = inventoryFacade
                 .findWarehouseByCode(WAREHOUSE_CODE)
                 .orElseThrow(() -> new IllegalStateException("Seed warehouse must exist before seeding sales"));
-        orderRepository.save(SalesOrder.create(
+        orderRepository.save(SalesOrder.createB2C(
                 businessNumberService.next(BusinessNumberType.SALES_ORDER),
-                SaleType.B2C,
                 FulfillmentType.PICKUP,
                 PaymentMethod.PIX,
                 null,
                 customer.ownerCompanyId(),
-                null,
                 customer.id(),
-                List.of(SalesOrderItem.create(
-                        product.id(),
-                        warehouse.id(),
-                        product.sku(),
-                        product.name(),
-                        2,
-                        product.basePrice().getAmount(),
-                        product.basePrice().getCurrencyCode()))));
+                Set.of(SalesOrderItem.create(
+                        product.id(), warehouse.id(), product.sku(), product.name(), 2, product.basePrice()))));
     }
 }

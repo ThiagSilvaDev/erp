@@ -1,13 +1,13 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.invoice;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -95,7 +95,8 @@ class CreateInvoiceUseCaseTest {
                         null,
                         OrderStatus.CONFIRMED,
                         new BigDecimal("20.00"),
-                        "BRL")));
+                        "BRL",
+                        Set.of())));
         when(invoiceRepository.existsBySalesOrderId(salesOrderId)).thenReturn(false);
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(201L);
         when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
@@ -128,9 +129,11 @@ class CreateInvoiceUseCaseTest {
                         customerId,
                         OrderStatus.CONFIRMED,
                         new BigDecimal("20.00"),
-                        "BRL")));
+                        "BRL",
+                        Set.of())));
+        CreateInvoiceUseCase useCase = useCase();
 
-        assertThatThrownBy(() -> useCase().execute(request)).isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ConflictException.class);
     }
 
     @Test
@@ -141,8 +144,9 @@ class CreateInvoiceUseCaseTest {
         when(customerFacade.findCustomerById(customerId))
                 .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID())));
         when(salesFacade.findOrderById(salesOrderId)).thenReturn(Optional.empty());
+        CreateInvoiceUseCase useCase = useCase();
 
-        assertThatThrownBy(() -> useCase().execute(request))
+        assertThatThrownBy(() -> useCase.execute(request))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
                         .containsEntry("resourceName", "SalesOrder"));
@@ -153,11 +157,10 @@ class CreateInvoiceUseCaseTest {
         UUID companyId = UUID.randomUUID();
         CreateInvoiceRequest request = request(BillingPartyType.COMPANY, companyId, null);
         when(companyFacade.findById(companyId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> useCase().execute(request))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
-                        .containsEntry("resourceName", "Company"));
+        var useCase = useCase();
+        var exception = catchThrowableOfType(ResourceNotFoundException.class, () -> useCase.execute(request));
+        assertThat(exception).isNotNull();
+        assertThat(exception.getProperties()).containsEntry("resourceName", "Company");
     }
 
     private CreateInvoiceUseCase useCase() {

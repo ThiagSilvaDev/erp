@@ -63,7 +63,7 @@ public class ValidationExceptionHandler {
         DomainErrorCode errorCode = ex.getErrorCode();
         if (errorCode != null) {
             return problemDetails.create(
-                    HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage(), Map.of("error_code", errorCode.name()));
+                    HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage(), Map.of("error_code", errorCode.code()));
         }
         return problemDetails.create(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
     }

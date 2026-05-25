@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.common.domain.validation;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -15,6 +16,7 @@ import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationExceptio
 class DomainAssertTest {
 
     private enum TestErrorCode implements DomainErrorCode {
+        VALUE_REQUIRED,
         VALUE_MUST_BE_POSITIVE
     }
 
@@ -88,6 +90,44 @@ class DomainAssertTest {
                 .hasMessage(TestErrorCode.VALUE_MUST_BE_POSITIVE.name())
                 .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
                 .isEqualTo(TestErrorCode.VALUE_MUST_BE_POSITIVE);
+    }
+
+    @Test
+    void shouldRejectNullValueWithErrorCode() {
+        assertThatThrownBy(() -> DomainAssert.requireNonNull(null, TestErrorCode.VALUE_REQUIRED))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessage(TestErrorCode.VALUE_REQUIRED.name())
+                .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
+                .isEqualTo(TestErrorCode.VALUE_REQUIRED);
+    }
+
+    @Test
+    void shouldRejectBlankValueWithErrorCode() {
+        assertThatThrownBy(() -> DomainAssert.requireNonBlank(" ", TestErrorCode.VALUE_REQUIRED))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessage(TestErrorCode.VALUE_REQUIRED.name())
+                .extracting(ex -> ((DomainValidationException) ex).getErrorCode())
+                .isEqualTo(TestErrorCode.VALUE_REQUIRED);
+    }
+
+    @Test
+    void shouldReturnNonNullValue() {
+        Object value = new Object();
+
+        assertThat(DomainAssert.requireNonNull(value, TestErrorCode.VALUE_REQUIRED))
+                .isSameAs(value);
+    }
+
+    @Test
+    void shouldReturnTrimmedNonBlankValue() {
+        assertThat(DomainAssert.requireNonBlank(" value ", TestErrorCode.VALUE_REQUIRED))
+                .isEqualTo("value");
+    }
+
+    @Test
+    void shouldReturnPositiveValue() {
+        assertThat(DomainAssert.requirePositive(1, TestErrorCode.VALUE_MUST_BE_POSITIVE))
+                .isEqualTo(1);
     }
 
     @Test
