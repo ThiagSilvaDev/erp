@@ -69,6 +69,16 @@ public class Cnpj {
         return number;
     }
 
+    public String getFormattedNumber() {
+        return String.format(
+                "%s.%s.%s/%s-%s",
+                number.substring(0, 2),
+                number.substring(2, 5),
+                number.substring(5, 8),
+                number.substring(8, 12),
+                number.substring(12, 14));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
