@@ -8,10 +8,12 @@ import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
+import com.thiagsilvadev.erpapi.company.api.CompanyAddressSnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyContactSnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.internal.dto.AddressRequest;
 import com.thiagsilvadev.erpapi.company.internal.dto.AddressResponse;
+import com.thiagsilvadev.erpapi.company.internal.dto.CompanyAddressResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyContactResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.ContactRequest;
@@ -68,6 +70,30 @@ public interface CompanyMapper {
                 toSnapshot(primaryContact));
     }
 
+    default CompanyAddressResponse toAddressResponse(Company company) {
+        if (company == null) {
+            return null;
+        }
+
+        return new CompanyAddressResponse(
+                company.getId(),
+                companyName(company),
+                toAddressResponse(company.getAddress()),
+                formatDeliveryRouteDestination(company.getAddress()));
+    }
+
+    default CompanyAddressSnapshot toAddressSnapshot(Company company) {
+        if (company == null) {
+            return null;
+        }
+
+        return new CompanyAddressSnapshot(
+                company.getId(),
+                companyName(company),
+                company.getAddress(),
+                formatDeliveryRouteDestination(company.getAddress()));
+    }
+
     default Address toAddress(AddressRequest request) {
         if (request == null) {
             return null;
@@ -110,5 +136,37 @@ public interface CompanyMapper {
 
         String trimmedValue = value.trim();
         return trimmedValue.isEmpty() ? null : trimmedValue;
+    }
+
+    private String companyName(Company company) {
+        String tradeName = trimToNull(company.getTradeName());
+        return tradeName == null ? company.getLegalName() : tradeName;
+    }
+
+    private String formatDeliveryRouteDestination(Address address) {
+        if (address == null) {
+            return null;
+        }
+
+        StringBuilder destination =
+                new StringBuilder().append(address.getStreet()).append(", ").append(address.getNumber());
+
+        String complement = trimToNull(address.getComplement());
+        if (complement != null) {
+            destination.append(", ").append(complement);
+        }
+
+        return destination
+                .append(" - ")
+                .append(address.getDistrict())
+                .append(", ")
+                .append(address.getCity())
+                .append(" - ")
+                .append(address.getRegion())
+                .append(", ")
+                .append(address.getCountry().name())
+                .append(", ")
+                .append(address.getPostalCode())
+                .toString();
     }
 }

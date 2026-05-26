@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.thiagsilvadev.erpapi.company.internal.dto.CompanyAddressResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyRequest;
@@ -39,6 +40,12 @@ public interface CompanyApi {
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "404")
     CompanyResponse getCompanyById(@PathVariable UUID id);
+
+    @GetMapping("/{id}/address")
+    @Operation(operationId = "getCompanyAddress")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "404")
+    CompanyAddressResponse getCompanyAddress(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listCompanies")

@@ -7,13 +7,16 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.logistics.internal.model.*;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentTrackingEventRepository;
+import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderCancelledEvent;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderDeliveryRequestedEvent;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
 
 @Component
 public class SalesOrderLogisticsListener {
@@ -22,16 +25,19 @@ public class SalesOrderLogisticsListener {
     private final ShipmentTrackingEventRepository trackingEventRepository;
     private final BusinessNumberService businessNumberService;
     private final Clock clock;
+    private final SalesFacade salesFacade;
 
     public SalesOrderLogisticsListener(
             ShipmentRepository shipmentRepository,
             ShipmentTrackingEventRepository trackingEventRepository,
             BusinessNumberService businessNumberService,
-            Clock clock) {
+            Clock clock,
+            SalesFacade salesFacade) {
         this.shipmentRepository = shipmentRepository;
         this.trackingEventRepository = trackingEventRepository;
         this.businessNumberService = businessNumberService;
         this.clock = clock;
+        this.salesFacade = salesFacade;
     }
 
     @ApplicationModuleListener
@@ -39,18 +45,30 @@ public class SalesOrderLogisticsListener {
         if (shipmentRepository.existsBySalesOrderId(event.salesOrderId())) {
             return;
         }
+
+        SalesOrderSnapshot order = salesFacade
+                .findOrderById(event.salesOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", event.salesOrderId()));
+
         Shipment shipment = Shipment.create(
                 businessNumberService.next(BusinessNumberType.SHIPMENT),
                 event.salesOrderId(),
-                event.sellerCompanyId(),
-                event.buyerCompanyId(),
-                event.customerId(),
-                event.items().stream()
+                order.sellerCompanyId(),
+                order.buyerCompanyId(),
+                order.customerId(),
+                order.items().stream()
                         .map(item -> ShipmentItem.create(
-                                item.productId(), item.warehouseId(), item.sku(), item.name(), item.quantity()))
+                                item.productId(),
+                                item.warehouseId(),
+                                item.productSku(),
+                                item.productName(),
+                                item.quantity()))
                         .toList());
 
-        shipment.assignRoute(event.routeName(), event.originWarehouseId(), event.destinationDescription());
+        shipment.assignRoute(
+                order.deliveryRoute().routeName(),
+                order.deliveryRoute().originWarehouseId(),
+                order.deliveryRoute().destinationDescription());
         shipment = shipmentRepository.save(shipment);
 
         trackingEventRepository.save(ShipmentTrackingEvent.create(

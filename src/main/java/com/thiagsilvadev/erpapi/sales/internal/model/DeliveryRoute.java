@@ -1,9 +1,9 @@
 package com.thiagsilvadev.erpapi.sales.internal.model;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
@@ -23,19 +23,21 @@ public class DeliveryRoute {
     private String destinationDescription;
 
     @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(
-                name = "latitude",
-                column = @Column(name = "destination_latitude", precision = 10, scale = 7)),
-        @AttributeOverride(
-                name = "longitude",
-                column = @Column(name = "destination_longitude", precision = 10, scale = 7))
-    })
+    @AttributeOverride(name = "latitude", column = @Column(name = "destination_latitude", precision = 10, scale = 7))
+    @AttributeOverride(name = "longitude", column = @Column(name = "destination_longitude", precision = 10, scale = 7))
     private GeoLocation destinationLocation;
 
     protected DeliveryRoute() {}
 
     private DeliveryRoute(
+            String routeName, UUID originWarehouseId, String destinationDescription, GeoLocation destinationLocation) {
+        this.routeName = routeName;
+        this.originWarehouseId = originWarehouseId;
+        this.destinationDescription = destinationDescription;
+        this.destinationLocation = destinationLocation;
+    }
+
+    public static DeliveryRoute of(
             String routeName, UUID originWarehouseId, String destinationDescription, GeoLocation destinationLocation) {
         if (routeName == null || routeName.isBlank()) {
             throw new IllegalArgumentException("Route name cannot be blank");
@@ -43,15 +45,12 @@ public class DeliveryRoute {
         if (destinationDescription == null || destinationDescription.isBlank()) {
             throw new IllegalArgumentException("Destination description cannot be blank");
         }
-        this.routeName = routeName.trim();
-        this.originWarehouseId = java.util.Objects.requireNonNull(originWarehouseId, "Origin warehouse ID is required");
-        this.destinationDescription = destinationDescription.trim();
-        this.destinationLocation = destinationLocation;
-    }
 
-    public static DeliveryRoute delivery(
-            String routeName, UUID originWarehouseId, String destinationDescription, GeoLocation destinationLocation) {
-        return new DeliveryRoute(routeName, originWarehouseId, destinationDescription, destinationLocation);
+        return new DeliveryRoute(
+                routeName.trim(),
+                Objects.requireNonNull(originWarehouseId, "Origin warehouse ID is required"),
+                destinationDescription.trim(),
+                destinationLocation);
     }
 
     public String getRouteName() {

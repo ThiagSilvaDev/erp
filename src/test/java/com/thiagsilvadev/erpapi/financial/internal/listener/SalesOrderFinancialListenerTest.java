@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -21,8 +23,7 @@ import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
-import com.thiagsilvadev.erpapi.sales.api.SaleType;
-import com.thiagsilvadev.erpapi.sales.api.SalesOrderConfirmedEvent;
+import com.thiagsilvadev.erpapi.sales.api.*;
 
 @ExtendWith(MockitoExtension.class)
 class SalesOrderFinancialListenerTest {
@@ -39,20 +40,17 @@ class SalesOrderFinancialListenerTest {
     @Mock
     private BusinessNumberService businessNumberService;
 
+    @Mock
+    private SalesFacade salesFacade;
+
     @Test
     void shouldCreateB2bInvoiceForBuyerCompany() {
+        UUID salesOrderId = UUID.randomUUID();
         UUID buyerCompanyId = UUID.randomUUID();
-        SalesOrderConfirmedEvent event = new SalesOrderConfirmedEvent(
-                UUID.randomUUID(),
-                SaleType.B2B,
-                UUID.randomUUID(),
-                buyerCompanyId,
-                null,
-                new BigDecimal("20.00"),
-                "BRL",
-                LocalDate.now(),
-                java.util.List.of());
+        SalesOrderConfirmedEvent event = new SalesOrderConfirmedEvent(salesOrderId, LocalDate.now());
         when(invoiceRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(false);
+        when(salesFacade.findOrderById(salesOrderId))
+                .thenReturn(Optional.of(order(salesOrderId, SaleType.B2B, buyerCompanyId, null)));
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(300L);
         when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -67,18 +65,12 @@ class SalesOrderFinancialListenerTest {
 
     @Test
     void shouldCreateB2cInvoiceForCustomer() {
+        UUID salesOrderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
-        SalesOrderConfirmedEvent event = new SalesOrderConfirmedEvent(
-                UUID.randomUUID(),
-                SaleType.B2C,
-                UUID.randomUUID(),
-                null,
-                customerId,
-                new BigDecimal("20.00"),
-                "BRL",
-                LocalDate.now(),
-                java.util.List.of());
+        SalesOrderConfirmedEvent event = new SalesOrderConfirmedEvent(salesOrderId, LocalDate.now());
         when(invoiceRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(false);
+        when(salesFacade.findOrderById(salesOrderId))
+                .thenReturn(Optional.of(order(salesOrderId, SaleType.B2C, null, customerId)));
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(301L);
         when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -93,6 +85,23 @@ class SalesOrderFinancialListenerTest {
 
     private SalesOrderFinancialListener listener() {
         return new SalesOrderFinancialListener(
-                invoiceRepository, ledgerEntryRepository, paymentRepository, businessNumberService);
+                invoiceRepository, ledgerEntryRepository, paymentRepository, businessNumberService, salesFacade);
+    }
+
+    private static SalesOrderSnapshot order(UUID id, SaleType saleType, UUID buyerCompanyId, UUID customerId) {
+        return new SalesOrderSnapshot(
+                id,
+                100L,
+                saleType,
+                FulfillmentType.PICKUP,
+                PaymentMethod.PIX,
+                null,
+                UUID.randomUUID(),
+                buyerCompanyId,
+                customerId,
+                OrderStatus.CONFIRMED,
+                new BigDecimal("20.00"),
+                "BRL",
+                Set.of());
     }
 }

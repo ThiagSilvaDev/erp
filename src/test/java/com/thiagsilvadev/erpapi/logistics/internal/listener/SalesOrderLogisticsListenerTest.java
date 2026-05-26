@@ -38,10 +38,14 @@ class SalesOrderLogisticsListenerTest {
     @Mock
     private BusinessNumberService businessNumberService;
 
+    @Mock
+    private SalesFacade salesFacade;
+
     @Test
     void shouldCreateShipmentWhenSalesOrderDeliveryIsRequested() {
         SalesOrderDeliveryRequestedEvent event = event();
         when(shipmentRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(false);
+        when(salesFacade.findOrderById(event.salesOrderId())).thenReturn(Optional.of(order(event.salesOrderId())));
         when(businessNumberService.next(BusinessNumberType.SHIPMENT)).thenReturn(500L);
         when(shipmentRepository.save(any(Shipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -88,20 +92,28 @@ class SalesOrderLogisticsListenerTest {
 
     private SalesOrderLogisticsListener listener() {
         return new SalesOrderLogisticsListener(
-                shipmentRepository, trackingEventRepository, businessNumberService, clock);
+                shipmentRepository, trackingEventRepository, businessNumberService, clock, salesFacade);
     }
 
     private SalesOrderDeliveryRequestedEvent event() {
-        return new SalesOrderDeliveryRequestedEvent(
-                UUID.randomUUID(),
+        return new SalesOrderDeliveryRequestedEvent(UUID.randomUUID());
+    }
+
+    private static SalesOrderSnapshot order(UUID id) {
+        return new SalesOrderSnapshot(
+                id,
+                100L,
+                SaleType.B2C,
+                FulfillmentType.DELIVERY,
+                PaymentMethod.PIX,
+                new SalesOrderDeliveryRouteSnapshot("Route A", UUID.randomUUID(), "Customer HQ"),
                 UUID.randomUUID(),
                 null,
                 UUID.randomUUID(),
-                "Route A",
-                UUID.randomUUID(),
-                "Customer HQ",
-                List.of(new SalesOrderDeliveryRequestedEvent.Item(
-                        UUID.randomUUID(), UUID.randomUUID(), "SKU-1", "Product", 2)),
-                Instant.now(clock));
+                OrderStatus.CONFIRMED,
+                java.math.BigDecimal.TEN,
+                "BRL",
+                java.util.Set.of(
+                        new SalesOrderItemSnapshot(UUID.randomUUID(), UUID.randomUUID(), "SKU-1", "Product", 2)));
     }
 }

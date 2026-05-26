@@ -8,4 +8,6 @@ public interface CompanyFacade {
     Optional<CompanySnapshot> findById(UUID id);
 
     Optional<CompanySnapshot> findByCnpj(String cnpj);
+
+    Optional<CompanyAddressSnapshot> findAddressByCompanyId(UUID id);
 }

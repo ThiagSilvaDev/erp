@@ -165,7 +165,7 @@ public class CreateSalesOrderUseCase {
             return null;
         }
 
-        return DeliveryRoute.delivery(
+        return DeliveryRoute.of(
                 request.routeName(),
                 request.originWarehouseId(),
                 request.destinationDescription(),

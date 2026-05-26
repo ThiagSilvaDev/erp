@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
+import com.thiagsilvadev.erpapi.company.api.CompanyAddressSnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
@@ -51,5 +52,11 @@ public class CompanyService implements CompanyFacade {
                         companyContactRepository
                                 .findByCompanyIdAndPrimaryContactTrue(company.getId())
                                 .orElse(null)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<CompanyAddressSnapshot> findAddressByCompanyId(UUID id) {
+        return companyRepository.findById(id).map(companyMapper::toAddressSnapshot);
     }
 }
