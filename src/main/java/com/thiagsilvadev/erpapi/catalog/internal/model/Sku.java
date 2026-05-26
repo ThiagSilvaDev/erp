@@ -5,7 +5,8 @@ import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
+import com.thiagsilvadev.erpapi.catalog.internal.exception.ProductErrorCode;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 @Embeddable
 public class Sku {
@@ -24,7 +25,8 @@ public class Sku {
     }
 
     private static String normalize(String value) {
-        return Strings.required(value, "Product SKU cannot be blank").toUpperCase();
+        return DomainAssert.requireNonBlank(value, ProductErrorCode.SKU_REQUIRED)
+                .toUpperCase();
     }
 
     public String getValue() {

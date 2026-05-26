@@ -1,14 +1,11 @@
 package com.thiagsilvadev.erpapi.catalog.internal.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.catalog.api.CategoryStatus;
+import com.thiagsilvadev.erpapi.catalog.internal.exception.CategoryErrorCode;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -32,17 +29,20 @@ public class Category extends AbstractBaseEntity {
     protected Category() {}
 
     private Category(String code, String name, String description) {
-        this.code = normalizeCode(code);
-        this.name = Strings.required(name, "Category name cannot be blank");
-        this.description = Strings.trimToNull(description);
+        this.code = code;
+        this.name = name;
+        this.description = description;
     }
 
     public static Category create(String code, String name, String description) {
-        return new Category(code, name, description);
+        return new Category(
+                normalizeCode(code),
+                DomainAssert.requireNonBlank(name, CategoryErrorCode.NAME_REQUIRED),
+                Strings.trimToNull(description));
     }
 
     public void update(String name, String description) {
-        this.name = Strings.required(name, "Category name cannot be blank");
+        this.name = DomainAssert.requireNonBlank(name, CategoryErrorCode.NAME_REQUIRED);
         this.description = Strings.trimToNull(description);
     }
 
@@ -71,6 +71,7 @@ public class Category extends AbstractBaseEntity {
     }
 
     public static String normalizeCode(String code) {
-        return Strings.required(code, "Category code cannot be blank").toUpperCase();
+        return DomainAssert.requireNonBlank(code, CategoryErrorCode.CODE_REQUIRED)
+                .toUpperCase();
     }
 }

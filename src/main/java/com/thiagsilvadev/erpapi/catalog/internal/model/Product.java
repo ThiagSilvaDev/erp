@@ -1,7 +1,5 @@
 package com.thiagsilvadev.erpapi.catalog.internal.model;
 
-import java.util.Objects;
-
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -15,8 +13,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
+import com.thiagsilvadev.erpapi.catalog.internal.exception.ProductErrorCode;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -52,31 +52,32 @@ public class Product extends AbstractBaseEntity {
 
     protected Product() {}
 
-    private Product(String sku, String name, String description, Money basePrice, Category category) {
-        this(Sku.create(sku), name, description, basePrice, category);
-    }
-
     private Product(Sku sku, String name, String description, Money basePrice, Category category) {
-        this.sku = Objects.requireNonNull(sku, "Product SKU cannot be null");
-        this.name = Strings.required(name, "Product name cannot be blank");
-        this.description = Strings.trimToNull(description);
-        this.basePrice = Objects.requireNonNull(basePrice, "Product base price cannot be null");
-        this.category = Objects.requireNonNull(category, "Product category cannot be null");
+        this.sku = sku;
+        this.name = name;
+        this.description = description;
+        this.basePrice = basePrice;
+        this.category = category;
     }
 
     public static Product create(String sku, String name, String description, Money basePrice, Category category) {
-        return new Product(sku, name, description, basePrice, category);
+        return create(Sku.create(sku), name, description, basePrice, category);
     }
 
     public static Product create(Sku sku, String name, String description, Money basePrice, Category category) {
-        return new Product(sku, name, description, basePrice, category);
+        return new Product(
+                DomainAssert.requireNonNull(sku, ProductErrorCode.SKU_REQUIRED),
+                DomainAssert.requireNonBlank(name, ProductErrorCode.NAME_REQUIRED),
+                Strings.trimToNull(description),
+                DomainAssert.requireNonNull(basePrice, ProductErrorCode.BASE_PRICE_REQUIRED),
+                DomainAssert.requireNonNull(category, ProductErrorCode.CATEGORY_REQUIRED));
     }
 
     public void update(String name, String description, Money basePrice, Category category) {
-        this.name = Strings.required(name, "Product name cannot be blank");
+        this.name = DomainAssert.requireNonBlank(name, ProductErrorCode.NAME_REQUIRED);
         this.description = Strings.trimToNull(description);
-        this.basePrice = Objects.requireNonNull(basePrice, "Product base price cannot be null");
-        this.category = Objects.requireNonNull(category, "Product category cannot be null");
+        this.basePrice = DomainAssert.requireNonNull(basePrice, ProductErrorCode.BASE_PRICE_REQUIRED);
+        this.category = DomainAssert.requireNonNull(category, ProductErrorCode.CATEGORY_REQUIRED);
     }
 
     public void activate() {

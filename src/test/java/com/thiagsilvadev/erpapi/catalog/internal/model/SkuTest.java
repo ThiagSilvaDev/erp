@@ -1,9 +1,12 @@
 package com.thiagsilvadev.erpapi.catalog.internal.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 import org.junit.jupiter.api.Test;
+
+import com.thiagsilvadev.erpapi.catalog.internal.exception.ProductErrorCode;
+import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 
 class SkuTest {
 
@@ -16,8 +19,10 @@ class SkuTest {
 
     @Test
     void shouldRejectBlankSku() {
-        assertThatThrownBy(() -> Sku.create(" "))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Product SKU cannot be blank");
+        String value = " ";
+
+        var exception = catchThrowableOfType(DomainValidationException.class, () -> Sku.create(value));
+
+        assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.SKU_REQUIRED);
     }
 }
