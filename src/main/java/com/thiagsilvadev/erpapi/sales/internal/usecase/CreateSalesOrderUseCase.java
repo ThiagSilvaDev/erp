@@ -21,6 +21,7 @@ import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.dto.*;
 import com.thiagsilvadev.erpapi.sales.internal.model.DeliveryRoute;
+import com.thiagsilvadev.erpapi.sales.internal.model.SalesBuyer;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrderItem;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
@@ -53,7 +54,7 @@ public class CreateSalesOrderUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).WRITE)")
     public SalesOrderResponse execute(CreateSalesOrderRequest request) {
-        validateParties(request);
+        SalesBuyer buyer = resolveBuyer(request);
 
         Set<UUID> productIds = request.items().stream()
                 .map(CreateSalesOrderItemRequest::productId)
@@ -80,81 +81,58 @@ public class CreateSalesOrderUseCase {
         DeliveryRoute deliveryRoute = toDeliveryRoute(request.deliveryRoute());
 
         Long orderNumber = businessNumberService.next(BusinessNumberType.SALES_ORDER);
-        SalesOrder order =
-                switch (request.saleType()) {
-                    case B2B ->
-                        SalesOrder.createB2B(
-                                orderNumber,
-                                request.fulfillmentType(),
-                                request.paymentMethod(),
-                                deliveryRoute,
-                                request.sellerCompanyId(),
-                                request.buyerCompanyId(),
-                                items);
-                    case B2C ->
-                        SalesOrder.createB2C(
-                                orderNumber,
-                                request.fulfillmentType(),
-                                request.paymentMethod(),
-                                deliveryRoute,
-                                request.sellerCompanyId(),
-                                request.customerId(),
-                                items);
-                };
+        SalesOrder order = SalesOrder.create(
+                orderNumber,
+                request.fulfillmentType(),
+                request.paymentMethod(),
+                deliveryRoute,
+                request.sellerCompanyId(),
+                buyer,
+                items);
         orderRepository.save(order);
 
         return mapper.toResponse(order);
     }
 
-    private void validateParties(CreateSalesOrderRequest request) {
+    private SalesBuyer resolveBuyer(CreateSalesOrderRequest request) {
+        SalesBuyer buyer = SalesBuyer.of(request.saleType(), request.buyerCompanyId(), request.customerId());
         CompanySnapshot seller = companyFacade
                 .findById(request.sellerCompanyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company", request.sellerCompanyId()));
 
-        if (request.saleType() == SaleType.B2B) {
-            validateB2b(request, seller);
-            return;
+        if (buyer.getSaleType() == SaleType.B2B) {
+            validateB2b(request, buyer, seller);
+            return buyer;
         }
 
-        validateB2c(request, seller);
+        validateB2c(request, buyer, seller);
+        return buyer;
     }
 
-    private void validateB2b(CreateSalesOrderRequest request, CompanySnapshot seller) {
-        if (request.buyerCompanyId() == null) {
-            throw new IllegalArgumentException("Buyer company is required for B2B sales");
-        }
-        if (request.customerId() != null) {
-            throw new IllegalArgumentException("Customer must be null for B2B sales");
-        }
+    private void validateB2b(CreateSalesOrderRequest request, SalesBuyer buyer, CompanySnapshot seller) {
         if (seller.type() != CompanyType.FACTORY) {
             throw new IllegalArgumentException("B2B seller must be a factory");
         }
-        if (request.sellerCompanyId().equals(request.buyerCompanyId())) {
+        if (request.sellerCompanyId().equals(buyer.getBuyerCompanyId())) {
             throw new IllegalArgumentException("B2B buyer company cannot be the seller company");
         }
 
-        CompanySnapshot buyer = companyFacade
-                .findById(request.buyerCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", request.buyerCompanyId()));
-        if (buyer.type() != CompanyType.CORRESPONDENT) {
+        CompanySnapshot buyerCompany = companyFacade
+                .findById(buyer.getBuyerCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company", buyer.getBuyerCompanyId()));
+        if (buyerCompany.type() != CompanyType.CORRESPONDENT) {
             throw new IllegalArgumentException("B2B buyer company must be a correspondent");
         }
     }
 
-    private void validateB2c(CreateSalesOrderRequest request, CompanySnapshot seller) {
-        if (request.buyerCompanyId() != null) {
-            throw new IllegalArgumentException("Buyer company must be null for B2C sales");
-        }
-        if (request.customerId() == null) {
-            throw new IllegalArgumentException("Customer is required for B2C sales");
-        }
+    private void validateB2c(CreateSalesOrderRequest request, SalesBuyer buyer, CompanySnapshot seller) {
         if (seller.type() != CompanyType.FACTORY && seller.type() != CompanyType.CORRESPONDENT) {
             throw new IllegalArgumentException("B2C seller must be a factory or correspondent");
         }
 
         CustomerSnapshot customer = customerFacade
-                .findCustomerById(request.customerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+                .findCustomerById(buyer.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", buyer.getCustomerId()));
         if (!request.sellerCompanyId().equals(customer.ownerCompanyId())) {
             throw new IllegalArgumentException("B2C customer must belong to the seller company");
         }

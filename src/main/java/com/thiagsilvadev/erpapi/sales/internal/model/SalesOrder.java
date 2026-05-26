@@ -28,9 +28,8 @@ public class SalesOrder extends AbstractBaseEntity {
     @Column(name = "order_number", nullable = false, updatable = false)
     private Long orderNumber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, updatable = false)
-    private SaleType saleType;
+    @Embedded
+    private SalesBuyer buyer;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "fulfillment_type", nullable = false, updatable = false)
@@ -46,12 +45,6 @@ public class SalesOrder extends AbstractBaseEntity {
     @Column(nullable = false, updatable = false)
     private UUID sellerCompanyId;
 
-    @Column(updatable = false)
-    private UUID buyerCompanyId;
-
-    @Column(updatable = false)
-    private UUID customerId;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.DRAFT;
@@ -63,21 +56,17 @@ public class SalesOrder extends AbstractBaseEntity {
 
     private SalesOrder(
             Long orderNumber,
-            SaleType saleType,
             FulfillmentType fulfillmentType,
             PaymentMethod paymentMethod,
             DeliveryRoute deliveryRoute,
             UUID sellerCompanyId,
-            UUID buyerCompanyId,
-            UUID customerId) {
+            SalesBuyer buyer) {
         this.orderNumber = orderNumber;
-        this.saleType = saleType;
+        this.buyer = buyer;
         this.fulfillmentType = fulfillmentType;
         this.paymentMethod = paymentMethod;
         this.deliveryRoute = deliveryRoute;
         this.sellerCompanyId = sellerCompanyId;
-        this.buyerCompanyId = buyerCompanyId;
-        this.customerId = customerId;
     }
 
     public static SalesOrder createB2B(
@@ -90,13 +79,11 @@ public class SalesOrder extends AbstractBaseEntity {
             Set<SalesOrderItem> items) {
         return create(
                 orderNumber,
-                SaleType.B2B,
                 fulfillmentType,
                 paymentMethod,
                 deliveryRoute,
                 sellerCompanyId,
-                buyerCompanyId,
-                null,
+                SalesBuyer.company(buyerCompanyId),
                 items);
     }
 
@@ -110,32 +97,27 @@ public class SalesOrder extends AbstractBaseEntity {
             Set<SalesOrderItem> items) {
         return create(
                 orderNumber,
-                SaleType.B2C,
                 fulfillmentType,
                 paymentMethod,
                 deliveryRoute,
                 sellerCompanyId,
-                null,
-                customerId,
+                SalesBuyer.customer(customerId),
                 items);
     }
 
-    private static SalesOrder create(
+    public static SalesOrder create(
             Long orderNumber,
-            SaleType saleType,
             FulfillmentType fulfillmentType,
             PaymentMethod paymentMethod,
             DeliveryRoute deliveryRoute,
             UUID sellerCompanyId,
-            UUID buyerCompanyId,
-            UUID customerId,
+            SalesBuyer buyer,
             Set<SalesOrderItem> items) {
         DomainAssert.requireNonNull(orderNumber, SalesOrderErrorCode.NUMBER_REQUIRED);
-        DomainAssert.requireNonNull(saleType, SalesOrderErrorCode.SALE_TYPE_REQUIRED);
         DomainAssert.requireNonNull(fulfillmentType, SalesOrderErrorCode.FULFILLMENT_TYPE_REQUIRED);
         DomainAssert.requireNonNull(paymentMethod, SalesOrderErrorCode.PAYMENT_METHOD_REQUIRED);
         DomainAssert.requireNonNull(sellerCompanyId, SalesOrderErrorCode.SELLER_COMPANY_REQUIRED);
-        validateSaleType(saleType, buyerCompanyId, customerId);
+        SalesBuyer requiredBuyer = DomainAssert.requireNonNull(buyer, SalesOrderErrorCode.SALE_TYPE_REQUIRED);
 
         if (items == null || items.isEmpty()) {
             throw new SalesOrderException(SalesOrderErrorCode.ITEMS_REQUIRED);
@@ -145,36 +127,11 @@ public class SalesOrder extends AbstractBaseEntity {
         validateSingleCurrency(items);
 
         SalesOrder order = new SalesOrder(
-                orderNumber,
-                saleType,
-                fulfillmentType,
-                paymentMethod,
-                deliveryRoute,
-                sellerCompanyId,
-                buyerCompanyId,
-                customerId);
+                orderNumber, fulfillmentType, paymentMethod, deliveryRoute, sellerCompanyId, requiredBuyer);
 
         items.forEach(order::addItem);
 
         return order;
-    }
-
-    private static void validateSaleType(SaleType saleType, UUID buyerCompanyId, UUID customerId) {
-        if (saleType == SaleType.B2B) {
-            DomainAssert.requireNonNull(buyerCompanyId, SalesOrderErrorCode.BUYER_COMPANY_REQUIRED_FOR_B2B);
-
-            if (customerId != null) {
-                throw new SalesOrderException(SalesOrderErrorCode.CUSTOMER_NOT_ALLOWED_FOR_B2B);
-            }
-        }
-
-        if (saleType == SaleType.B2C) {
-            DomainAssert.requireNonNull(customerId, SalesOrderErrorCode.CUSTOMER_REQUIRED_FOR_B2C);
-
-            if (buyerCompanyId != null) {
-                throw new SalesOrderException(SalesOrderErrorCode.BUYER_COMPANY_NOT_ALLOWED_FOR_B2C);
-            }
-        }
     }
 
     private static void validateFulfillment(
@@ -237,7 +194,7 @@ public class SalesOrder extends AbstractBaseEntity {
     }
 
     public SaleType getSaleType() {
-        return saleType;
+        return buyer.getSaleType();
     }
 
     public FulfillmentType getFulfillmentType() {
@@ -257,11 +214,11 @@ public class SalesOrder extends AbstractBaseEntity {
     }
 
     public UUID getBuyerCompanyId() {
-        return buyerCompanyId;
+        return buyer.getBuyerCompanyId();
     }
 
     public UUID getCustomerId() {
-        return customerId;
+        return buyer.getCustomerId();
     }
 
     public Long getOrderNumber() {
