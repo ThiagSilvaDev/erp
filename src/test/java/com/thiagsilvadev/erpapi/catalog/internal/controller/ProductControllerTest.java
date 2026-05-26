@@ -22,10 +22,9 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.thiagsilvadev.erpapi.catalog.api.CategoryStatus;
 import com.thiagsilvadev.erpapi.catalog.api.ProductStatus;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyResponse;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategorySummaryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductSearchCriteria;
@@ -77,7 +76,11 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.sku").value("SKU-1"))
                 .andExpect(jsonPath("$.basePrice.amount").value(10.50))
                 .andExpect(jsonPath("$.basePrice.currencyCode").value("BRL"))
-                .andExpect(jsonPath("$.category.code").value("RAW"));
+                .andExpect(jsonPath("$.category.id").value(categoryId.toString()))
+                .andExpect(jsonPath("$.category.code").value("RAW"))
+                .andExpect(jsonPath("$.category.name").value("Raw materials"))
+                .andExpect(jsonPath("$.category.description").doesNotExist())
+                .andExpect(jsonPath("$.category.status").doesNotExist());
     }
 
     @Test
@@ -112,6 +115,6 @@ class ProductControllerTest {
                 null,
                 new MoneyResponse(new BigDecimal("10.50"), "BRL"),
                 ProductStatus.ACTIVE,
-                new CategoryResponse(categoryId, "RAW", "Raw materials", null, CategoryStatus.ACTIVE));
+                new CategorySummaryResponse(categoryId, "RAW", "Raw materials"));
     }
 }

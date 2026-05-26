@@ -20,7 +20,7 @@ public class Sku {
         this.value = normalize(value);
     }
 
-    public static Sku create(String value) {
+    public static Sku of(String value) {
         return new Sku(value);
     }
 

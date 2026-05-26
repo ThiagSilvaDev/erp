@@ -16,6 +16,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.model.Money;
 
 @Component
 public class CreateProductUseCase {
@@ -39,7 +40,7 @@ public class CreateProductUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
     public ProductResponse execute(CreateProductRequest request) {
-        Sku sku = catalogMapper.toSku(request.sku());
+        Sku sku = Sku.of(request.sku());
 
         if (productRepository.existsBySkuValue(sku.getValue())) {
             throw new SkuAlreadyExistsException(sku.getValue());
@@ -48,8 +49,9 @@ public class CreateProductUseCase {
         Category category = categoryRepository
                 .findById(request.categoryId())
                 .orElseThrow(() -> new ResourceNotFoundException(Category.class, request.categoryId()));
-        Product product = Product.create(
-                sku, request.name(), request.description(), catalogMapper.toMoney(request.basePrice()), category);
+        Money basePrice =
+                Money.of(request.basePrice().amount(), request.basePrice().currencyCode());
+        Product product = Product.create(sku, request.name(), request.description(), basePrice, category);
 
         Product savedProduct;
         try {

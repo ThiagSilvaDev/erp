@@ -39,8 +39,7 @@ class CatalogDevSeeder implements ApplicationRunner {
                 .findByCode(Category.normalizeCode(INDUSTRIAL_CATEGORY_CODE))
                 .orElseGet(this::seedCategory);
 
-        if (!productRepository.existsBySkuValue(
-                Sku.create(INDUSTRIAL_WIDGET_SKU).getValue())) {
+        if (!productRepository.existsBySkuValue(Sku.of(INDUSTRIAL_WIDGET_SKU).getValue())) {
             productRepository.save(Product.create(
                     INDUSTRIAL_WIDGET_SKU,
                     "Industrial Widget",

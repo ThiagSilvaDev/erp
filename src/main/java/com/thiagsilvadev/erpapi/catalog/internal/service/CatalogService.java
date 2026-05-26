@@ -39,7 +39,7 @@ public class CatalogService implements CatalogFacade {
     @Override
     @Transactional(readOnly = true)
     public Optional<ProductSnapshot> findProductBySku(String sku) {
-        return productRepository.findBySkuValue(Sku.create(sku).getValue()).map(catalogMapper::toSnapshot);
+        return productRepository.findBySkuValue(Sku.of(sku).getValue()).map(catalogMapper::toSnapshot);
     }
 
     @Override

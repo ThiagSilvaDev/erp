@@ -23,7 +23,7 @@ public class ProductSpecification {
             if (sku == null || sku.isBlank()) {
                 return null;
             }
-            return cb.equal(root.get("sku").get("value"), Sku.create(sku).getValue());
+            return cb.equal(root.get("sku").get("value"), Sku.of(sku).getValue());
         };
     }
 

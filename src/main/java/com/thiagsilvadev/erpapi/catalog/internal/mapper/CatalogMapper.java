@@ -4,19 +4,20 @@ import org.mapstruct.Mapper;
 
 import com.thiagsilvadev.erpapi.catalog.api.CategorySnapshot;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
-import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategorySummaryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
-import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
 
 @Mapper(componentModel = "spring")
 public interface CatalogMapper {
 
     CategoryResponse toResponse(Category category);
+
+    CategorySummaryResponse toSummaryResponse(Category category);
 
     ProductResponse toResponse(Product product);
 
@@ -25,15 +26,4 @@ public interface CatalogMapper {
     ProductSnapshot toSnapshot(Product product);
 
     MoneyResponse toResponse(Money money);
-
-    default Money toMoney(MoneyRequest request) {
-        if (request == null) {
-            return null;
-        }
-        return Money.of(request.amount(), request.currencyCode());
-    }
-
-    default Sku toSku(String value) {
-        return value == null ? null : Sku.create(value);
-    }
 }

@@ -61,7 +61,7 @@ public class Product extends AbstractBaseEntity {
     }
 
     public static Product create(String sku, String name, String description, Money basePrice, Category category) {
-        return create(Sku.create(sku), name, description, basePrice, category);
+        return create(Sku.of(sku), name, description, basePrice, category);
     }
 
     public static Product create(Sku sku, String name, String description, Money basePrice, Category category) {
