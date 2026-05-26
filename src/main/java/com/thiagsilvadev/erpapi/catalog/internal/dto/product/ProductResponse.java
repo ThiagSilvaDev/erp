@@ -12,5 +12,6 @@ public record ProductResponse(
         String name,
         String description,
         MoneyResponse basePrice,
+        String formattedBasePrice,
         ProductStatus status,
         CategorySummaryResponse category) {}

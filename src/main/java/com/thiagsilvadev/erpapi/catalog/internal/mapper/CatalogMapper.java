@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.thiagsilvadev.erpapi.catalog.api.CategorySnapshot;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
@@ -19,6 +20,7 @@ public interface CatalogMapper {
 
     CategorySummaryResponse toSummaryResponse(Category category);
 
+    @Mapping(target = "formattedBasePrice", expression = "java(formatBasePrice(product.getBasePrice()))")
     ProductResponse toResponse(Product product);
 
     CategorySnapshot toSnapshot(Category category);
@@ -26,4 +28,11 @@ public interface CatalogMapper {
     ProductSnapshot toSnapshot(Product product);
 
     MoneyResponse toResponse(Money money);
+
+    default String formatBasePrice(Money money) {
+        if (money == null) {
+            return null;
+        }
+        return "%s %s".formatted(money.getCurrencyCode(), money.getAmount().toPlainString());
+    }
 }

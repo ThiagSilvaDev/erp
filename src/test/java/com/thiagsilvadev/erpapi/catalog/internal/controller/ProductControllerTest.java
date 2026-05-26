@@ -114,6 +114,7 @@ class ProductControllerTest {
                 "Product",
                 null,
                 new MoneyResponse(new BigDecimal("10.50"), "BRL"),
+                "BRL 10.50",
                 ProductStatus.ACTIVE,
                 new CategorySummaryResponse(categoryId, "RAW", "Raw materials"));
     }

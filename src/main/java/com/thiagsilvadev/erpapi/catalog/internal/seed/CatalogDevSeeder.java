@@ -1,6 +1,10 @@
 package com.thiagsilvadev.erpapi.catalog.internal.seed;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -22,7 +26,38 @@ import com.thiagsilvadev.erpapi.common.domain.model.Money;
 class CatalogDevSeeder implements ApplicationRunner {
 
     static final String INDUSTRIAL_CATEGORY_CODE = "INDUSTRIAL";
+    static final String OFFICE_CATEGORY_CODE = "OFFICE";
     static final String INDUSTRIAL_WIDGET_SKU = "SKU-001";
+
+    private static final List<CategorySeed> CATEGORIES = List.of(
+            new CategorySeed(INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", "Seeded industrial catalog category"),
+            new CategorySeed(OFFICE_CATEGORY_CODE, "Office Supplies", "Seeded office catalog category"));
+
+    private static final List<ProductSeed> PRODUCTS = List.of(
+            new ProductSeed(
+                    INDUSTRIAL_WIDGET_SKU,
+                    "Industrial Widget",
+                    "Standard catalog product",
+                    "10.50",
+                    INDUSTRIAL_CATEGORY_CODE),
+            new ProductSeed(
+                    "SKU-002", "Hydraulic Pump", "High-pressure hydraulic pump", "320.00", INDUSTRIAL_CATEGORY_CODE),
+            new ProductSeed("SKU-003", "Bearing Kit", "Replacement bearing kit", "48.90", INDUSTRIAL_CATEGORY_CODE),
+            new ProductSeed(
+                    "SKU-004", "Safety Gloves", "Cut-resistant safety gloves", "18.75", INDUSTRIAL_CATEGORY_CODE),
+            new ProductSeed(
+                    "SKU-005",
+                    "Industrial Sealant",
+                    "Multi-purpose industrial sealant",
+                    "26.40",
+                    INDUSTRIAL_CATEGORY_CODE),
+            new ProductSeed(
+                    "SKU-006", "Steel Fastener Pack", "Assorted steel fasteners", "14.20", INDUSTRIAL_CATEGORY_CODE),
+            new ProductSeed("SKU-007", "Copy Paper", "A4 white copy paper ream", "7.95", OFFICE_CATEGORY_CODE),
+            new ProductSeed("SKU-008", "Ballpoint Pen Box", "Blue ballpoint pens", "12.30", OFFICE_CATEGORY_CODE),
+            new ProductSeed("SKU-009", "Desk Organizer", "Compact desktop organizer", "22.10", OFFICE_CATEGORY_CODE),
+            new ProductSeed(
+                    "SKU-010", "Shipping Labels", "Self-adhesive shipping labels", "16.80", OFFICE_CATEGORY_CODE));
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
@@ -35,22 +70,30 @@ class CatalogDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        Category category = categoryRepository
-                .findByCode(Category.normalizeCode(INDUSTRIAL_CATEGORY_CODE))
-                .orElseGet(this::seedCategory);
+        Map<String, Category> categories = CATEGORIES.stream()
+                .map(this::seedCategory)
+                .collect(Collectors.toMap(Category::getCode, Function.identity()));
 
-        if (!productRepository.existsBySkuValue(Sku.of(INDUSTRIAL_WIDGET_SKU).getValue())) {
-            productRepository.save(Product.create(
-                    INDUSTRIAL_WIDGET_SKU,
-                    "Industrial Widget",
-                    "Standard catalog product",
-                    Money.reais(new BigDecimal("10.50")),
-                    category));
+        for (ProductSeed product : PRODUCTS) {
+            if (!productRepository.existsBySkuValue(Sku.of(product.sku()).getValue())) {
+                productRepository.save(Product.create(
+                        product.sku(),
+                        product.name(),
+                        product.description(),
+                        Money.reais(new BigDecimal(product.basePrice())),
+                        categories.get(Category.normalizeCode(product.categoryCode()))));
+            }
         }
     }
 
-    private Category seedCategory() {
-        return categoryRepository.save(
-                Category.create(INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", "Seeded industrial catalog category"));
+    private Category seedCategory(CategorySeed category) {
+        return categoryRepository
+                .findByCode(Category.normalizeCode(category.code()))
+                .orElseGet(() -> categoryRepository.save(
+                        Category.create(category.code(), category.name(), category.description())));
     }
+
+    private record CategorySeed(String code, String name, String description) {}
+
+    private record ProductSeed(String sku, String name, String description, String basePrice, String categoryCode) {}
 }
