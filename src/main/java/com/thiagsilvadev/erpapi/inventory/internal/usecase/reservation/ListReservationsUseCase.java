@@ -6,7 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryReservationRepository;
 
@@ -14,9 +14,9 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryReservati
 public class ListReservationsUseCase {
 
     private final InventoryReservationRepository reservationRepository;
-    private final InventoryMapper mapper;
+    private final ReservationMapper mapper;
 
-    public ListReservationsUseCase(InventoryReservationRepository reservationRepository, InventoryMapper mapper) {
+    public ListReservationsUseCase(InventoryReservationRepository reservationRepository, ReservationMapper mapper) {
         this.reservationRepository = reservationRepository;
         this.mapper = mapper;
     }

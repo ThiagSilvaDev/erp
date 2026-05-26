@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.CreateWarehouseRequest;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.usecase.warehouse.CreateWarehouseUseCase;
@@ -19,7 +19,7 @@ class InventoryControllerTest {
     void shouldTranslateDuplicateWarehouseCodeRace() {
         WarehouseRepository warehouseRepository = org.mockito.Mockito.mock(WarehouseRepository.class);
         CreateWarehouseUseCase useCase =
-                new CreateWarehouseUseCase(warehouseRepository, org.mockito.Mockito.mock(InventoryMapper.class));
+                new CreateWarehouseUseCase(warehouseRepository, org.mockito.Mockito.mock(WarehouseMapper.class));
         when(warehouseRepository.existsByCode("MAIN")).thenReturn(false);
         when(warehouseRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Warehouse.class)))
                 .thenThrow(new DataIntegrityViolationException("uk_inventory_warehouse_code"));

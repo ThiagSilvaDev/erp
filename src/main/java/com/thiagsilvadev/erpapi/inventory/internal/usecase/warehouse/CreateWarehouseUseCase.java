@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.CreateWarehouseRequest;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
@@ -16,9 +16,9 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepositor
 public class CreateWarehouseUseCase {
 
     private final WarehouseRepository warehouseRepository;
-    private final InventoryMapper mapper;
+    private final WarehouseMapper mapper;
 
-    public CreateWarehouseUseCase(WarehouseRepository warehouseRepository, InventoryMapper mapper) {
+    public CreateWarehouseUseCase(WarehouseRepository warehouseRepository, WarehouseMapper mapper) {
         this.warehouseRepository = warehouseRepository;
         this.mapper = mapper;
     }

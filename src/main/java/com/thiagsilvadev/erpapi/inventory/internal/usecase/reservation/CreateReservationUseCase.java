@@ -4,8 +4,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.CreateReservationRequest;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryService;
 
@@ -13,9 +13,9 @@ import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryService;
 public class CreateReservationUseCase {
 
     private final InventoryService inventoryService;
-    private final InventoryMapper mapper;
+    private final ReservationMapper mapper;
 
-    public CreateReservationUseCase(InventoryService inventoryService, InventoryMapper mapper) {
+    public CreateReservationUseCase(InventoryService inventoryService, ReservationMapper mapper) {
         this.inventoryService = inventoryService;
         this.mapper = mapper;
     }

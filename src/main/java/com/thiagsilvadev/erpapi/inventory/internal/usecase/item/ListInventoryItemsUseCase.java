@@ -6,7 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
 
@@ -14,9 +14,9 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepos
 public class ListInventoryItemsUseCase {
 
     private final InventoryItemRepository itemRepository;
-    private final InventoryMapper mapper;
+    private final InventoryItemMapper mapper;
 
-    public ListInventoryItemsUseCase(InventoryItemRepository itemRepository, InventoryMapper mapper) {
+    public ListInventoryItemsUseCase(InventoryItemRepository itemRepository, InventoryItemMapper mapper) {
         this.itemRepository = itemRepository;
         this.mapper = mapper;
     }

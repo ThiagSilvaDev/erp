@@ -6,7 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
 
@@ -14,9 +14,9 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepos
 public class ListStockMovementsUseCase {
 
     private final StockMovementRepository movementRepository;
-    private final InventoryMapper mapper;
+    private final StockMovementMapper mapper;
 
-    public ListStockMovementsUseCase(StockMovementRepository movementRepository, InventoryMapper mapper) {
+    public ListStockMovementsUseCase(StockMovementRepository movementRepository, StockMovementMapper mapper) {
         this.movementRepository = movementRepository;
         this.mapper = mapper;
     }

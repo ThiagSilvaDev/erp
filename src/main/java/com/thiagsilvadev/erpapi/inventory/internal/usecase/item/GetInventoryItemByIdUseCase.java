@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.InventoryItem;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
@@ -16,9 +16,9 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepos
 public class GetInventoryItemByIdUseCase {
 
     private final InventoryItemRepository itemRepository;
-    private final InventoryMapper mapper;
+    private final InventoryItemMapper mapper;
 
-    public GetInventoryItemByIdUseCase(InventoryItemRepository itemRepository, InventoryMapper mapper) {
+    public GetInventoryItemByIdUseCase(InventoryItemRepository itemRepository, InventoryItemMapper mapper) {
         this.itemRepository = itemRepository;
         this.mapper = mapper;
     }

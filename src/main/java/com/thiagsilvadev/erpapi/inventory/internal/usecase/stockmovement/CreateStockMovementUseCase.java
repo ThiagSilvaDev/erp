@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.InventoryMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.CreateStockMovementRequest;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.InventoryItem;
 import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovement;
@@ -19,13 +19,13 @@ public class CreateStockMovementUseCase {
 
     private final StockMovementRepository movementRepository;
     private final InventoryBalanceService inventoryBalanceService;
-    private final InventoryMapper mapper;
+    private final StockMovementMapper mapper;
     private final BusinessNumberService businessNumberService;
 
     public CreateStockMovementUseCase(
             StockMovementRepository movementRepository,
             InventoryBalanceService inventoryBalanceService,
-            InventoryMapper mapper,
+            StockMovementMapper mapper,
             BusinessNumberService businessNumberService) {
         this.movementRepository = movementRepository;
         this.inventoryBalanceService = inventoryBalanceService;
