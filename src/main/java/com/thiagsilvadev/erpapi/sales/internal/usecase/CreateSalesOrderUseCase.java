@@ -33,7 +33,7 @@ public class CreateSalesOrderUseCase {
     private final CustomerFacade customerFacade;
     private final CompanyFacade companyFacade;
     private final CatalogFacade catalogFacade;
-    private final SalesMapper mapper;
+    private final SalesOrderResponseAssembler responseAssembler;
     private final BusinessNumberService businessNumberService;
 
     public CreateSalesOrderUseCase(
@@ -41,13 +41,13 @@ public class CreateSalesOrderUseCase {
             CustomerFacade customerFacade,
             CompanyFacade companyFacade,
             CatalogFacade catalogFacade,
-            SalesMapper mapper,
+            SalesOrderResponseAssembler responseAssembler,
             BusinessNumberService businessNumberService) {
         this.orderRepository = orderRepository;
         this.customerFacade = customerFacade;
         this.companyFacade = companyFacade;
         this.catalogFacade = catalogFacade;
-        this.mapper = mapper;
+        this.responseAssembler = responseAssembler;
         this.businessNumberService = businessNumberService;
     }
 
@@ -91,7 +91,7 @@ public class CreateSalesOrderUseCase {
                 items);
         orderRepository.save(order);
 
-        return mapper.toResponse(order);
+        return responseAssembler.toResponse(order);
     }
 
     private SalesBuyer resolveBuyer(CreateSalesOrderRequest request) {

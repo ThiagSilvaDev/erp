@@ -32,6 +32,13 @@ class MoneyTest {
     }
 
     @Test
+    void shouldFormatMoney() {
+        Money money = Money.of(new BigDecimal("10.50"), "BRL");
+
+        assertThat(money.getFormattedMoney()).isEqualTo("BRL 10.50");
+    }
+
+    @Test
     void shouldRejectNullAmount() {
         assertThatThrownBy(() -> Money.of(null, "BRL"))
                 .isInstanceOf(DomainValidationException.class)

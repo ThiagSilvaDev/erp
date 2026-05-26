@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.event.SalesOrderEventPublisher;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
@@ -21,17 +20,17 @@ public class ConfirmSalesOrderUseCase {
     private final SalesOrderRepository orderRepository;
     private final InventoryFacade inventoryFacade;
     private final SalesOrderEventPublisher eventPublisher;
-    private final SalesMapper mapper;
+    private final SalesOrderResponseAssembler responseAssembler;
 
     public ConfirmSalesOrderUseCase(
             SalesOrderRepository orderRepository,
             InventoryFacade inventoryFacade,
             SalesOrderEventPublisher eventPublisher,
-            SalesMapper mapper) {
+            SalesOrderResponseAssembler responseAssembler) {
         this.orderRepository = orderRepository;
         this.inventoryFacade = inventoryFacade;
         this.eventPublisher = eventPublisher;
-        this.mapper = mapper;
+        this.responseAssembler = responseAssembler;
     }
 
     @Transactional
@@ -49,6 +48,6 @@ public class ConfirmSalesOrderUseCase {
             eventPublisher.salesOrderDeliveryRequested(order);
         }
 
-        return mapper.toResponse(order);
+        return responseAssembler.toResponse(order);
     }
 }

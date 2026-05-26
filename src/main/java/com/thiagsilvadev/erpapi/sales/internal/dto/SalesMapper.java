@@ -3,6 +3,7 @@ package com.thiagsilvadev.erpapi.sales.internal.dto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import com.thiagsilvadev.erpapi.common.domain.model.Money;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderDeliveryRouteSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderItemSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
@@ -13,6 +14,9 @@ public interface SalesMapper {
 
     @Mapping(target = "totalAmount", expression = "java(order.totalAmount())")
     @Mapping(target = "currencyCode", expression = "java(order.currencyCode())")
+    @Mapping(target = "formattedTotalAmount", expression = "java(formatTotalAmount(order))")
+    @Mapping(target = "sellerSummary", ignore = true)
+    @Mapping(target = "buyerSummary", ignore = true)
     SalesOrderResponse toResponse(SalesOrder order);
 
     @Mapping(target = "lineTotal", expression = "java(item.lineTotal())")
@@ -63,5 +67,13 @@ public interface SalesMapper {
                 item.getProductSku(),
                 item.getProductName(),
                 item.getQuantity());
+    }
+
+    default String formatTotalAmount(SalesOrder order) {
+        if (order == null) {
+            return null;
+        }
+
+        return Money.of(order.totalAmount(), order.currencyCode()).getFormattedMoney();
     }
 }

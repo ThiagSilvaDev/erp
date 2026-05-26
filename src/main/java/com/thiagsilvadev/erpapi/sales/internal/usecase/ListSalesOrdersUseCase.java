@@ -6,7 +6,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderSearchCriteria;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
@@ -16,11 +15,11 @@ import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderSpecificatio
 public class ListSalesOrdersUseCase {
 
     private final SalesOrderRepository orderRepository;
-    private final SalesMapper mapper;
+    private final SalesOrderResponseAssembler responseAssembler;
 
-    public ListSalesOrdersUseCase(SalesOrderRepository orderRepository, SalesMapper mapper) {
+    public ListSalesOrdersUseCase(SalesOrderRepository orderRepository, SalesOrderResponseAssembler responseAssembler) {
         this.orderRepository = orderRepository;
-        this.mapper = mapper;
+        this.responseAssembler = responseAssembler;
     }
 
     @Transactional(readOnly = true)
@@ -28,6 +27,6 @@ public class ListSalesOrdersUseCase {
     public Page<SalesOrderResponse> execute(SalesOrderSearchCriteria criteria, Pageable pageable) {
         return orderRepository
                 .findAll(SalesOrderSpecification.withCriteria(criteria), pageable)
-                .map(mapper::toResponse);
+                .map(responseAssembler::toResponse);
     }
 }

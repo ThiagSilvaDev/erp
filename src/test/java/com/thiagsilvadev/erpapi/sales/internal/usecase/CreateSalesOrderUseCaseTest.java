@@ -34,7 +34,6 @@ import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderItemRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderRequest;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 
@@ -54,7 +53,7 @@ class CreateSalesOrderUseCaseTest {
     private CatalogFacade catalogFacade;
 
     @Mock
-    private SalesMapper mapper;
+    private SalesOrderResponseAssembler responseAssembler;
 
     @Mock
     private BusinessNumberService businessNumberService;
@@ -161,7 +160,12 @@ class CreateSalesOrderUseCaseTest {
 
     private CreateSalesOrderUseCase useCase() {
         return new CreateSalesOrderUseCase(
-                orderRepository, customerFacade, companyFacade, catalogFacade, mapper, businessNumberService);
+                orderRepository,
+                customerFacade,
+                companyFacade,
+                catalogFacade,
+                responseAssembler,
+                businessNumberService);
     }
 
     private void givenCompany(UUID id, CompanyType type) {

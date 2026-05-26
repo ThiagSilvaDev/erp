@@ -17,9 +17,12 @@ public record SalesOrderResponse(
         PaymentMethod paymentMethod,
         DeliveryRouteRequest deliveryRoute,
         UUID sellerCompanyId,
+        SalesOrderSellerSummaryResponse sellerSummary,
         UUID buyerCompanyId,
         UUID customerId,
+        SalesOrderBuyerSummaryResponse buyerSummary,
         OrderStatus status,
         BigDecimal totalAmount,
         String currencyCode,
+        String formattedTotalAmount,
         Set<SalesOrderItemResponse> items) {}

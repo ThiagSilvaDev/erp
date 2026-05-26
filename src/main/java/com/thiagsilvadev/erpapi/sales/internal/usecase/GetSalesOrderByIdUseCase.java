@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
@@ -16,17 +15,18 @@ import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 public class GetSalesOrderByIdUseCase {
 
     private final SalesOrderRepository orderRepository;
-    private final SalesMapper mapper;
+    private final SalesOrderResponseAssembler responseAssembler;
 
-    public GetSalesOrderByIdUseCase(SalesOrderRepository orderRepository, SalesMapper mapper) {
+    public GetSalesOrderByIdUseCase(
+            SalesOrderRepository orderRepository, SalesOrderResponseAssembler responseAssembler) {
         this.orderRepository = orderRepository;
-        this.mapper = mapper;
+        this.responseAssembler = responseAssembler;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).READ)")
     public SalesOrderResponse execute(UUID id) {
-        return mapper.toResponse(
+        return responseAssembler.toResponse(
                 orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id)));
     }
 }

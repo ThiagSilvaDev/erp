@@ -61,6 +61,10 @@ public class Money {
         return currencyCode;
     }
 
+    public String getFormattedMoney() {
+        return "%s %s".formatted(currencyCode, amount.toPlainString());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

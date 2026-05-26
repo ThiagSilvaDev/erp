@@ -33,6 +33,7 @@ public interface CatalogMapper {
         if (money == null) {
             return null;
         }
-        return "%s %s".formatted(money.getCurrencyCode(), money.getAmount().toPlainString());
+
+        return money.getFormattedMoney();
     }
 }
