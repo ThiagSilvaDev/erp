@@ -77,14 +77,11 @@ public class Shipment extends AbstractBaseEntity {
             UUID buyerCompanyId,
             UUID customerId,
             List<ShipmentItem> items) {
-        this.shipmentNumber = Objects.requireNonNull(shipmentNumber, "Shipment number is required");
-        this.salesOrderId = Objects.requireNonNull(salesOrderId, "Sales order is required");
-        this.sellerCompanyId = Objects.requireNonNull(sellerCompanyId, "Seller company is required");
+        this.shipmentNumber = shipmentNumber;
+        this.salesOrderId = salesOrderId;
+        this.sellerCompanyId = sellerCompanyId;
         this.buyerCompanyId = buyerCompanyId;
         this.customerId = customerId;
-        if (items == null || items.isEmpty()) {
-            throw new IllegalArgumentException("Shipment must have at least one item");
-        }
         this.items.addAll(items);
     }
 
@@ -95,7 +92,20 @@ public class Shipment extends AbstractBaseEntity {
             UUID buyerCompanyId,
             UUID customerId,
             List<ShipmentItem> items) {
-        return new Shipment(shipmentNumber, salesOrderId, sellerCompanyId, buyerCompanyId, customerId, items);
+        Long requiredShipmentNumber = Objects.requireNonNull(shipmentNumber, "Shipment number is required");
+        UUID requiredSalesOrderId = Objects.requireNonNull(salesOrderId, "Sales order is required");
+        UUID requiredSellerCompanyId = Objects.requireNonNull(sellerCompanyId, "Seller company is required");
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Shipment must have at least one item");
+        }
+
+        return new Shipment(
+                requiredShipmentNumber,
+                requiredSalesOrderId,
+                requiredSellerCompanyId,
+                buyerCompanyId,
+                customerId,
+                List.copyOf(items));
     }
 
     public void assignRoute(String routeName, UUID originWarehouseId, String destinationDescription) {
@@ -171,6 +181,10 @@ public class Shipment extends AbstractBaseEntity {
 
     public Long getShipmentNumber() {
         return shipmentNumber;
+    }
+
+    public String getFormattedShipmentNumber() {
+        return "SHP-%06d".formatted(shipmentNumber);
     }
 
     public UUID getSalesOrderId() {

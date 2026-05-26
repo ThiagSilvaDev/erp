@@ -11,6 +11,7 @@ import com.thiagsilvadev.erpapi.logistics.internal.model.ShipmentStatus;
 public record ShipmentResponse(
         UUID id,
         Long shipmentNumber,
+        String formattedShipmentNumber,
         UUID salesOrderId,
         UUID sellerCompanyId,
         UUID buyerCompanyId,
