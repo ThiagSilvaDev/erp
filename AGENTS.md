@@ -1,125 +1,465 @@
 # Repository Guidelines
 
-## Project Structure
-Java 21 Spring Boot ERP API organized with Spring Modulith. Main code lives in
-`src/main/java/com/thiagsilvadev/erpapi`; tests mirror it in `src/test/java`. Modules include `catalog`,
-`company`, `customer`, `financial`, `iam`, `inventory`, `logistics`, `sales`, and `user`. Each module
-exposes contracts from `api` and keeps implementation in `internal`. Bruno requests live in
-`bruno/erp-api`.
+## Project Overview
 
-Always run `./mvnw verify` before finishing code changes.
+This is a Java 21 Spring Boot ERP API organized as a Modular Monolith using Spring Modulith.
 
-## Architecture Rules
-- Communicate across modules only through another module's `api` package.
-- Never import another module's `internal` classes, repositories, entities, DTOs, mappers, or services.
-- Keep JPA entities inside `internal`; REST controllers must use request/response DTOs.
-- Use facades/snapshots for reads, events for eventual consistency, and `api` commands only for immediate
-  consistency.
-- Use `common` only for validation, exception handling, security primitives, generic value objects, and
-  utilities reused by 3+ modules. Domain-specific value objects stay in their owning module. When unsure,
-  keep code in the owning module and ask before adding shared abstractions.
-- Use smart factories and dumb constructors for domain objects.
+Main code lives in:
 
-## Packaging
-Use `internal/controller`, `internal/dto`, `internal/usecase`, `internal/model`, `internal/repository`, and
-`internal/mapper`. `internal/model` is for JPA entities; place non-persistent domain objects in
-`internal/domain` or `internal/model/domain`. Move to feature packages when a folder contains multiple
-unrelated use cases.
-
-## Coding Style
-Use constructor injection and keep transactions at the use case layer. Prefer records for immutable DTOs
-and snapshots. Apply Palantir Java Format with Spotless. Prefer manual mappers; use MapStruct only when
-generated code clearly reduces maintenance.
-
-## Validation, Errors, and Logging
-Validate external input at REST boundaries with Bean Validation. Use domain exceptions for business rules.
-Use `ResourceNotFoundException`, `ConflictException`, and `DomainValidationException` for generic cases.
-REST error translation belongs in global handlers under `common/web/exception`, not controllers. Never log
-secrets, tokens, passwords, or sensitive business data.
-
-## Database Migrations
-No migration tool is configured yet. Do not add ad hoc SQL files. If a schema change requires migrations,
-introduce Flyway and use `src/main/resources/db/migration/V<version>__<description>.sql`, for example
-`V1__create_logistics_tables.sql`. Decide repeatable migrations, baseline behavior, and test-data strategy
-when Flyway is introduced. Do not rely on Hibernate auto-DDL in production.
-
-## Build, Test, and Development Commands
-- `docker compose up -d`: starts local PostgreSQL.
-- `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`: runs the API locally.
-- `./mvnw spotless:apply`: formats Java and POMs.
-- `./mvnw -q test`: runs the test suite with quieter output.
-- `./mvnw verify`: runs compilation, tests, packaging, Modulith checks, and Spotless validation.
-
-## Testing Guidelines
-Use JUnit 5, AssertJ, Mockito, Spring test support, and Spring Modulith tests. Add focused tests for changed
-use cases, domain rules, security, and listeners. Add integration tests for facade/event boundaries when
-module interactions change. `ApplicationModularityTests` must keep passing.
-### Exception assertions
-
-For AssertJ exception tests, the throwing lambda must contain only the method invocation expected to throw. Prepare collaborators, use cases, requests, and test data before the assertion.
-
-Prefer:
-
-```java
-var useCase = useCase();
-
-var exception = catchThrowableOfType(
-        ResourceNotFoundException.class,
-        () -> useCase.execute(request)
-);
-
-assertThat(exception.getProperties())
-        .containsEntry("resourceName", "Company");
+```text
+src/main/java/com/thiagsilvadev/erpapi
 ```
 
-### Isolate Exception-Throwing Invocations
+Tests mirror the source structure:
 
-When asserting exceptions with AssertJ, keep the throwing lambda focused on the **single action expected to fail**.
+```text
+src/test/java/com/thiagsilvadev/erpapi
+```
 
-This applies to APIs such as:
+Business modules include:
 
-- `assertThatThrownBy(...)`
-- `assertThatExceptionOfType(...).isThrownBy(...)`
-- `catchThrowableOfType(...)`
+* catalog
+* company
+* customer
+* financial
+* iam
+* inventory
+* logistics
+* sales
+* user
 
-Do not create objects, generate UUIDs, parse strings, build value objects, or call helper/factory methods inside the exception lambda. Those extra calls may also throw runtime exceptions, which can hide the real failure source and trigger SonarQube warnings.
+Each module exposes public contracts through `api` and keeps implementation details inside `internal`.
 
-Prepare all test data before the assertion. The lambda should contain only the target invocation.
+Always run:
+
+```bash
+./mvnw verify
+```
+
+before finishing changes.
+
+---
+
+## Working Rules
+
+* Always understand the owning module before making changes.
+* Keep changes local to the affected module whenever possible.
+* Preserve existing naming conventions and architectural patterns.
+* Prefer minimal, targeted edits over broad rewrites.
+* Do not introduce new frameworks, abstractions, or dependencies unless clearly justified.
+* If a requested change violates module boundaries, explain the issue and propose a Modulith-compatible solution.
+
+---
+
+# Architecture
+
+## Core Principles
+
+* Modular Monolith using Spring Modulith.
+* Rich Domain Model.
+* Smart factories and dumb constructors.
+* Thin controllers.
+* Use cases to orchestrate business workflows.
+* Repositories are persistence-only.
+* Entities protect business invariants.
+
+## Layer Responsibilities
+
+### Controllers
+
+* Accept and validate external requests.
+* Convert requests into use case invocations.
+* Never contain business logic.
+* Never access repositories directly.
+
+### Use Cases
+
+* Orchestrate business workflows.
+* Define transaction boundaries.
+* Coordinate repositories, facades, domain entities, and events.
+
+### Repositories
+
+* Persistence only.
+* No orchestration.
+* No business rules.
+
+### Entities
+
+* Own business invariants.
+* Expose behavior instead of setters.
+* Prevent invalid state transitions.
+
+---
+
+## Module Boundaries
+
+* Respect Spring Modulith boundaries strictly.
+* Cross-module communication is allowed only through another module's `api` package.
+* Never import another module's `internal` classes.
+* Never inject another module's repositories, services, entities, DTOs, or mappers.
+* Never expose JPA entities outside the owning module.
+
+### Preferred Communication
+
+Reads:
+
+```java
+CompanySnapshot company = companyFacade.findById(companyId);
+```
+
+Immediate writes:
+
+```java
+inventoryFacade.reserveStock(command);
+```
+
+Eventual consistency:
+
+```java
+applicationEventPublisher.publishEvent(event);
+```
+
+### Avoid
+
+```java
+@Autowired
+private CompanyRepository repository;
+```
+
+across module boundaries.
+
+---
+
+## Domain Model
+
+### Entities
+
+* Prefer rich domain models over anemic entities.
+* Avoid public setters.
+* Use intention-revealing methods.
+
+Good:
+
+```java
+order.confirm();
+inventory.reserve(quantity);
+company.activate();
+```
 
 Avoid:
 
 ```java
-assertThatThrownBy(() -> SalesOrderItem.create(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "SKU-001",
-                " ",
-                1,
-                Money.of(new BigDecimal("10.00"), "BRL")))
-        .isInstanceOf(DomainValidationException.class)
-        .satisfies(exception -> assertThat(((DomainValidationException) exception).getErrorCode())
-                .isEqualTo(SalesOrderItemErrorCode.PRODUCT_NAME_REQUIRED));
+order.setStatus(CONFIRMED);
 ```
-Prefer:
+
+### Construction
+
+Use smart factories and dumb constructors.
+
+Good:
 
 ```java
-var orderId = UUID.randomUUID();
-var productId = UUID.randomUUID();
-var price = Money.of(new BigDecimal("10.00"), "BRL");
-
-var exception = catchThrowableOfType(
-        DomainValidationException.class,
-        () -> SalesOrderItem.create(orderId, productId, "SKU-001", " ", 1, price));
-
-assertThat(exception.getErrorCode())
-        .isEqualTo(SalesOrderItemErrorCode.PRODUCT_NAME_REQUIRED);
+SalesOrder.create(...);
+InventoryItem.create(...);
 ```
 
+Constructors should perform assignments only.
+
+### Value Objects
+
+Use value objects for domain concepts such as:
+
+* Money
+* Address
+* Email
+* Phone
+* Cnpj
+* GeoLocation
+
+Domain-specific value objects belong to their owning module.
+
+---
+
+## Module Structure
+
+Each module should follow:
+
+```text
+<module>/
+├── api
+└── internal
+```
+
+### api
+
+Public contracts only:
+
+* Facades
+* Commands
+* Snapshots
+* Events
+* Enums
+
+### internal
+
+Implementation details:
+
+```text
+internal/controller
+internal/dto
+internal/usecase
+internal/model
+internal/repository
+internal/mapper
+```
+
+Additional packages are allowed when justified:
+
+```text
+internal/domain
+internal/model/domain
+```
+
+Move to feature-based packaging when folders start containing multiple unrelated flows.
+
+---
+
+## Shared Code
+
+Use `common` only for true cross-cutting concerns.
+
+Allowed examples:
+
+* Validation helpers
+* Shared exception handling
+* Security primitives
+* Generic value objects
+* Utilities reused by multiple modules
+
+Domain-specific code belongs in the owning module.
+
+When unsure, keep code inside the owning module.
+
+---
+
+## Persistence
+
+### General
+
+* Keep JPA entities inside `internal/model`.
+* REST controllers must use request/response DTOs.
+* Prefer IDs instead of JPA relationships across modules.
+* Use plural table names.
+* Use snake_case column names.
+
+### JPA
+
+* Prefer `FetchType.LAZY`.
+* Use `@Enumerated(EnumType.STRING)`.
+* Use `@Version` for optimistic locking where concurrent updates are possible.
+* Avoid public setters.
+* Keep transaction boundaries outside entities.
+
+### Transactions
+
+Use transactions in use cases or application services.
+
+Commands:
+
+```java
+@Transactional
+```
+
+Queries:
+
+```java
+@Transactional(readOnly = true)
+```
+
+Repositories and entities must not define transaction boundaries.
+
+---
+
+## Mapping
+
+Prefer manual mappers by default.
+
+Use MapStruct only when generated code clearly reduces maintenance and repetitive boilerplate.
+
+Mapper naming:
+
+```text
+CustomerMapper
+SalesOrderMapper
+PaymentMapper
+```
+
+Use clear method names:
+
+```java
+toResponse(...)
+toSnapshot(...)
+toEntity(...)
+```
+
+---
+
+## Validation, Errors, and Logging
+
+### Validation
+
+* Validate external input at REST boundaries using Bean Validation.
+* Validate business invariants inside the domain model.
+
+### Exceptions
+
+Use domain-specific exceptions for business rule violations.
+
+Common exceptions:
+
+* ResourceNotFoundException
+* ConflictException
+* DomainValidationException
+
+REST exception translation belongs in global handlers, never controllers.
+
+### Logging
+
+* Never log secrets.
+* Never log passwords.
+* Never log tokens.
+* Never log sensitive business data.
+* Prefer structured logging.
+* Use placeholders instead of string concatenation.
+
+Good:
+
+```java
+log.info("Payment processed. paymentId={}", paymentId);
+```
+
+---
+
+## Database Migrations
+
+No migration tool is currently configured.
+
+Do not introduce ad hoc SQL files.
+
+If migrations become necessary:
+
+* Introduce Flyway.
+* Store migrations in:
+
+```text
+src/main/resources/db/migration
+```
+
+Examples:
+
+```text
+V1__create_sales_tables.sql
+V2__add_customer_status.sql
+```
+
+Never rely on Hibernate auto-DDL in production.
+
+---
+
+## Build, Test, and Development Commands
+
+```bash
+docker compose up -d
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+./mvnw spotless:apply
+./mvnw -q test
+./mvnw verify
+```
+
+---
+
+## Testing Guidelines
+
+Use:
+
+* JUnit 5
+* AssertJ
+* Mockito
+* Spring Test
+* Spring Modulith Test
+
+### General Rules
+
+* Add tests whenever behavior changes.
+* Test business rules.
+* Test failure paths.
+* Add integration tests when module interactions change.
+* Keep `ApplicationModularityTests` passing.
+
+### Exception Assertions
+
+Prepare all data before the assertion.
+
+The exception lambda should contain only the action expected to fail.
+
+Good:
+
+```java
+var exception = catchThrowableOfType(
+        DomainValidationException.class,
+        () -> salesOrder.confirm()
+);
+```
+
+Avoid:
+
+```java
+assertThatThrownBy(() ->
+        SalesOrder.create(
+                UUID.randomUUID(),
+                UUID.randomUUID()))
+```
+
+---
+
 ## Commit and Pull Request Guidelines
-Use Conventional Commits, for example `feat(logistics): add shipment workflow` or
-`fix(financial): prevent duplicate payment processing`. PRs should describe behavior changes, test results,
-and Bruno updates when API endpoints change.
+
+Use Conventional Commits.
+
+Examples:
+
+```text
+feat(logistics): add shipment workflow
+fix(financial): prevent duplicate payment processing
+refactor(company): extract address value object
+```
+
+---
 
 ## Security and Configuration
-Never commit real secrets. Local JWT development uses `ERP_IAM_JWT_SECRET`; real environments must provide
-a secure value outside source control.
+
+* Never commit secrets.
+* Never commit production credentials.
+* Keep environment-specific configuration outside source control.
+* Document required environment variables.
+
+Local JWT development uses:
+
+```text
+ERP_IAM_JWT_SECRET
+```
+
+Production environments must provide secure values externally.
+
+---
+
+## Agent Behavior
+
+* Prefer minimal, focused changes.
+* Preserve package structure.
+* Preserve module boundaries.
+* Preserve architectural patterns.
+* Avoid introducing unnecessary abstractions.
+* Avoid moving code across modules without justification.
+* When uncertain, follow existing patterns in the affected module.
