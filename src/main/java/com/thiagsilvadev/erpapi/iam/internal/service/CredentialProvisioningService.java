@@ -1,16 +1,18 @@
 package com.thiagsilvadev.erpapi.iam.internal.service;
 
+import java.util.UUID;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.model.Email;
-import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningFacade;
-import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.iam.internal.exception.CredentialAlreadyExistsException;
 import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
+import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
+import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 
 @Service
 public class CredentialProvisioningService implements CredentialProvisioningFacade {
@@ -47,7 +49,7 @@ public class CredentialProvisioningService implements CredentialProvisioningFaca
     }
 
     private static CredentialAlreadyExistsException duplicateCredential(
-            DataIntegrityViolationException exception, java.util.UUID userId, String email) {
+            DataIntegrityViolationException exception, UUID userId, String email) {
         String message = getMessages(exception);
         if (message.contains("uk_iam_credential_user")) {
             return new CredentialAlreadyExistsException("userId", userId);

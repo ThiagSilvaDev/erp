@@ -1,10 +1,13 @@
 package com.thiagsilvadev.erpapi.user.internal.seed;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,11 +26,13 @@ import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
-import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningFacade;
-import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
+import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
+import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
+import com.thiagsilvadev.erpapi.user.internal.model.UserMembership;
+import com.thiagsilvadev.erpapi.user.internal.repository.UserMembershipRepository;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,21 +50,34 @@ class UserDevSeederTest {
     @Mock
     private CredentialProvisioningFacade credentialProvisioningFacade;
 
+    @Mock
+    private UserMembershipRepository userMembershipRepository;
+
     @Test
     void shouldSeedAdminUserAndCredentialWhenMissing() {
-        UUID companyId = UUID.randomUUID();
+        UUID acmeId = UUID.randomUUID();
+        UUID partnerId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         when(userRepository.existsByContactEmailValue(UserDevSeeder.ADMIN_EMAIL))
                 .thenReturn(false);
-        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(companyId)));
-        when(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(User.class)))
-                .thenAnswer(invocation -> {
-                    User user = invocation.getArgument(0);
-                    ReflectionTestUtils.setField(user, "id", userId);
-                    return user;
-                });
+        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(acmeId)));
+        when(companyFacade.findByCnpj("17.018.282/0001-57")).thenReturn(Optional.of(company(partnerId)));
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            ReflectionTestUtils.setField(user, "id", userId);
+            return user;
+        });
+        when(userMembershipRepository.findByUserIdAndCompanyId(userId, acmeId)).thenReturn(Optional.empty());
+        when(userMembershipRepository.findByUserIdAndCompanyId(userId, partnerId))
+                .thenReturn(Optional.empty());
 
-        new UserDevSeeder(userRepository, companyFacade, eventPublisher, credentialProvisioningFacade).run(null);
+        new UserDevSeeder(
+                        userRepository,
+                        companyFacade,
+                        eventPublisher,
+                        credentialProvisioningFacade,
+                        userMembershipRepository)
+                .run(null);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).saveAndFlush(userCaptor.capture());
@@ -68,7 +86,18 @@ class UserDevSeederTest {
         assertThat(user.getFirstName()).isEqualTo("Admin");
         assertThat(user.getContact().getEmail()).isEqualTo(UserDevSeeder.ADMIN_EMAIL);
         assertThat(user.getRole()).isEqualTo(UserRole.ADMIN);
-        assertThat(user.getCompanyId()).isEqualTo(companyId);
+        assertThat(user.getCompanyId()).isEqualTo(acmeId);
+        ArgumentCaptor<UserMembership> membershipCaptor = ArgumentCaptor.forClass(UserMembership.class);
+        verify(userMembershipRepository, times(2)).save(membershipCaptor.capture());
+        assertThat(membershipCaptor.getAllValues())
+                .extracting(UserMembership::getUserId)
+                .containsExactly(userId, userId);
+        assertThat(membershipCaptor.getAllValues())
+                .extracting(UserMembership::getCompanyId)
+                .containsExactly(acmeId, partnerId);
+        assertThat(membershipCaptor.getAllValues())
+                .extracting(UserMembership::getRole)
+                .containsExactly(UserRole.ADMIN, UserRole.ADMIN);
 
         ArgumentCaptor<CredentialProvisioningRequest> credentialCaptor =
                 ArgumentCaptor.forClass(CredentialProvisioningRequest.class);
@@ -82,16 +111,44 @@ class UserDevSeederTest {
     }
 
     @Test
-    void shouldSkipAdminUserWhenAlreadySeeded() {
+    void shouldSeedMissingMembershipsWhenAdminUserAlreadyExists() {
+        UUID acmeId = UUID.randomUUID();
+        UUID partnerId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        User existingUser = User.create(
+                "Admin",
+                "Acme",
+                Contact.create(UserDevSeeder.ADMIN_EMAIL, "11987654321"),
+                LocalDate.of(1990, 1, 1),
+                UserRole.ADMIN,
+                acmeId);
+        ReflectionTestUtils.setField(existingUser, "id", userId);
         when(userRepository.existsByContactEmailValue(UserDevSeeder.ADMIN_EMAIL))
                 .thenReturn(true);
+        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(acmeId)));
+        when(companyFacade.findByCnpj("17.018.282/0001-57")).thenReturn(Optional.of(company(partnerId)));
+        when(userRepository.findByContactEmailValue(UserDevSeeder.ADMIN_EMAIL)).thenReturn(Optional.of(existingUser));
+        when(userMembershipRepository.findByUserIdAndCompanyId(userId, acmeId))
+                .thenReturn(Optional.of(UserMembership.create(userId, acmeId, UserRole.ADMIN)));
+        when(userMembershipRepository.findByUserIdAndCompanyId(userId, partnerId))
+                .thenReturn(Optional.empty());
 
-        new UserDevSeeder(userRepository, companyFacade, eventPublisher, credentialProvisioningFacade).run(null);
+        new UserDevSeeder(
+                        userRepository,
+                        companyFacade,
+                        eventPublisher,
+                        credentialProvisioningFacade,
+                        userMembershipRepository)
+                .run(null);
 
-        verify(companyFacade, never()).findByCnpj(org.mockito.ArgumentMatchers.anyString());
-        verify(userRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
-        verify(credentialProvisioningFacade, never()).provision(org.mockito.ArgumentMatchers.any());
-        verify(eventPublisher, never()).userCreated(org.mockito.ArgumentMatchers.any());
+        verify(userRepository, never()).saveAndFlush(any());
+        ArgumentCaptor<UserMembership> membershipCaptor = ArgumentCaptor.forClass(UserMembership.class);
+        verify(userMembershipRepository).save(membershipCaptor.capture());
+        assertThat(membershipCaptor.getValue().getUserId()).isEqualTo(userId);
+        assertThat(membershipCaptor.getValue().getCompanyId()).isEqualTo(partnerId);
+        assertThat(membershipCaptor.getValue().getRole()).isEqualTo(UserRole.ADMIN);
+        verify(credentialProvisioningFacade, never()).provision(any());
+        verify(eventPublisher, never()).userCreated(any());
     }
 
     private static User savedUser(User user, UUID id) {

@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.iam.api;
+package com.thiagsilvadev.erpapi.user.api;
 
 public interface CredentialProvisioningFacade {
 

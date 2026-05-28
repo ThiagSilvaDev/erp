@@ -3,9 +3,14 @@ package com.thiagsilvadev.erpapi;
 import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.modulith.events.config.EventPublicationAutoConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
@@ -31,18 +36,18 @@ import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentTrackingEventRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
+import com.thiagsilvadev.erpapi.user.internal.repository.UserMembershipRepository;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
-@SpringBootTest(
-        properties = {
-            "spring.autoconfigure.exclude="
-                    + "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,"
-                    + "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration,"
-                    + "org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration,"
-                    + "org.springframework.modulith.events.config.EventPublicationAutoConfiguration,"
-                    + "org.springframework.modulith.events.jpa.JpaEventPublicationAutoConfiguration",
-            "erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes"
-        })
+@SpringBootTest(properties = {"erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes"})
+@EnableAutoConfiguration(
+        exclude = {
+            DataSourceAutoConfiguration.class,
+            HibernateJpaAutoConfiguration.class,
+            DataJpaRepositoriesAutoConfiguration.class,
+            EventPublicationAutoConfiguration.class
+        },
+        excludeName = JpaEventPublicationAutoConfigurationExclusion.NAME)
 @ActiveProfiles("test")
 class ErpApiApplicationTests {
 
@@ -75,6 +80,11 @@ class ErpApiApplicationTests {
         @Bean
         UserRepository userRepository() {
             return mock(UserRepository.class);
+        }
+
+        @Bean
+        UserMembershipRepository userMembershipRepository() {
+            return mock(UserMembershipRepository.class);
         }
 
         @Bean
@@ -172,4 +182,11 @@ class ErpApiApplicationTests {
             return mock(ShipmentTrackingEventRepository.class);
         }
     }
+}
+
+final class JpaEventPublicationAutoConfigurationExclusion {
+
+    static final String NAME = "org." + "springframework.modulith.events.jpa." + "JpaEventPublicationAutoConfiguration";
+
+    private JpaEventPublicationAutoConfigurationExclusion() {}
 }

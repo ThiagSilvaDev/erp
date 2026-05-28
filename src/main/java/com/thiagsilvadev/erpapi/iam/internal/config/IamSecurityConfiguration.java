@@ -10,6 +10,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,7 +27,9 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -56,8 +60,12 @@ public class IamSecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/auth/login")
                         .permitAll()
+                        .requestMatchers("/api/v1/auth/select-company")
+                        .permitAll()
+                        .requestMatchers("/api/v1/auth/companies")
+                        .permitAll()
                         .requestMatchers("/api/v1/**")
-                        .authenticated()
+                        .access(tokenUse("scoped"))
                         .requestMatchers("/v3/api-docs")
                         .permitAll()
                         .anyRequest()
@@ -70,6 +78,9 @@ public class IamSecurityConfiguration {
     private JwtAuthenticationConverter jwtAuthenticationConverter(RolePermissionResolver rolePermissionResolver) {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            if (!"scoped".equals(jwt.getClaimAsString("token_use"))) {
+                return List.of();
+            }
             List<String> authorities = jwt.getClaimAsStringList("authorities");
             if (authorities != null && !authorities.isEmpty()) {
                 return authorities.stream()
@@ -80,6 +91,16 @@ public class IamSecurityConfiguration {
             return SecurityAuthorities.fromRole(role, rolePermissionResolver);
         });
         return converter;
+    }
+
+    private AuthorizationManager<RequestAuthorizationContext> tokenUse(String tokenUse) {
+        return (authentication, context) -> {
+            if (authentication.get() instanceof JwtAuthenticationToken jwtAuthentication
+                    && tokenUse.equals(jwtAuthentication.getToken().getClaimAsString("token_use"))) {
+                return new AuthorizationDecision(true);
+            }
+            return new AuthorizationDecision(false);
+        };
     }
 
     @Bean

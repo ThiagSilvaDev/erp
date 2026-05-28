@@ -18,10 +18,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.thiagsilvadev.erpapi.iam.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.iam.internal.exception.CredentialAlreadyExistsException;
 import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
+import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 
 @ExtendWith(MockitoExtension.class)
 class CredentialProvisioningServiceTest {

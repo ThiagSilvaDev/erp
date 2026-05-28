@@ -1,12 +1,14 @@
 package com.thiagsilvadev.erpapi.iam.internal.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,17 +19,24 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthUserResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
+import com.thiagsilvadev.erpapi.iam.internal.usecase.ListUserCompaniesUseCase;
 import com.thiagsilvadev.erpapi.iam.internal.usecase.LoginUseCase;
+import com.thiagsilvadev.erpapi.iam.internal.usecase.SelectCompanyUseCase;
 
 class AuthControllerTest {
 
     private LoginUseCase loginUseCase;
+    private SelectCompanyUseCase selectCompanyUseCase;
+    private ListUserCompaniesUseCase listUserCompaniesUseCase;
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        loginUseCase = org.mockito.Mockito.mock(LoginUseCase.class);
-        mockMvc = standaloneSetup(new AuthController(loginUseCase)).build();
+        loginUseCase = mock(LoginUseCase.class);
+        selectCompanyUseCase = mock(SelectCompanyUseCase.class);
+        listUserCompaniesUseCase = mock(ListUserCompaniesUseCase.class);
+        mockMvc = standaloneSetup(new AuthController(loginUseCase, selectCompanyUseCase, listUserCompaniesUseCase))
+                .build();
     }
 
     @Test
@@ -35,7 +44,7 @@ class AuthControllerTest {
         UUID userId = UUID.randomUUID();
         when(loginUseCase.execute(any(LoginRequest.class)))
                 .thenReturn(LoginResponse.bearer(
-                        "jwt-token", 3600, new AuthUserResponse(userId, "user@example.com", "ADMIN")));
+                        "jwt-token", 3600, new AuthUserResponse(userId, "user@example.com", "ADMIN"), List.of(), null));
 
         mockMvc.perform(
                         post("/api/v1/auth/login")

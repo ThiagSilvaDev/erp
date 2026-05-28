@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.iam.internal.config;
 
+import static com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions.WRITE;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -17,10 +18,15 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.modulith.events.config.EventPublicationAutoConfiguration;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -37,7 +43,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
 import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
@@ -57,13 +62,15 @@ import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
         },
         properties = {
             "erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes",
-            "spring.autoconfigure.exclude="
-                    + "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,"
-                    + "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration,"
-                    + "org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration,"
-                    + "org.springframework.modulith.events.config.EventPublicationAutoConfiguration,"
-                    + "org.springframework.modulith.events.jpa.JpaEventPublicationAutoConfiguration"
         })
+@EnableAutoConfiguration(
+        exclude = {
+            DataSourceAutoConfiguration.class,
+            HibernateJpaAutoConfiguration.class,
+            DataJpaRepositoriesAutoConfiguration.class,
+            EventPublicationAutoConfiguration.class
+        },
+        excludeName = JpaEventPublicationAutoConfigurationExclusion.NAME)
 class IamSecurityConfigurationTest {
 
     @Autowired
@@ -87,6 +94,12 @@ class IamSecurityConfigurationTest {
     }
 
     @Test
+    void shouldAllowGlobalTokenForSelectCompanyEndpoint() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/select-company").header("Authorization", "Bearer " + tokenWithUse("global")))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void shouldRequireAuthenticationForApiReads() throws Exception {
         mockMvc.perform(get("/api/v1/security-test"))
                 .andExpect(status().isUnauthorized())
@@ -101,21 +114,30 @@ class IamSecurityConfigurationTest {
     @Test
     void shouldAllowAuthenticatedApiReads() throws Exception {
         mockMvc.perform(get("/api/v1/security-test")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped"))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
                 .andExpect(status().isOk());
     }
 
     @Test
     void shouldAllowAuthenticatedApiWritesThroughUrlSecurity() throws Exception {
         mockMvc.perform(post("/api/v1/security-test")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped"))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldRejectGlobalTokenForBusinessApi() throws Exception {
+        mockMvc.perform(get("/api/v1/security-test").header("Authorization", "Bearer " + tokenWithUse("global")))
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void shouldRejectUnauthorizedMethodCalls() throws Exception {
         mockMvc.perform(post("/api/v1/method-security-test")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped"))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
                 .andExpect(status().isForbidden())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(403))
@@ -128,7 +150,8 @@ class IamSecurityConfigurationTest {
     @Test
     void shouldAllowAuthorizedMethodCalls() throws Exception {
         mockMvc.perform(post("/api/v1/method-security-test")
-                        .with(jwt().authorities(new SimpleGrantedAuthority(CatalogPermissions.WRITE))))
+                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped"))
+                                .authorities(new SimpleGrantedAuthority(WRITE))))
                 .andExpect(status().isOk());
     }
 
@@ -176,7 +199,7 @@ class IamSecurityConfigurationTest {
 
     @Test
     void shouldAuthorizeWithAuthoritiesClaim() throws Exception {
-        String token = tokenWithAuthorities("UNKNOWN", List.of("ROLE_UNKNOWN", CatalogPermissions.WRITE));
+        String token = tokenWithAuthorities("UNKNOWN", List.of("ROLE_UNKNOWN", WRITE));
 
         mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
@@ -197,6 +220,7 @@ class IamSecurityConfigurationTest {
                 .issuedAt(issuedAt)
                 .expiresAt(issuedAt.plusSeconds(3600))
                 .subject(UUID.randomUUID().toString())
+                .claim("token_use", "scoped")
                 .claim("email", "user@example.com")
                 .claim("role", role)
                 .build();
@@ -213,9 +237,26 @@ class IamSecurityConfigurationTest {
                 .issuedAt(issuedAt)
                 .expiresAt(issuedAt.plusSeconds(3600))
                 .subject(UUID.randomUUID().toString())
+                .claim("token_use", "scoped")
                 .claim("email", "user@example.com")
                 .claim("role", role)
                 .claim("authorities", authorities)
+                .build();
+        return jwtEncoder
+                .encode(JwtEncoderParameters.from(
+                        JwsHeader.with(MacAlgorithm.HS256).build(), claims))
+                .getTokenValue();
+    }
+
+    private String tokenWithUse(String tokenUse) {
+        Instant issuedAt = Instant.now();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("erp-api")
+                .issuedAt(issuedAt)
+                .expiresAt(issuedAt.plusSeconds(3600))
+                .subject(UUID.randomUUID().toString())
+                .claim("token_use", tokenUse)
+                .claim("email", "user@example.com")
                 .build();
         return jwtEncoder
                 .encode(JwtEncoderParameters.from(
@@ -266,9 +307,16 @@ class IamSecurityConfigurationTest {
     @Component
     static class TestWriteUseCase {
 
-        @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
+        @PreAuthorize("hasAuthority('" + WRITE + "')")
         String execute() {
             return "method write";
         }
     }
+}
+
+final class JpaEventPublicationAutoConfigurationExclusion {
+
+    static final String NAME = "org." + "springframework.modulith.events.jpa." + "JpaEventPublicationAutoConfiguration";
+
+    private JpaEventPublicationAutoConfigurationExclusion() {}
 }
