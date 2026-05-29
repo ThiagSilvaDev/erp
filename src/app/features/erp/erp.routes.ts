@@ -1,8 +1,104 @@
+import { Provider } from '@angular/core';
 import { Routes } from '@angular/router';
 
+import {
+  provideCategoriesEntityConfig,
+  provideProductsEntityConfig,
+} from './catalog/catalog.entity-config';
+import { provideCompaniesEntityConfig } from './companies/companies.entity-config';
+import { provideCompanyContactsEntityConfig } from './company-contacts/company-contacts.entity-config';
+import { provideContactPersonsEntityConfig } from './contact-persons/contact-persons.entity-config';
+import { provideCustomersEntityConfig } from './customers/customers.entity-config';
+import {
+  provideFinancialEntriesEntityConfig,
+  provideInvoicesEntityConfig,
+  providePaymentsEntityConfig,
+} from './financial/financial.entity-config';
+import {
+  provideInventoryItemsEntityConfig,
+  provideReservationsEntityConfig,
+  provideStockMovementsEntityConfig,
+  provideWarehousesEntityConfig,
+} from './inventory/inventory.entity-config';
+import {
+  provideSalesOrderCreateEntityConfig,
+  provideSalesOrderListEntityConfig,
+} from './sales/sales.entity-config';
+import { provideSuppliersEntityConfig } from './suppliers/suppliers.entity-config';
+import { provideUsersEntityConfig } from './users/users.entity-config';
+import { EntityKey } from './entity/models/entity-view-model';
+
+const entityPage = () => import('./entity/pages/entity-page/entity-page').then((m) => m.EntityPage);
+const entityCreatePage = () =>
+  import('./entity/pages/entity-create-page/entity-create-page').then((m) => m.EntityCreatePage);
+const logisticsPage = () =>
+  import('./logistics/pages/logistics-page/logistics-page').then((m) => m.LogisticsPage);
+const shipmentDetailPage = () =>
+  import('./logistics/pages/shipment-detail-page/shipment-detail-page').then(
+    (m) => m.ShipmentDetailPage,
+  );
+
+function entityRoute(
+  path: EntityKey,
+  listProviders: Provider[],
+  createProviders?: Provider[],
+): Routes[number] {
+  return {
+    path,
+    children: [
+      ...(createProviders
+        ? [
+            {
+              path: 'new',
+              data: { entity: path },
+              providers: createProviders,
+              loadComponent: entityCreatePage,
+            },
+          ]
+        : []),
+      {
+        path: '',
+        data: { entity: path },
+        providers: listProviders,
+        loadComponent: entityPage,
+      },
+    ],
+  };
+}
+
 export const ERP_ROUTES: Routes = [
+  entityRoute('companies', provideCompaniesEntityConfig(), provideCompaniesEntityConfig()),
+  entityRoute('users', provideUsersEntityConfig(), provideUsersEntityConfig()),
+  entityRoute('categories', provideCategoriesEntityConfig()),
+  entityRoute('products', provideProductsEntityConfig(), provideProductsEntityConfig()),
+  entityRoute('customers', provideCustomersEntityConfig(), provideCustomersEntityConfig()),
+  entityRoute('suppliers', provideSuppliersEntityConfig(), provideSuppliersEntityConfig()),
+  entityRoute('company-contacts', provideCompanyContactsEntityConfig()),
+  entityRoute('contact-persons', provideContactPersonsEntityConfig()),
   {
-    path: '',
-    loadComponent: () => import('./pages/entity/entity').then((m) => m.Entity),
+    path: 'pdv',
+    loadComponent: () => import('./pdv/pages/pdv-page/pdv-page').then((m) => m.PdvPage),
   },
+  entityRoute(
+    'sales-orders',
+    provideSalesOrderListEntityConfig(),
+    provideSalesOrderCreateEntityConfig(),
+  ),
+  {
+    path: 'logistics',
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'vehicles' },
+      { path: 'vehicles', data: { logisticsTab: 'vehicles' }, loadComponent: logisticsPage },
+      { path: 'drivers', data: { logisticsTab: 'drivers' }, loadComponent: logisticsPage },
+      { path: 'shipments/:id', loadComponent: shipmentDetailPage },
+      { path: 'shipments', data: { logisticsTab: 'shipments' }, loadComponent: logisticsPage },
+    ],
+  },
+  entityRoute('warehouses', provideWarehousesEntityConfig()),
+  entityRoute('inventory-items', provideInventoryItemsEntityConfig()),
+  entityRoute('stock-movements', provideStockMovementsEntityConfig()),
+  entityRoute('reservations', provideReservationsEntityConfig()),
+  entityRoute('invoices', provideInvoicesEntityConfig()),
+  entityRoute('payments', providePaymentsEntityConfig()),
+  entityRoute('financial-entries', provideFinancialEntriesEntityConfig()),
 ];

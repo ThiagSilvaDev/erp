@@ -1,13 +1,45 @@
 import { Injectable, inject } from '@angular/core';
 import { catchError, forkJoin, map, of } from 'rxjs';
 
-import { CatalogService } from '../../../api/modules/catalog/catalog.service';
-import { CompaniesService } from '../../../api/modules/companies/companies.service';
-import { ContactPersonsService } from '../../../api/modules/contact-persons/contact-persons.service';
-import { CustomersService } from '../../../api/modules/customers/customers.service';
-import { SuppliersService } from '../../../api/modules/suppliers/suppliers.service';
-import { UsersService } from '../../../api/modules/users/users.service';
+import { CatalogService } from '@generated-api/modules/catalog/Catalog.service';
+import { CompaniesService } from '@generated-api/modules/companies/Companies.service';
+import { ContactPersonsService } from '@generated-api/modules/contact-persons/ContactPersons.service';
+import { CustomersService } from '@generated-api/modules/customers/Customers.service';
+import { SuppliersService } from '@generated-api/modules/suppliers/Suppliers.service';
+import { UsersService } from '@generated-api/modules/users/Users.service';
 import { DashboardViewModel } from '../models/dashboard-view-model';
+
+interface PageLike {
+  content?: object[];
+  page?: {
+    totalElements?: number;
+  };
+  totalElements?: number;
+}
+
+function total(page: PageLike): number {
+  return page.totalElements ?? page.page?.totalElements ?? 0;
+}
+
+function valueOf(record: object, key: string): string {
+  if (key in record) {
+    const value = (record as Record<string, unknown>)[key];
+    if (typeof value === 'string' || typeof value === 'number') {
+      return String(value);
+    }
+  }
+  return '';
+}
+
+function nestedValueOf(record: object, key: string, childKey: string): string {
+  if (key in record) {
+    const value = (record as Record<string, unknown>)[key];
+    if (value && typeof value === 'object') {
+      return valueOf(value, childKey);
+    }
+  }
+  return '';
+}
 
 @Injectable({ providedIn: 'root' })
 export class DashboardOverviewFacade {
@@ -19,26 +51,26 @@ export class DashboardOverviewFacade {
   private readonly users = inject(UsersService);
 
   loadOverview() {
-    const pageable = { page: 0, size: 5 };
+    const pageParams = { page: 0, size: 5 };
 
     return forkJoin({
       companies: this.companies
-        .listCompanies({ criteria: {}, pageable })
+        .listCompanies(pageParams)
         .pipe(catchError(() => of({ content: [], totalElements: 0 }))),
       users: this.users
-        .listUsers({ criteria: {}, pageable })
+        .listUsers(pageParams)
         .pipe(catchError(() => of({ content: [], totalElements: 0 }))),
       products: this.catalog
-        .listProducts({ criteria: {}, pageable })
+        .listProducts(pageParams)
         .pipe(catchError(() => of({ content: [], totalElements: 0 }))),
       customers: this.customers
-        .listCustomers({ criteria: {}, pageable })
+        .listCustomers(pageParams)
         .pipe(catchError(() => of({ content: [], totalElements: 0 }))),
       suppliers: this.suppliers
-        .listSuppliers({ criteria: {}, pageable })
+        .listSuppliers(pageParams)
         .pipe(catchError(() => of({ content: [], totalElements: 0 }))),
       contacts: this.contactPersons
-        .listContactPersons({ pageable })
+        .listContactPersons(pageParams)
         .pipe(catchError(() => of({ content: [], totalElements: 0 }))),
     }).pipe(
       map(
@@ -46,37 +78,37 @@ export class DashboardOverviewFacade {
           cards: [
             {
               label: 'Companies',
-              value: result.companies.totalElements ?? 0,
+              value: total(result.companies),
               path: '/companies',
               icon: 'apartment',
             },
             {
               label: 'Users',
-              value: result.users.totalElements ?? 0,
+              value: total(result.users),
               path: '/users',
               icon: 'team',
             },
             {
               label: 'Products',
-              value: result.products.totalElements ?? 0,
+              value: total(result.products),
               path: '/products',
               icon: 'shop',
             },
             {
               label: 'Customers',
-              value: result.customers.totalElements ?? 0,
+              value: total(result.customers),
               path: '/customers',
               icon: 'user',
             },
             {
               label: 'Suppliers',
-              value: result.suppliers.totalElements ?? 0,
+              value: total(result.suppliers),
               path: '/suppliers',
               icon: 'contacts',
             },
             {
               label: 'Contact persons',
-              value: result.contacts.totalElements ?? 0,
+              value: total(result.contacts),
               path: '/contact-persons',
               icon: 'team',
             },
@@ -84,20 +116,20 @@ export class DashboardOverviewFacade {
           recentRecords: [
             ...(result.companies.content ?? []).map((item) => ({
               module: 'Companies',
-              name: item.tradeName || item.legalName || 'Company',
-              detail: item.cnpj?.number ?? item.status ?? '',
+              name: valueOf(item, 'tradeName') || valueOf(item, 'legalName') || 'Company',
+              detail: nestedValueOf(item, 'cnpj', 'number') || valueOf(item, 'status'),
               path: '/companies',
             })),
             ...(result.products.content ?? []).map((item) => ({
               module: 'Products',
-              name: item.name ?? 'Product',
-              detail: item.sku ?? item.status ?? '',
+              name: valueOf(item, 'name') || 'Product',
+              detail: valueOf(item, 'sku') || valueOf(item, 'status'),
               path: '/products',
             })),
             ...(result.customers.content ?? []).map((item) => ({
               module: 'Customers',
-              name: item.name ?? 'Customer',
-              detail: item.document ?? '',
+              name: valueOf(item, 'name') || 'Customer',
+              detail: valueOf(item, 'document'),
               path: '/customers',
             })),
           ].slice(0, 8),

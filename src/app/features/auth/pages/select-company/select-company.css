@@ -1,0 +1,168 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.company-select-page {
+  min-height: 100vh;
+  padding: 32px 16px;
+  background: #f6f8fb;
+}
+
+.company-select-shell {
+  display: grid;
+  gap: 20px;
+  width: min(100%, 960px);
+  margin: 0 auto;
+}
+
+.company-select-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.company-select-header h1 {
+  margin: 8px 0 0;
+  color: #0f172a;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.company-select-header p {
+  margin: 10px 0 0;
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.company-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.company-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.company-card-active {
+  border-color: #1677ff;
+}
+
+.company-card-content {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.company-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1677ff;
+  font-size: 22px;
+}
+
+.company-card-main {
+  min-width: 0;
+}
+
+.company-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.company-card-title h2 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active-badge {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e6f4ff;
+  color: #0958d9;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.company-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.loading-panel,
+.empty-panel {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.empty-panel {
+  align-content: center;
+  gap: 8px;
+  color: #64748b;
+  text-align: center;
+}
+
+.empty-panel nz-icon {
+  color: #94a3b8;
+  font-size: 30px;
+}
+
+.empty-panel h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.empty-panel p {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .company-select-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .company-card-content {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .company-card-content button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}

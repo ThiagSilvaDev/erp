@@ -1,0 +1,113 @@
+<section class="mx-auto grid w-full max-w-6xl gap-4">
+  <div class="flex flex-col gap-3 border-b border-slate-200 pb-3 sm:flex-row sm:items-start sm:justify-between">
+    <div class="min-w-0">
+      <h1 class="m-0 truncate text-xl font-semibold text-slate-950">
+        Shipment {{ text(shipment()?.shipmentNumber) }}
+      </h1>
+      <p class="m-0 mt-1 text-sm text-slate-500">Shipment status, dispatch, items, and tracking.</p>
+    </div>
+    <a nz-button routerLink="/logistics/shipments" class="shrink-0">
+      <nz-icon nzType="arrow-left" />
+      <span>Back</span>
+    </a>
+  </div>
+
+  @if (errorMessage()) {
+    <nz-alert nzType="error" [nzMessage]="errorMessage()" nzShowIcon />
+  }
+
+  <nz-spin [nzSpinning]="isLoading()">
+    @if (shipment(); as shipment) {
+      <div class="detail-layout">
+        <section class="detail-panel">
+          <div class="panel-heading">
+            <h2>Summary</h2>
+            <nz-tag>{{ text(shipment.status) }}</nz-tag>
+          </div>
+
+          <nz-descriptions nzBordered [nzColumn]="1">
+            @for (field of shipmentFields(); track field.label) {
+              <nz-descriptions-item [nzTitle]="field.label">
+                {{ field.value }}
+              </nz-descriptions-item>
+            }
+          </nz-descriptions>
+        </section>
+
+        <section class="detail-panel">
+          <div class="panel-heading">
+            <h2>Items</h2>
+          </div>
+
+          <nz-table
+            nzSize="small"
+            [nzData]="shipment.items ?? []"
+            [nzShowPagination]="false"
+            [nzScroll]="{ x: '720px' }"
+          >
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Product</th>
+                <th>Product ID</th>
+                <th>Warehouse</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of shipment.items ?? []; track item.productId + '-' + item.warehouseId) {
+                <tr>
+                  <td>{{ text(item.productSku) }}</td>
+                  <td>{{ text(item.productName) }}</td>
+                  <td>{{ text(item.productId) }}</td>
+                  <td>{{ text(item.warehouseId) }}</td>
+                  <td>{{ text(item.quantity) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="empty-cell">No items.</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </section>
+
+        <section class="detail-panel">
+          <div class="panel-heading">
+            <h2>Tracking events</h2>
+          </div>
+
+          <nz-table
+            nzSize="small"
+            [nzData]="shipment.trackingEvents ?? []"
+            [nzShowPagination]="false"
+            [nzScroll]="{ x: '720px' }"
+          >
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Occurred at</th>
+                <th>Location</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (event of shipment.trackingEvents ?? []; track event.id ?? event.occurredAt) {
+                <tr>
+                  <td>{{ text(event.status) }}</td>
+                  <td>{{ formatTimestamp(event.occurredAt) }}</td>
+                  <td>{{ text(event.location) }}</td>
+                  <td>{{ text(event.notes) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="empty-cell">No tracking events.</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </section>
+      </div>
+    }
+  </nz-spin>
+</section>

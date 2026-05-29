@@ -8,7 +8,7 @@
     [nzTrigger]="null"
   >
     <div class="brand">
-      <span class="brand-mark">E</span>
+      <span class="brand-mark" aria-hidden="true">E</span>
       @if (!state.isCollapsed()) {
         <span class="brand-name">ERP Web</span>
       }
@@ -23,16 +23,6 @@
           </a>
         </li>
       }
-
-      <li nz-submenu nzOpen nzTitle="Organization" nzIcon="apartment">
-        <ul>
-          @for (item of organizationItems; track item.path) {
-            <li nz-menu-item nzMatchRouter>
-              <a [routerLink]="item.path">{{ item.label }}</a>
-            </li>
-          }
-        </ul>
-      </li>
 
       <li nz-submenu nzOpen nzTitle="Catalog" nzIcon="appstore">
         <ul>
@@ -53,10 +43,62 @@
           }
         </ul>
       </li>
+
+      <li nz-submenu nzOpen nzTitle="Sales" nzIcon="shopping-cart">
+        <ul>
+          @for (item of salesItems; track item.path) {
+            <li nz-menu-item nzMatchRouter>
+              <a [routerLink]="item.path">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </li>
+
+      <li nz-submenu nzOpen nzTitle="Logistics" nzIcon="truck">
+        <ul>
+          @for (item of logisticsItems; track item.path) {
+            <li nz-menu-item nzMatchRouter>
+              <a [routerLink]="item.path">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </li>
+
+      <li nz-submenu nzOpen nzTitle="Inventory" nzIcon="database">
+        <ul>
+          @for (item of inventoryItems; track item.path) {
+            <li nz-menu-item nzMatchRouter>
+              <a [routerLink]="item.path">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </li>
+
+      <li nz-submenu nzOpen nzTitle="Financial" nzIcon="wallet">
+        <ul>
+          @for (item of financialItems; track item.path) {
+            <li nz-menu-item nzMatchRouter>
+              <a [routerLink]="item.path">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </li>
+
+
+      <li nz-submenu nzOpen nzTitle="Admin" nzIcon="apartment">
+        <ul>
+          @for (item of organizationItems; track item.path) {
+            <li nz-menu-item nzMatchRouter>
+              <a [routerLink]="item.path">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </li>
+
     </ul>
   </nz-sider>
 
-  <nz-layout>
+  <nz-layout class="min-w-0">
     <nz-header class="app-header">
       <button
         nz-button
@@ -70,10 +112,21 @@
       </button>
 
       <div class="header-user">
-        <span>{{ state.userLabel() }}</span>
-        <button nz-button nzType="default" type="button" (click)="logout()">
-          <nz-icon nzType="logout" />
-          <span>Logout</span>
+        <a
+          nz-button
+          nzType="default"
+          class="company-switch"
+          routerLink="/select-company"
+          title="Change company"
+        >
+          <nz-icon nzType="apartment" />
+          <span>{{ state.companyLabel() }}</span>
+        </a>
+        <span class="max-w-48 truncate text-sm text-slate-600 md:max-w-72">
+          {{ state.userLabel() }}
+        </span>
+        <button nz-button nzType="default" type="button" class="shrink-0" (click)="logout()">
+          <span class="hidden sm:inline">Logout</span>
         </button>
       </div>
     </nz-header>

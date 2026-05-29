@@ -1,0 +1,154 @@
+:host {
+  display: block;
+}
+
+.filter-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.table-panel {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.pagination-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.create-resource-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  max-height: min(68vh, 680px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.create-resource-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.field-radio-group {
+  display: flex;
+  width: 100%;
+}
+
+.field-radio-group label {
+  flex: 1;
+  text-align: center;
+}
+
+:host ::ng-deep .create-resource-modal .ant-modal-body {
+  padding-bottom: 16px;
+}
+
+:host ::ng-deep .view-resource-modal .ant-modal-body {
+  max-height: min(68vh, 680px);
+  overflow-y: auto;
+}
+
+:host ::ng-deep .view-resource-details .ant-descriptions-item-label {
+  width: 34%;
+  color: #475569;
+  font-weight: 600;
+  background: #f8fafc;
+}
+
+:host ::ng-deep .view-resource-details .ant-descriptions-item-content {
+  color: #334155;
+  overflow-wrap: anywhere;
+}
+
+:host ::ng-deep .ant-table {
+  min-width: 760px;
+}
+
+:host ::ng-deep .ant-table-wrapper {
+  overflow-x: auto;
+}
+
+:host ::ng-deep .ant-table-thead > tr > th {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #f8fafc;
+}
+
+:host ::ng-deep .ant-table-tbody > tr > td {
+  color: #334155;
+}
+
+:host ::ng-deep .actions-column {
+  width: 190px;
+}
+
+:host ::ng-deep .actions-cell {
+  white-space: nowrap;
+}
+
+:host ::ng-deep .actions-cell .ant-btn-link {
+  padding-inline: 4px;
+}
+
+:host ::ng-deep .empty-cell {
+  padding: 28px 16px;
+  color: #64748b;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .create-resource-form {
+    grid-template-columns: 1fr;
+    max-height: 70vh;
+  }
+
+  .create-resource-actions {
+    justify-content: stretch;
+  }
+
+  .create-resource-actions button {
+    flex: 1;
+  }
+
+  .filter-actions {
+    justify-content: stretch;
+    grid-column: 1 / -1;
+  }
+
+  .filter-actions button {
+    flex: 1;
+  }
+
+  .pagination-row {
+    justify-content: center;
+    overflow-x: auto;
+  }
+}

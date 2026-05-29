@@ -2,15 +2,24 @@ import { defineConfig, type Options } from 'orval';
 
 const inputTarget = 'http://localhost:8080/v3/api-docs';
 
-const moduleConfig = (tag: string, folder: string, title: string): Options => ({
+const toTags = (tags: string | string[]) => (Array.isArray(tags) ? tags : [tags]);
+
+const moduleConfig = (
+  tags: string | string[],
+  folder: string,
+  fileName: string,
+  title: string,
+): Options => ({
   input: {
     target: inputTarget,
-    filters: { tags: [tag] },
+    filters: {
+      tags: toTags(tags),
+    },
   },
   output: {
     mode: 'split',
-    target: `src/app/api/modules/${folder}/${folder}.ts`,
-    schemas: `src/app/api/modules/${folder}/dtos`,
+    target: `src/app/generated/api/modules/${folder}/${fileName}.ts`,
+    schemas: `src/app/generated/api/modules/${folder}/dtos`,
     client: 'angular',
     clean: true,
     override: {
@@ -26,14 +35,31 @@ const moduleConfig = (tag: string, folder: string, title: string): Options => ({
 });
 
 export default defineConfig({
-  authentication: moduleConfig('authentication', 'authentication', 'Authentication'),
-  catalog: moduleConfig('catalog', 'catalog', 'Catalog'),
-  companies: moduleConfig('companies', 'companies', 'Companies'),
-  customers: moduleConfig('customers', 'customers', 'Customers'),
-  suppliers: moduleConfig('suppliers', 'suppliers', 'Suppliers'),
-  contactPersons: moduleConfig('contact-persons', 'contact-persons', 'ContactPersons'),
-  inventory: moduleConfig('inventory', 'inventory', 'Inventory'),
-  sales: moduleConfig('sales', 'sales', 'Sales'),
-  financial: moduleConfig('financial', 'financial', 'Financial'),
-  users: moduleConfig('users', 'users', 'Users'),
+  authentication: moduleConfig(
+    'authentication',
+    'authentication',
+    'Authentication',
+    'Authentication',
+  ),
+  catalog: moduleConfig('catalog', 'catalog', 'Catalog', 'Catalog'),
+  companies: moduleConfig('companies', 'companies', 'Companies', 'Companies'),
+  customers: moduleConfig('customers', 'customers', 'Customers', 'Customers'),
+  suppliers: moduleConfig('suppliers', 'suppliers', 'Suppliers', 'Suppliers'),
+  contactPersons: moduleConfig(
+    'contact-persons',
+    'contact-persons',
+    'ContactPersons',
+    'ContactPersons',
+  ),
+  inventory: moduleConfig('inventory', 'inventory', 'Inventory', 'Inventory'),
+  sales: moduleConfig('sales', 'sales', 'Sales', 'Sales'),
+  users: moduleConfig('users', 'users', 'Users', 'Users'),
+  logistics: moduleConfig('logistics', 'logistics', 'Logistics', 'Logistics'),
+
+  financial: moduleConfig(
+    ['ledger entries', 'financial invoices', 'financial payments'],
+    'financial',
+    'Financial',
+    'Financial',
+  ),
 });

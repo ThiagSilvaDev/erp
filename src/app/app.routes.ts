@@ -1,28 +1,34 @@
 import { Routes } from '@angular/router';
 
-import { authGuard, guestGuard } from './core/auth/auth.guard';
-import { DashboardShell } from './features/dashboard/layout/dashboard-shell';
+import { activeCompanyGuard, authGuard, guestGuard } from '@core/auth/auth.guard';
+import { DashboardShell } from '@features/dashboard/layout/dashboard-shell';
 
 export const routes: Routes = [
   {
     path: 'login',
     canActivate: [guestGuard],
-    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+    loadChildren: () => import('@features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+  },
+  {
+    path: 'select-company',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('@features/auth/pages/select-company/select-company').then((m) => m.SelectCompany),
   },
   {
     path: '',
     component: DashboardShell,
-    canActivate: [authGuard],
+    canActivate: [authGuard, activeCompanyGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
         loadChildren: () =>
-          import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
+          import('@features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
       },
       {
-        path: ':entity',
-        loadChildren: () => import('./features/erp/erp.routes').then((m) => m.ERP_ROUTES),
+        path: '',
+        loadChildren: () => import('@features/erp/erp.routes').then((m) => m.ERP_ROUTES),
       },
     ],
   },

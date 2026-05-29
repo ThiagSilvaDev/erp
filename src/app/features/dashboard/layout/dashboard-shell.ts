@@ -38,7 +38,28 @@ export class DashboardShell {
   readonly contactItems: MenuItem[] = [
     { label: 'Customers', path: '/customers', icon: 'user' },
     { label: 'Suppliers', path: '/suppliers', icon: 'contacts' },
+    { label: 'Company contacts', path: '/company-contacts', icon: 'contacts' },
     { label: 'Contact persons', path: '/contact-persons', icon: 'team' },
+  ];
+  readonly salesItems: MenuItem[] = [
+    { label: 'PDV', path: '/pdv', icon: 'credit-card' },
+    { label: 'Sales orders', path: '/sales-orders', icon: 'shopping-cart' },
+  ];
+  readonly logisticsItems: MenuItem[] = [
+    { label: 'Vehicles', path: '/logistics/vehicles', icon: 'truck' },
+    { label: 'Drivers', path: '/logistics/drivers', icon: 'user' },
+    { label: 'Shipments', path: '/logistics/shipments', icon: 'container' },
+  ];
+  readonly inventoryItems: MenuItem[] = [
+    { label: 'Warehouses', path: '/warehouses', icon: 'inbox' },
+    { label: 'Inventory items', path: '/inventory-items', icon: 'database' },
+    { label: 'Stock movements', path: '/stock-movements', icon: 'file-text' },
+    { label: 'Reservations', path: '/reservations', icon: 'container' },
+  ];
+  readonly financialItems: MenuItem[] = [
+    { label: 'Invoices', path: '/invoices', icon: 'wallet' },
+    { label: 'Payments', path: '/payments', icon: 'dollar' },
+    { label: 'Financial entries', path: '/financial-entries', icon: 'file-text' },
   ];
 
   toggleSidebar(): void {

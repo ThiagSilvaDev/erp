@@ -4,7 +4,7 @@ import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { routes } from './app.routes';
-import { icons } from './icons-provider';
+import { icons } from '@core/ui/icons-provider';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { pt_BR, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { registerLocaleData } from '@angular/common';

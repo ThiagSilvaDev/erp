@@ -1,9 +1,13 @@
 <main class="login-page">
-  <section class="login-panel" aria-labelledby="login-title">
-    <div class="login-copy">
-      <span class="eyebrow">ERP Web</span>
-      <h1 id="login-title">Operations workspace</h1>
-      <p>Access companies, catalog, customers, suppliers, users, and contact records.</p>
+  <section class="grid w-full max-w-5xl items-center gap-8 lg:grid-cols-[minmax(0,1fr)_420px]" aria-labelledby="login-title">
+    <div class="min-w-0 text-center lg:text-left">
+      <span class="text-xs font-bold uppercase text-blue-600">ERP Web</span>
+      <h1 id="login-title" class="m-0 mt-3 text-4xl font-semibold leading-none text-slate-950 sm:text-5xl">
+        Operations workspace
+      </h1>
+      <p class="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-600 lg:mx-0">
+        Access companies, catalog, customers, suppliers, users, and contact records.
+      </p>
     </div>
 
     <app-login-form-card

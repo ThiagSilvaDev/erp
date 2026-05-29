@@ -1,0 +1,296 @@
+<section class="pdv-page mx-auto grid w-full max-w-7xl gap-4">
+  <div class="flex flex-col gap-1 border-b border-slate-200 pb-3">
+    <h1 class="m-0 text-xl font-semibold text-slate-950">PDV</h1>
+    <p class="m-0 text-sm text-slate-500">Point of sale for company and customer orders.</p>
+  </div>
+
+  @if (lookupError()) {
+    <nz-alert nzType="error" [nzMessage]="lookupError()" nzShowIcon />
+  }
+
+  <form nz-form nzLayout="vertical" class="sale-context" [formGroup]="saleForm">
+    <nz-form-item class="m-0">
+      <nz-form-label nzFor="sale-target">Sell to</nz-form-label>
+      <nz-form-control>
+        <nz-radio-group id="sale-target" formControlName="targetType" class="target-toggle">
+          <label nz-radio-button nzValue="customer">Customer</label>
+          <label nz-radio-button nzValue="company">Company</label>
+        </nz-radio-group>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item class="m-0">
+      <nz-form-label nzFor="seller-company" nzRequired>Seller company</nz-form-label>
+      <nz-form-control nzErrorTip="Seller company is required.">
+        <nz-select
+          id="seller-company"
+          formControlName="sellerCompanyId"
+          nzShowSearch
+          nzPlaceHolder="Select seller"
+          [nzLoading]="companiesLoading()"
+        >
+          @for (option of companyOptions(); track option.value) {
+            <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+          }
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    @if (targetType() === 'customer') {
+      <nz-form-item class="m-0">
+        <nz-form-label nzFor="customer" nzRequired>Customer</nz-form-label>
+        <nz-form-control nzErrorTip="Customer is required.">
+          <nz-select
+            id="customer"
+            formControlName="customerId"
+            nzShowSearch
+            nzPlaceHolder="Select customer"
+            [nzLoading]="customersLoading()"
+          >
+            @for (option of customerOptions(); track option.value) {
+              <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    } @else {
+      <nz-form-item class="m-0">
+        <nz-form-label nzFor="buyer-company" nzRequired>Buyer company</nz-form-label>
+        <nz-form-control nzErrorTip="Buyer company is required.">
+          <nz-select
+            id="buyer-company"
+            formControlName="buyerCompanyId"
+            nzShowSearch
+            nzPlaceHolder="Select buyer"
+            [nzLoading]="companiesLoading()"
+          >
+            @for (option of companyOptions(); track option.value) {
+              <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    }
+
+    <nz-form-item class="m-0">
+      <nz-form-label nzFor="warehouse" nzRequired>Warehouse</nz-form-label>
+      <nz-form-control nzErrorTip="Warehouse is required.">
+        <nz-select
+          id="warehouse"
+          formControlName="warehouseId"
+          nzShowSearch
+          nzPlaceHolder="Select warehouse"
+          [nzLoading]="warehousesLoading()"
+        >
+          @for (option of warehouseOptions(); track option.value) {
+            <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+          }
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item class="m-0">
+      <nz-form-label nzFor="payment-method" nzRequired>Payment</nz-form-label>
+      <nz-form-control nzErrorTip="Payment method is required.">
+        <nz-select id="payment-method" formControlName="paymentMethod">
+          @for (option of paymentMethodOptions; track option.value) {
+            <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+          }
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item class="m-0">
+      <nz-form-label nzFor="fulfillment-type" nzRequired>Fulfillment</nz-form-label>
+      <nz-form-control nzErrorTip="Fulfillment type is required.">
+        <nz-radio-group id="fulfillment-type" formControlName="fulfillmentType" class="target-toggle">
+          @for (option of fulfillmentTypeOptions; track option.value) {
+            <label nz-radio-button [nzValue]="option.value">{{ option.label }}</label>
+          }
+        </nz-radio-group>
+      </nz-form-control>
+    </nz-form-item>
+
+    @if (isDelivery()) {
+      <nz-form-item class="m-0">
+        <nz-form-label nzFor="delivery-route" nzRequired>Delivery route</nz-form-label>
+        <nz-form-control nzErrorTip="Delivery route is required.">
+          <input nz-input id="delivery-route" formControlName="deliveryRouteName" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item class="m-0 sale-context-wide">
+        <nz-form-label nzFor="delivery-destination" nzRequired>Destination</nz-form-label>
+        <nz-form-control nzErrorTip="Destination is required.">
+          <input
+            nz-input
+            id="delivery-destination"
+            formControlName="deliveryRouteDestinationDescription"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    }
+  </form>
+
+  <div class="pdv-layout">
+    <section class="product-panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Products</h2>
+          <p>Search active products and add them to the cart.</p>
+        </div>
+      </div>
+
+      <form
+        nz-form
+        nzLayout="vertical"
+        class="product-search"
+        [formGroup]="productSearchForm"
+        (ngSubmit)="submitProductSearch()"
+      >
+        <nz-form-item class="m-0">
+          <nz-form-label nzFor="product-sku">SKU</nz-form-label>
+          <nz-form-control>
+            <input nz-input id="product-sku" formControlName="sku" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="m-0">
+          <nz-form-label nzFor="product-name">Name</nz-form-label>
+          <nz-form-control>
+            <input nz-input id="product-name" formControlName="name" />
+          </nz-form-control>
+        </nz-form-item>
+        <div class="search-actions">
+          <button nz-button nzType="primary" type="submit">
+            <nz-icon nzType="barcode" />
+            <span>Search</span>
+          </button>
+          <button nz-button type="button" (click)="resetProductSearch()">Reset</button>
+        </div>
+      </form>
+
+      @if (productsError()) {
+        <nz-alert nzType="error" [nzMessage]="productsError()" nzShowIcon />
+      }
+
+      <nz-spin [nzSpinning]="productsLoading()">
+        <div class="product-grid">
+          @for (product of products(); track product.id ?? product.sku) {
+            <article class="product-card">
+              <div class="product-image" aria-hidden="true">
+                <nz-icon nzType="shop" />
+              </div>
+              <div class="product-info">
+                <div class="product-sku">{{ text(product.sku) || '-' }}</div>
+                <h3>{{ productLabel(product) }}</h3>
+                <p>{{ text(product.description) || '-' }}</p>
+                <div class="product-meta">
+                  <strong>{{ formatMoney(product) }}</strong>
+                  <nz-tag>{{ text(product.status) || '-' }}</nz-tag>
+                </div>
+              </div>
+              <button nz-button nzType="primary" type="button" (click)="addToCart(product)">
+                Add
+              </button>
+            </article>
+          } @empty {
+            <div class="empty-state">No products found.</div>
+          }
+        </div>
+      </nz-spin>
+
+      <div class="pagination-row">
+        <nz-pagination
+          [nzPageIndex]="productsPageIndex()"
+          [nzPageSize]="pageSize"
+          [nzTotal]="productsTotal()"
+          (nzPageIndexChange)="changeProductsPage($event)"
+        />
+      </div>
+    </section>
+
+    <aside class="cart-panel">
+      <div class="panel-heading cart-heading">
+        <div>
+          <h2>Cart</h2>
+          <p>{{ cartQuantity() }} item(s)</p>
+        </div>
+        <button nz-button type="button" [disabled]="!cartItems().length" (click)="clearCart()">
+          Clear
+        </button>
+      </div>
+
+      <nz-table
+        nzSize="small"
+        [nzData]="cartItems()"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '520px' }"
+      >
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Total</th>
+            <th class="cart-action-column"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of cartItems(); track item.product.id) {
+            <tr>
+              <td>
+                <div class="cart-product">
+                  <strong>{{ productLabel(item.product) }}</strong>
+                  <span>{{ text(item.product.sku) || '-' }}</span>
+                </div>
+              </td>
+              <td>
+                <input
+                  nz-input
+                  type="number"
+                  min="1"
+                  class="quantity-input"
+                  [value]="item.quantity"
+                  (change)="changeQuantity(item.product.id, $any($event.target).value)"
+                />
+              </td>
+              <td>{{ lineTotal(item) }}</td>
+              <td>
+                <button
+                  nz-button
+                  nzType="text"
+                  type="button"
+                  aria-label="Remove item"
+                  (click)="removeFromCart(item.product.id)"
+                >
+                  <nz-icon nzType="delete" />
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty-cart">Cart is empty.</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      <div class="cart-summary">
+        <span>Subtotal</span>
+        <strong>{{ formatTotal() }}</strong>
+      </div>
+
+      <button
+        nz-button
+        nzType="primary"
+        type="button"
+        class="checkout-button"
+        [disabled]="!canCheckout() || isLookupLoading()"
+        [nzLoading]="isCheckingOut()"
+        (click)="checkout()"
+      >
+        <nz-icon nzType="credit-card" />
+        <span>Confirm sale</span>
+      </button>
+    </aside>
+  </div>
+</section>

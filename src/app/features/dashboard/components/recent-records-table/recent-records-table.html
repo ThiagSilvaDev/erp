@@ -1,9 +1,10 @@
-<nz-card nzTitle="Recent records">
+<nz-card nzTitle="Recent records" class="border-slate-200 shadow-none">
   <nz-table
-    nzSize="middle"
+    nzSize="small"
     [nzData]="records()"
     [nzLoading]="isLoading()"
     [nzShowPagination]="false"
+    [nzScroll]="{ x: '640px' }"
   >
     <thead>
       <tr>

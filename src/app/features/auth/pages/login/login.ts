@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
-import { AuthStateService } from '../../../../core/auth/auth.service';
+import { AuthService } from '@core/auth/auth.service';
+import { appPaths } from '@core/routing/app-paths';
 import { LoginFormCard } from '../../components/login-form-card/login-form-card';
 import { LoginForm } from '../../models/login-form';
 
@@ -14,8 +15,9 @@ import { LoginForm } from '../../models/login-form';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login {
-  private readonly auth = inject(AuthStateService);
+  private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
   readonly isSubmitting = signal(false);
@@ -29,11 +31,19 @@ export class Login {
       .login(credentials)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => void this.router.navigateByUrl('/dashboard'),
+        next: () => void this.router.navigateByUrl(this.nextPath()),
         error: () => {
           this.errorMessage.set('Unable to sign in with these credentials.');
           this.isSubmitting.set(false);
         },
       });
+  }
+
+  private nextPath(): string {
+    if (!this.auth.hasActiveCompany()) {
+      return appPaths.selectCompany;
+    }
+
+    return this.route.snapshot.queryParamMap.get('returnUrl') ?? appPaths.dashboard;
   }
 }

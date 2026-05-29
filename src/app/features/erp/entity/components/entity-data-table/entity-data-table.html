@@ -1,0 +1,78 @@
+<nz-table
+  nzSize="small"
+  [nzData]="rows()"
+  [nzLoading]="isLoading()"
+  [nzShowPagination]="false"
+  [nzScroll]="{ x: '760px' }"
+>
+  <thead>
+    <tr>
+      @for (column of columns(); track column.key) {
+        <th>{{ column.label }}</th>
+      }
+      <th class="actions-column">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track valueFor(row, 'id')) {
+      <tr>
+        @for (column of columns(); track column.key) {
+          <td>
+            @if (isTagColumn(column.key) && valueFor(row, column.key) !== '-') {
+              <nz-tag [nzColor]="tagColor(valueFor(row, column.key))">
+                {{ valueFor(row, column.key) }}
+              </nz-tag>
+            } @else {
+              {{ valueFor(row, column.key) }}
+            }
+          </td>
+        }
+        <td class="actions-cell">
+          @for (action of inlineActions(row); track action.label) {
+            <button
+              nz-button
+              nzType="text"
+              type="button"
+              [attr.aria-label]="action.label"
+              [attr.title]="action.label"
+              [nzLoading]="activeAction() === actionKey(action, row)"
+              (click)="runRecordAction.emit({ action, record: row })"
+            >
+              <nz-icon [nzType]="action.icon ?? ''" />
+            </button>
+          }
+          <button
+            nz-button
+            nzType="text"
+            type="button"
+            aria-label="Open actions"
+            title="Actions"
+            nz-dropdown
+            [nzDropdownMenu]="actionsMenu"
+            nzTrigger="click"
+          >
+            <nz-icon nzType="ellipsis" />
+          </button>
+          <nz-dropdown-menu #actionsMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-item (click)="viewRecord.emit(row)">Detail</li>
+              @for (action of menuActions(row); track action.label) {
+                <li
+                  nz-menu-item
+                  [nzDisabled]="activeAction() === actionKey(action, row)"
+                  (click)="runRecordAction.emit({ action, record: row })"
+                >
+                  <span>{{ action.label }}</span>
+                </li>
+              }
+            </ul>
+          </nz-dropdown-menu>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td class="empty-cell" [attr.colspan]="columns().length + 1">No records found.</td>
+      </tr>
+    }
+  </tbody>
+</nz-table>
