@@ -78,6 +78,7 @@ public class JwtTokenService {
                 .expiresAt(expiresAt)
                 .claim("token_use", "scoped")
                 .claim("email", principal.getEmail())
+                .claim("tenant_id", membership.companyId().toString())
                 .claim("company_id", membership.companyId().toString())
                 .claim("role", membership.role().name())
                 .claim("authorities", authorities)

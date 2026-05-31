@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.iam.internal.config;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -28,8 +29,10 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.util.StringUtils;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -38,6 +41,7 @@ import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
 import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
 import com.thiagsilvadev.erpapi.iam.internal.security.SecurityAuthorities;
+import com.thiagsilvadev.erpapi.iam.internal.security.TenantContextFilter;
 
 @Configuration
 @EnableMethodSecurity
@@ -49,7 +53,8 @@ public class IamSecurityConfiguration {
             HttpSecurity http,
             CustomAuthenticationEntryPoint authenticationEntryPoint,
             CustomAccessDeniedHandler accessDeniedHandler,
-            RolePermissionResolver rolePermissionResolver) {
+            RolePermissionResolver rolePermissionResolver,
+            TenantContextFilter tenantContextFilter) {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -72,6 +77,7 @@ public class IamSecurityConfiguration {
                         .authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
                         jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter(rolePermissionResolver))))
+                .addFilterAfter(tenantContextFilter, BearerTokenAuthenticationFilter.class)
                 .build();
     }
 
@@ -96,11 +102,17 @@ public class IamSecurityConfiguration {
     private AuthorizationManager<RequestAuthorizationContext> tokenUse(String tokenUse) {
         return (authentication, context) -> {
             if (authentication.get() instanceof JwtAuthenticationToken jwtAuthentication
-                    && tokenUse.equals(jwtAuthentication.getToken().getClaimAsString("token_use"))) {
+                    && tokenUse.equals(jwtAuthentication.getToken().getClaimAsString("token_use"))
+                    && hasTenant(jwtAuthentication)) {
                 return new AuthorizationDecision(true);
             }
             return new AuthorizationDecision(false);
         };
+    }
+
+    @Bean
+    TenantContextFilter tenantContextFilter() {
+        return new TenantContextFilter();
     }
 
     @Bean
@@ -132,5 +144,21 @@ public class IamSecurityConfiguration {
             throw new IllegalStateException("erp.iam.jwt.secret must contain at least 32 bytes");
         }
         return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    }
+
+    private boolean hasTenant(JwtAuthenticationToken authentication) {
+        String tenantId = authentication.getToken().getClaimAsString(TenantContextFilter.TENANT_ID_CLAIM);
+        if (!StringUtils.hasText(tenantId)) {
+            tenantId = authentication.getToken().getClaimAsString(TenantContextFilter.COMPANY_ID_CLAIM);
+        }
+        if (!StringUtils.hasText(tenantId)) {
+            return false;
+        }
+        try {
+            UUID.fromString(tenantId);
+            return true;
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
     }
 }

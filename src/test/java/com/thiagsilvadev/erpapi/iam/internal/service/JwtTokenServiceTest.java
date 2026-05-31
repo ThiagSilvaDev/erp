@@ -79,6 +79,7 @@ class JwtTokenServiceTest {
         assertThat(jwtEncoder.claims).containsEntry("sub", userId.toString());
         assertThat(jwtEncoder.claims).containsEntry("email", "user@example.com");
         assertThat(jwtEncoder.claims).containsEntry("company_id", companyId.toString());
+        assertThat(jwtEncoder.claims).containsEntry("tenant_id", companyId.toString());
         assertThat(jwtEncoder.claims).containsEntry("role", "ADMIN");
         assertThat((Object) jwtEncoder.claims.get("authorities")).asList().contains(UserPermissions.WRITE);
     }

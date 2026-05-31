@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
@@ -114,7 +115,8 @@ class IamSecurityConfigurationTest {
     @Test
     void shouldAllowAuthenticatedApiReads() throws Exception {
         mockMvc.perform(get("/api/v1/security-test")
-                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped"))
+                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped")
+                                        .claim("tenant_id", UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
                 .andExpect(status().isOk());
     }
@@ -122,9 +124,18 @@ class IamSecurityConfigurationTest {
     @Test
     void shouldAllowAuthenticatedApiWritesThroughUrlSecurity() throws Exception {
         mockMvc.perform(post("/api/v1/security-test")
-                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped"))
+                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped")
+                                        .claim("tenant_id", UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldRejectScopedTokenWithoutTenantForBusinessApi() throws Exception {
+        mockMvc.perform(get("/api/v1/security-test")
+                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped"))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -136,7 +147,8 @@ class IamSecurityConfigurationTest {
     @Test
     void shouldRejectUnauthorizedMethodCalls() throws Exception {
         mockMvc.perform(post("/api/v1/method-security-test")
-                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped"))
+                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped")
+                                        .claim("tenant_id", UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
                 .andExpect(status().isForbidden())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -150,9 +162,20 @@ class IamSecurityConfigurationTest {
     @Test
     void shouldAllowAuthorizedMethodCalls() throws Exception {
         mockMvc.perform(post("/api/v1/method-security-test")
-                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped"))
+                        .with(jwt().jwt(builder -> builder.claim("token_use", "scoped")
+                                        .claim("tenant_id", UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority(WRITE))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldExposeTenantContextFromScopedToken() throws Exception {
+        UUID tenantId = UUID.randomUUID();
+
+        mockMvc.perform(get("/api/v1/security-test/tenant")
+                        .header("Authorization", "Bearer " + tokenWithRole("ADMIN", tenantId)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(tenantId.toString()));
     }
 
     @Test
@@ -214,6 +237,10 @@ class IamSecurityConfigurationTest {
     }
 
     private String tokenWithRole(String role) {
+        return tokenWithRole(role, UUID.randomUUID());
+    }
+
+    private String tokenWithRole(String role, UUID tenantId) {
         Instant issuedAt = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("erp-api")
@@ -222,6 +249,8 @@ class IamSecurityConfigurationTest {
                 .subject(UUID.randomUUID().toString())
                 .claim("token_use", "scoped")
                 .claim("email", "user@example.com")
+                .claim("tenant_id", tenantId.toString())
+                .claim("company_id", tenantId.toString())
                 .claim("role", role)
                 .build();
         return jwtEncoder
@@ -239,6 +268,7 @@ class IamSecurityConfigurationTest {
                 .subject(UUID.randomUUID().toString())
                 .claim("token_use", "scoped")
                 .claim("email", "user@example.com")
+                .claim("tenant_id", UUID.randomUUID().toString())
                 .claim("role", role)
                 .claim("authorities", authorities)
                 .build();
@@ -280,6 +310,11 @@ class IamSecurityConfigurationTest {
         @GetMapping
         String read() {
             return "read";
+        }
+
+        @GetMapping("/tenant")
+        String tenant() {
+            return TenantContext.requireTenantId().toString();
         }
 
         @PostMapping
