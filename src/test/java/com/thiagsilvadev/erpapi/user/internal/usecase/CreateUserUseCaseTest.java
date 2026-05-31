@@ -23,10 +23,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
-import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
-import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
+import com.thiagsilvadev.erpapi.user.internal.event.UserCredentialProvisioningAfterCommitHandler;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.exception.EmailAlreadyExistsException;
 import com.thiagsilvadev.erpapi.user.internal.mapper.UserMapper;
@@ -51,7 +50,7 @@ class CreateUserUseCaseTest {
     private UserEventPublisher eventPublisher;
 
     @Mock
-    private CredentialProvisioningFacade credentialProvisioningFacade;
+    private UserCredentialProvisioningAfterCommitHandler credentialProvisioningAfterCommitHandler;
 
     @Mock
     private UserMembershipRepository userMembershipRepository;
@@ -67,7 +66,7 @@ class CreateUserUseCaseTest {
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(EmailAlreadyExistsException.class);
 
         verify(userRepository, never()).saveAndFlush(any());
-        verify(credentialProvisioningFacade, never()).provision(any());
+        verify(credentialProvisioningAfterCommitHandler, never()).provisionAfterCommit(any(), any());
         verify(eventPublisher, never()).userCreated(any());
     }
 
@@ -85,12 +84,12 @@ class CreateUserUseCaseTest {
                         .containsEntry("resourceName", "Company"));
 
         verify(userRepository, never()).saveAndFlush(any());
-        verify(credentialProvisioningFacade, never()).provision(any());
+        verify(credentialProvisioningAfterCommitHandler, never()).provisionAfterCommit(any(), any());
         verify(eventPublisher, never()).userCreated(any());
     }
 
     @Test
-    void shouldCreateUserProvisionCredentialAndPublishSafeEvent() {
+    void shouldCreateUserRegisterCredentialProvisioningAndPublishSafeEvent() {
         CreateUserRequest request = userRequest();
         UUID userId = UUID.randomUUID();
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
@@ -103,15 +102,14 @@ class CreateUserUseCaseTest {
         useCase.execute(request);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        ArgumentCaptor<CredentialProvisioningRequest> credentialCaptor =
-                ArgumentCaptor.forClass(CredentialProvisioningRequest.class);
-        verify(credentialProvisioningFacade).provision(credentialCaptor.capture());
-        assertThat(credentialCaptor.getValue().userId()).isEqualTo(userId);
-        assertThat(credentialCaptor.getValue().email()).isEqualTo("user@example.com");
-        assertThat(credentialCaptor.getValue().rawPassword()).isEqualTo("secret123");
-        assertThat(credentialCaptor.getValue().role()).isEqualTo("ADMIN");
+        ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
+        verify(credentialProvisioningAfterCommitHandler)
+                .provisionAfterCommit(userCaptor.capture(), passwordCaptor.capture());
+        assertThat(userCaptor.getValue().getId()).isEqualTo(userId);
+        assertThat(userCaptor.getValue().getContact().getEmail()).isEqualTo("user@example.com");
+        assertThat(passwordCaptor.getValue()).isEqualTo("secret123");
 
-        verify(eventPublisher).userCreated(userCaptor.capture());
+        verify(eventPublisher).userCreated(userCaptor.getValue());
         verify(userRepository).saveAndFlush(userCaptor.getValue());
         ArgumentCaptor<UserMembership> membershipCaptor = ArgumentCaptor.forClass(UserMembership.class);
         verify(userMembershipRepository).save(membershipCaptor.capture());
@@ -119,11 +117,11 @@ class CreateUserUseCaseTest {
         assertThat(membershipCaptor.getValue().getCompanyId()).isEqualTo(request.companyId());
         assertThat(membershipCaptor.getValue().getRole()).isEqualTo(UserRole.ADMIN);
 
-        InOrder inOrder =
-                inOrder(userRepository, userMembershipRepository, credentialProvisioningFacade, eventPublisher);
+        InOrder inOrder = inOrder(
+                userRepository, userMembershipRepository, credentialProvisioningAfterCommitHandler, eventPublisher);
         inOrder.verify(userRepository).saveAndFlush(any(User.class));
         inOrder.verify(userMembershipRepository).save(any(UserMembership.class));
-        inOrder.verify(credentialProvisioningFacade).provision(any());
+        inOrder.verify(credentialProvisioningAfterCommitHandler).provisionAfterCommit(any(User.class), any());
         inOrder.verify(eventPublisher).userCreated(any(User.class));
     }
 
@@ -136,26 +134,7 @@ class CreateUserUseCaseTest {
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(EmailAlreadyExistsException.class);
 
-        verify(credentialProvisioningFacade, never()).provision(any());
-        verify(eventPublisher, never()).userCreated(any());
-    }
-
-    @Test
-    void shouldNotPublishEventWhenCredentialProvisioningFails() {
-        CreateUserRequest request = userRequest();
-        UUID userId = UUID.randomUUID();
-        when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
-        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            ReflectionTestUtils.setField(user, "id", userId);
-            return user;
-        });
-        doThrow(new IllegalStateException("credential failure"))
-                .when(credentialProvisioningFacade)
-                .provision(any());
-
-        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(IllegalStateException.class);
-
+        verify(credentialProvisioningAfterCommitHandler, never()).provisionAfterCommit(any(), any());
         verify(eventPublisher, never()).userCreated(any());
     }
 

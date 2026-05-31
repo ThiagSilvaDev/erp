@@ -9,10 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
-import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
-import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserResponse;
+import com.thiagsilvadev.erpapi.user.internal.event.UserCredentialProvisioningAfterCommitHandler;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.exception.EmailAlreadyExistsException;
 import com.thiagsilvadev.erpapi.user.internal.mapper.UserMapper;
@@ -28,7 +27,7 @@ public class CreateUserUseCase {
     private final CompanyFacade companyFacade;
     private final UserMapper userMapper;
     private final UserEventPublisher eventPublisher;
-    private final CredentialProvisioningFacade credentialProvisioningFacade;
+    private final UserCredentialProvisioningAfterCommitHandler credentialProvisioningAfterCommitHandler;
     private final UserMembershipRepository userMembershipRepository;
 
     public CreateUserUseCase(
@@ -36,13 +35,13 @@ public class CreateUserUseCase {
             CompanyFacade companyFacade,
             UserMapper userMapper,
             UserEventPublisher eventPublisher,
-            CredentialProvisioningFacade credentialProvisioningFacade,
+            UserCredentialProvisioningAfterCommitHandler credentialProvisioningAfterCommitHandler,
             UserMembershipRepository userMembershipRepository) {
         this.userRepository = userRepository;
         this.companyFacade = companyFacade;
         this.userMapper = userMapper;
         this.eventPublisher = eventPublisher;
-        this.credentialProvisioningFacade = credentialProvisioningFacade;
+        this.credentialProvisioningAfterCommitHandler = credentialProvisioningAfterCommitHandler;
         this.userMembershipRepository = userMembershipRepository;
     }
 
@@ -72,11 +71,7 @@ public class CreateUserUseCase {
         }
         userMembershipRepository.save(
                 UserMembership.create(savedUser.getId(), request.companyId(), savedUser.getRole()));
-        credentialProvisioningFacade.provision(new CredentialProvisioningRequest(
-                savedUser.getId(),
-                savedUser.getContact().getEmail(),
-                request.password(),
-                savedUser.getRole().name()));
+        credentialProvisioningAfterCommitHandler.provisionAfterCommit(savedUser, request.password());
         eventPublisher.userCreated(savedUser);
 
         return userMapper.toResponse(savedUser);
