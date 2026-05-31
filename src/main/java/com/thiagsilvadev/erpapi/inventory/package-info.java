@@ -4,8 +4,10 @@
             "common::model",
             "common::validation",
             "common::numbering",
+            "common::tenant",
             "common::web",
-            "catalog::api"
+            "catalog::api",
+            "company::api"
         })
 package com.thiagsilvadev.erpapi.inventory;
 

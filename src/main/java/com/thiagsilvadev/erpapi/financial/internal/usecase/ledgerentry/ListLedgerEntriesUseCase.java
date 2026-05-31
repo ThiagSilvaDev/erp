@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.ledgerentry.LedgerEntryResponse;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
@@ -24,6 +25,7 @@ public class ListLedgerEntriesUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public Page<LedgerEntryResponse> execute(Pageable pageable) {
-        return ledgerEntryRepository.findAll(pageable).map(mapper::toResponse);
+        var companyId = TenantContext.requireTenantId();
+        return ledgerEntryRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
     }
 }

@@ -13,9 +13,14 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
         name = "financial_invoices",
         uniqueConstraints = {
             @UniqueConstraint(name = "uk_financial_invoice_sales_order", columnNames = "sales_order_id"),
-            @UniqueConstraint(name = "uk_financial_invoice_invoice_number", columnNames = "invoice_number")
+            @UniqueConstraint(
+                    name = "uk_financial_invoice_company_invoice_number",
+                    columnNames = {"company_id", "invoice_number"})
         })
 public class Invoice extends AbstractBaseEntity {
+
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
 
     @Column(name = "invoice_number", nullable = false, updatable = false)
     private Long invoiceNumber;
@@ -47,6 +52,7 @@ public class Invoice extends AbstractBaseEntity {
 
     private Invoice(
             Long invoiceNumber,
+            UUID companyId,
             BillingPartyType billingPartyType,
             UUID billingPartyId,
             UUID salesOrderId,
@@ -54,6 +60,7 @@ public class Invoice extends AbstractBaseEntity {
             String currencyCode,
             LocalDate dueDate) {
         this.invoiceNumber = invoiceNumber;
+        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.billingPartyType = billingPartyType;
         this.billingPartyId = billingPartyId;
         this.salesOrderId = salesOrderId;
@@ -64,6 +71,7 @@ public class Invoice extends AbstractBaseEntity {
 
     public static Invoice create(
             Long invoiceNumber,
+            UUID companyId,
             BillingPartyType billingPartyType,
             UUID billingPartyId,
             UUID salesOrderId,
@@ -71,7 +79,14 @@ public class Invoice extends AbstractBaseEntity {
             String currencyCode,
             LocalDate dueDate) {
         return new Invoice(
-                invoiceNumber, billingPartyType, billingPartyId, salesOrderId, amount, currencyCode, dueDate);
+                invoiceNumber,
+                companyId,
+                billingPartyType,
+                billingPartyId,
+                salesOrderId,
+                amount,
+                currencyCode,
+                dueDate);
     }
 
     public void markPaid() {
@@ -90,6 +105,10 @@ public class Invoice extends AbstractBaseEntity {
 
     public BillingPartyType getBillingPartyType() {
         return billingPartyType;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public UUID getBillingPartyId() {

@@ -11,6 +11,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductSearchCriter
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductSpecification;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 
 @Component
 public class ListProductsUseCase {
@@ -26,8 +27,9 @@ public class ListProductsUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
     public Page<ProductResponse> execute(ProductSearchCriteria criteria, Pageable pageable) {
+        var companyId = TenantContext.requireTenantId();
         return productRepository
-                .findAll(ProductSpecification.withCriteria(criteria), pageable)
+                .findAll(ProductSpecification.withCriteriaForCompany(criteria, companyId), pageable)
                 .map(catalogMapper::toResponse);
     }
 }

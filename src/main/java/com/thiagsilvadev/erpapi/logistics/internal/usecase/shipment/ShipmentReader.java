@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.ShipmentResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Shipment;
@@ -28,7 +29,10 @@ class ShipmentReader {
     }
 
     Shipment get(UUID id) {
-        return shipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Shipment.class, id));
+        var sellerCompanyId = TenantContext.requireTenantId();
+        return shipmentRepository
+                .findByIdAndSellerCompanyId(id, sellerCompanyId)
+                .orElseThrow(() -> new ResourceNotFoundException(Shipment.class, id));
     }
 
     ShipmentResponse toResponse(Shipment shipment) {

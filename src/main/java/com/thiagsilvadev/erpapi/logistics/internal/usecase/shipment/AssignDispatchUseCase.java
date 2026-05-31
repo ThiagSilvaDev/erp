@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.AssignDispatchRequest;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.ShipmentResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.model.*;
@@ -34,12 +35,13 @@ public class AssignDispatchUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).DISPATCH)")
     public ShipmentResponse execute(UUID shipmentId, AssignDispatchRequest request) {
+        var sellerCompanyId = TenantContext.requireTenantId();
         Shipment shipment = shipmentReader.get(shipmentId);
         Driver driver = driverRepository
-                .findById(request.driverId())
+                .findByIdAndCompanyId(request.driverId(), sellerCompanyId)
                 .orElseThrow(() -> new ResourceNotFoundException(Driver.class, request.driverId()));
         Vehicle vehicle = vehicleRepository
-                .findById(request.vehicleId())
+                .findByIdAndCompanyId(request.vehicleId(), sellerCompanyId)
                 .orElseThrow(() -> new ResourceNotFoundException(Vehicle.class, request.vehicleId()));
         shipment.assignDispatch(
                 driver, vehicle, request.routeName(), request.originWarehouseId(), request.destinationDescription());

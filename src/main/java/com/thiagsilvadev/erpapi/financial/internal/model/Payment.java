@@ -13,8 +13,13 @@ import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 @Table(
         name = "financial_payments",
         uniqueConstraints =
-                @UniqueConstraint(name = "uk_financial_payment_payment_number", columnNames = "payment_number"))
+                @UniqueConstraint(
+                        name = "uk_financial_payment_company_payment_number",
+                        columnNames = {"company_id", "payment_number"}))
 public class Payment extends AbstractBaseEntity {
+
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
 
     @Column(name = "payment_number", nullable = false, updatable = false)
     private Long paymentNumber;
@@ -52,6 +57,7 @@ public class Payment extends AbstractBaseEntity {
 
     private Payment(
             Long paymentNumber,
+            UUID companyId,
             UUID salesOrderId,
             UUID customerId,
             UUID invoiceId,
@@ -62,6 +68,7 @@ public class Payment extends AbstractBaseEntity {
             LocalDate dueDate,
             LocalDate paidAt) {
         this.paymentNumber = paymentNumber;
+        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.salesOrderId = salesOrderId;
         this.customerId = customerId;
         this.invoiceId = invoiceId;
@@ -75,6 +82,7 @@ public class Payment extends AbstractBaseEntity {
 
     public static Payment create(
             Long paymentNumber,
+            UUID companyId,
             UUID salesOrderId,
             UUID customerId,
             UUID invoiceId,
@@ -85,6 +93,7 @@ public class Payment extends AbstractBaseEntity {
             LocalDate dueDate) {
         return new Payment(
                 paymentNumber,
+                companyId,
                 salesOrderId,
                 customerId,
                 invoiceId,
@@ -103,6 +112,10 @@ public class Payment extends AbstractBaseEntity {
 
     public Long getPaymentNumber() {
         return paymentNumber;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public UUID getSalesOrderId() {

@@ -13,6 +13,9 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 @Table(name = "financial_entries")
 public class FinancialEntry extends AbstractBaseEntity {
 
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
+
     @Column(name = "account_id", nullable = false)
     private UUID accountId;
 
@@ -42,6 +45,7 @@ public class FinancialEntry extends AbstractBaseEntity {
     protected FinancialEntry() {}
 
     private FinancialEntry(
+            UUID companyId,
             UUID accountId,
             FinancialEntryType type,
             FinancialEntrySource source,
@@ -49,6 +53,7 @@ public class FinancialEntry extends AbstractBaseEntity {
             String currencyCode,
             UUID referenceId,
             String description) {
+        this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
         this.accountId = Objects.requireNonNull(accountId, "Account ID is required");
         this.type = Objects.requireNonNull(type, "Entry type is required");
         this.source = Objects.requireNonNull(source, "Entry source is required");
@@ -69,6 +74,7 @@ public class FinancialEntry extends AbstractBaseEntity {
     }
 
     public static FinancialEntry income(
+            UUID companyId,
             UUID accountId,
             FinancialEntrySource source,
             BigDecimal amount,
@@ -76,10 +82,18 @@ public class FinancialEntry extends AbstractBaseEntity {
             UUID referenceId,
             String description) {
         return new FinancialEntry(
-                accountId, FinancialEntryType.INCOME, source, amount, currencyCode, referenceId, description);
+                companyId,
+                accountId,
+                FinancialEntryType.INCOME,
+                source,
+                amount,
+                currencyCode,
+                referenceId,
+                description);
     }
 
     public static FinancialEntry expense(
+            UUID companyId,
             UUID accountId,
             FinancialEntrySource source,
             BigDecimal amount,
@@ -87,10 +101,18 @@ public class FinancialEntry extends AbstractBaseEntity {
             UUID referenceId,
             String description) {
         return new FinancialEntry(
-                accountId, FinancialEntryType.EXPENSE, source, amount, currencyCode, referenceId, description);
+                companyId,
+                accountId,
+                FinancialEntryType.EXPENSE,
+                source,
+                amount,
+                currencyCode,
+                referenceId,
+                description);
     }
 
     public static FinancialEntry transferIn(
+            UUID companyId,
             UUID accountId,
             FinancialEntrySource source,
             BigDecimal amount,
@@ -98,10 +120,18 @@ public class FinancialEntry extends AbstractBaseEntity {
             UUID referenceId,
             String description) {
         return new FinancialEntry(
-                accountId, FinancialEntryType.TRANSFER_IN, source, amount, currencyCode, referenceId, description);
+                companyId,
+                accountId,
+                FinancialEntryType.TRANSFER_IN,
+                source,
+                amount,
+                currencyCode,
+                referenceId,
+                description);
     }
 
     public static FinancialEntry transferOut(
+            UUID companyId,
             UUID accountId,
             FinancialEntrySource source,
             BigDecimal amount,
@@ -109,10 +139,18 @@ public class FinancialEntry extends AbstractBaseEntity {
             UUID referenceId,
             String description) {
         return new FinancialEntry(
-                accountId, FinancialEntryType.TRANSFER_OUT, source, amount, currencyCode, referenceId, description);
+                companyId,
+                accountId,
+                FinancialEntryType.TRANSFER_OUT,
+                source,
+                amount,
+                currencyCode,
+                referenceId,
+                description);
     }
 
     public static FinancialEntry adjustment(
+            UUID companyId,
             UUID accountId,
             FinancialEntrySource source,
             BigDecimal amount,
@@ -120,7 +158,18 @@ public class FinancialEntry extends AbstractBaseEntity {
             UUID referenceId,
             String description) {
         return new FinancialEntry(
-                accountId, FinancialEntryType.ADJUSTMENT, source, amount, currencyCode, referenceId, description);
+                companyId,
+                accountId,
+                FinancialEntryType.ADJUSTMENT,
+                source,
+                amount,
+                currencyCode,
+                referenceId,
+                description);
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public UUID getAccountId() {

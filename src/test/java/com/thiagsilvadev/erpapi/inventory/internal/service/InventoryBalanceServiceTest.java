@@ -30,7 +30,8 @@ class InventoryBalanceServiceTest {
 
     private final UUID productId = UUID.randomUUID();
     private final UUID warehouseId = UUID.randomUUID();
-    private final Warehouse warehouse = Warehouse.create("MAIN", "Main Warehouse");
+    private final UUID companyId = UUID.randomUUID();
+    private final Warehouse warehouse = Warehouse.create(companyId, "MAIN", "Main Warehouse");
 
     private InventoryBalanceService service;
 
@@ -38,6 +39,7 @@ class InventoryBalanceServiceTest {
     void setUp() {
         service = new InventoryBalanceService(itemRepository, warehouseRepository, catalogFacade);
         when(warehouseRepository.findById(warehouseId)).thenReturn(Optional.of(warehouse));
+        when(warehouseRepository.findByIdAndCompanyId(warehouseId, companyId)).thenReturn(Optional.of(warehouse));
     }
 
     @Test
@@ -54,7 +56,7 @@ class InventoryBalanceServiceTest {
     @Test
     void shouldIncreaseStockForInboundMovement() {
         InventoryItem item = InventoryItem.create(productId, warehouse, 10);
-        when(itemRepository.findByProductIdAndWarehouseId(productId, warehouseId))
+        when(itemRepository.findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId))
                 .thenReturn(Optional.of(item));
 
         InventoryItem updated = service.applyMovement(productId, warehouseId, 5, StockMovementType.IN);
@@ -65,7 +67,7 @@ class InventoryBalanceServiceTest {
     @Test
     void shouldDecreaseStockForOutboundMovement() {
         InventoryItem item = InventoryItem.create(productId, warehouse, 10);
-        when(itemRepository.findByProductIdAndWarehouseId(productId, warehouseId))
+        when(itemRepository.findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId))
                 .thenReturn(Optional.of(item));
 
         InventoryItem updated = service.applyMovement(productId, warehouseId, 4, StockMovementType.OUT);
@@ -77,7 +79,7 @@ class InventoryBalanceServiceTest {
     void shouldNotDecreaseReservedStockWithOutboundMovement() {
         InventoryItem item = InventoryItem.create(productId, warehouse, 10);
         item.reserve(7);
-        when(itemRepository.findByProductIdAndWarehouseId(productId, warehouseId))
+        when(itemRepository.findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId))
                 .thenReturn(Optional.of(item));
 
         assertThatThrownBy(() -> service.applyMovement(productId, warehouseId, 4, StockMovementType.OUT))
@@ -87,7 +89,7 @@ class InventoryBalanceServiceTest {
 
     @Test
     void shouldCreateItemOnlyForInboundMovement() {
-        when(itemRepository.findByProductIdAndWarehouseId(productId, warehouseId))
+        when(itemRepository.findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId))
                 .thenReturn(Optional.empty());
         when(itemRepository.save(any(InventoryItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 

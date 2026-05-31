@@ -7,6 +7,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Vehicle;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
@@ -19,23 +20,31 @@ class LogisticsDevSeeder implements ApplicationRunner {
 
     static final String DRIVER_LICENSE_NUMBER = "CNH-001";
     static final String VEHICLE_PLATE = "ABC1234";
+    private static final String ACME_CNPJ = "97.986.234/0001-91";
 
     private final DriverRepository driverRepository;
     private final VehicleRepository vehicleRepository;
+    private final CompanyFacade companyFacade;
 
-    LogisticsDevSeeder(DriverRepository driverRepository, VehicleRepository vehicleRepository) {
+    LogisticsDevSeeder(
+            DriverRepository driverRepository, VehicleRepository vehicleRepository, CompanyFacade companyFacade) {
         this.driverRepository = driverRepository;
         this.vehicleRepository = vehicleRepository;
+        this.companyFacade = companyFacade;
     }
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (!driverRepository.existsByLicenseNumber(DRIVER_LICENSE_NUMBER)) {
-            driverRepository.save(Driver.create("Alex Driver", DRIVER_LICENSE_NUMBER, "11999999999"));
+        var companyId = companyFacade
+                .findByCnpj(ACME_CNPJ)
+                .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding logistics"))
+                .id();
+        if (!driverRepository.existsByCompanyIdAndLicenseNumber(companyId, DRIVER_LICENSE_NUMBER)) {
+            driverRepository.save(Driver.create(companyId, "Alex Driver", DRIVER_LICENSE_NUMBER, "11999999999"));
         }
-        if (!vehicleRepository.existsByPlate(VEHICLE_PLATE)) {
-            vehicleRepository.save(Vehicle.create(VEHICLE_PLATE, "Box truck", 1000));
+        if (!vehicleRepository.existsByCompanyIdAndPlate(companyId, VEHICLE_PLATE)) {
+            vehicleRepository.save(Vehicle.create(companyId, VEHICLE_PLATE, "Box truck", 1000));
         }
     }
 }

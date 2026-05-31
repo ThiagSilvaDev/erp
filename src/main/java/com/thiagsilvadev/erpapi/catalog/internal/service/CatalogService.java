@@ -38,13 +38,34 @@ public class CatalogService implements CatalogFacade {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<ProductSnapshot> findProductById(UUID id, UUID companyId) {
+        return productRepository.findByIdAndCompanyId(id, companyId).map(catalogMapper::toSnapshot);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<ProductSnapshot> findProductBySku(String sku) {
         return productRepository.findBySkuValue(Sku.of(sku).getValue()).map(catalogMapper::toSnapshot);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<ProductSnapshot> findProductBySku(String sku, UUID companyId) {
+        return productRepository
+                .findByCompanyIdAndSkuValue(companyId, Sku.of(sku).getValue())
+                .map(catalogMapper::toSnapshot);
+    }
+
+    @Override
     public void requireProductExistsById(UUID id) {
         if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException(Product.class, id);
+        }
+    }
+
+    @Override
+    public void requireProductExistsById(UUID id, UUID companyId) {
+        if (productRepository.findByIdAndCompanyId(id, companyId).isEmpty()) {
             throw new ResourceNotFoundException(Product.class, id);
         }
     }
@@ -57,6 +78,18 @@ public class CatalogService implements CatalogFacade {
         }
 
         List<Product> products = productRepository.findAllByIdIn((productIds));
+
+        return products.stream().map(catalogMapper::toSnapshot).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductSnapshot> findAllProductsByIdIn(Set<UUID> productIds, UUID companyId) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Product> products = productRepository.findAllByCompanyIdAndIdIn(companyId, productIds);
 
         return products.stream().map(catalogMapper::toSnapshot).toList();
     }

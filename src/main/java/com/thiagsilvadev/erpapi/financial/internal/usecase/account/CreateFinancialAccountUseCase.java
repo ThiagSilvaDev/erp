@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.CreateFinancialAccountRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
@@ -25,12 +26,14 @@ public class CreateFinancialAccountUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
     public FinancialAccountResponse execute(CreateFinancialAccountRequest request) {
-        if (accountRepository.existsByNameIgnoreCase(request.name().trim())) {
+        var companyId = TenantContext.requireTenantId();
+        if (accountRepository.existsByCompanyIdAndNameIgnoreCase(
+                companyId, request.name().trim())) {
             throw new ConflictException("A financial account with this name already exists.");
         }
 
-        FinancialAccount account =
-                accountRepository.save(FinancialAccount.create(request.name(), request.type(), request.description()));
+        FinancialAccount account = accountRepository.save(
+                FinancialAccount.create(companyId, request.name(), request.type(), request.description()));
 
         return mapper.toResponse(account);
     }

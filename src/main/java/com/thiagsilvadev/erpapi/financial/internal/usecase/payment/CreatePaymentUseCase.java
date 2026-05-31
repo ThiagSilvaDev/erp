@@ -10,6 +10,7 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.CreatePaymentRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
@@ -58,13 +59,14 @@ public class CreatePaymentUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
     public PaymentResponse execute(CreatePaymentRequest request) {
+        var companyId = TenantContext.requireTenantId();
         Invoice invoice = invoiceRepository
-                .findWithLockingById(request.invoiceId())
+                .findWithLockingByIdAndCompanyId(request.invoiceId(), companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(Invoice.class, request.invoiceId()));
         validateInvoiceCanReceivePayment(invoice);
-        validateDestinationAccount(request);
+        validateDestinationAccount(companyId, request);
 
-        BigDecimal paidAmount = paymentRepository.sumAmountByInvoiceId(invoice.getId());
+        BigDecimal paidAmount = paymentRepository.sumAmountByCompanyIdAndInvoiceId(companyId, invoice.getId());
         BigDecimal totalPaidAmount = paidAmount.add(request.amount());
         if (totalPaidAmount.compareTo(invoice.getAmount()) > 0) {
             throw new ConflictException("Payment amount exceeds the invoice balance.");
@@ -72,6 +74,7 @@ public class CreatePaymentUseCase {
 
         Payment payment = paymentRepository.save(Payment.create(
                 businessNumberService.next(BusinessNumberType.PAYMENT),
+                companyId,
                 request.salesOrderId(),
                 request.customerId(),
                 request.invoiceId(),
@@ -88,18 +91,22 @@ public class CreatePaymentUseCase {
 
         if (totalPaidAmount.compareTo(invoice.getAmount()) == 0) {
             invoice.markPaid();
-            ledgerEntryRepository.findByInvoiceId(invoice.getId()).ifPresent(LedgerEntry::settle);
+            ledgerEntryRepository
+                    .findByCompanyIdAndInvoiceId(companyId, invoice.getId())
+                    .ifPresent(LedgerEntry::settle);
         }
 
         return mapper.toResponse(payment);
     }
 
-    private void validateDestinationAccount(CreatePaymentRequest request) {
+    private void validateDestinationAccount(java.util.UUID companyId, CreatePaymentRequest request) {
         if (request.status() == PaymentStatus.PAID && request.destinationAccountId() == null) {
             throw new ConflictException("Destination account is required for paid payments.");
         }
         if (request.destinationAccountId() != null) {
-            if (!accountRepository.existsById(request.destinationAccountId())) {
+            if (accountRepository
+                    .findByIdAndCompanyId(request.destinationAccountId(), companyId)
+                    .isEmpty()) {
                 throw new ResourceNotFoundException(FinancialAccount.class, request.destinationAccountId());
             }
         }
@@ -108,6 +115,7 @@ public class CreatePaymentUseCase {
     private void createIncomeEntryIfAccountPresent(Payment payment, Invoice invoice) {
         if (payment.getDestinationAccountId() != null) {
             entryRepository.save(FinancialEntry.income(
+                    payment.getCompanyId(),
                     payment.getDestinationAccountId(),
                     FinancialEntrySource.PAYMENT,
                     payment.getAmount(),

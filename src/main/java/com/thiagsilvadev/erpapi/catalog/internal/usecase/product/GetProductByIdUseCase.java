@@ -11,6 +11,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 
 @Component
 public class GetProductByIdUseCase {
@@ -26,8 +27,10 @@ public class GetProductByIdUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
     public ProductResponse execute(UUID id) {
-        Product product =
-                productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Product.class, id));
+        var companyId = TenantContext.requireTenantId();
+        Product product = productRepository
+                .findByIdAndCompanyId(id, companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(Product.class, id));
 
         return catalogMapper.toResponse(product);
     }

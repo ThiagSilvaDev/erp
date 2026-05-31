@@ -10,6 +10,9 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 @Table(name = "inventory_reservations")
 public class InventoryReservation extends AbstractBaseEntity {
 
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
+
     @Column(nullable = false)
     private UUID productId;
 
@@ -24,15 +27,21 @@ public class InventoryReservation extends AbstractBaseEntity {
 
     protected InventoryReservation() {}
 
-    private InventoryReservation(UUID productId, UUID warehouseId, int quantity, UUID salesOrderId) {
+    private InventoryReservation(UUID companyId, UUID productId, UUID warehouseId, int quantity, UUID salesOrderId) {
+        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.productId = productId;
         this.warehouseId = warehouseId;
         this.quantity = quantity;
         this.salesOrderId = salesOrderId;
     }
 
-    public static InventoryReservation create(UUID productId, UUID warehouseId, int quantity, UUID salesOrderId) {
-        return new InventoryReservation(productId, warehouseId, quantity, salesOrderId);
+    public static InventoryReservation create(
+            UUID companyId, UUID productId, UUID warehouseId, int quantity, UUID salesOrderId) {
+        return new InventoryReservation(companyId, productId, warehouseId, quantity, salesOrderId);
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public UUID getProductId() {

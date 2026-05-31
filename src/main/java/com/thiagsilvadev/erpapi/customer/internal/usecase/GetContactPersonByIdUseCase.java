@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.customer.internal.dto.ContactPersonResponse;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;
@@ -26,8 +27,9 @@ public class GetContactPersonByIdUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
     public ContactPersonResponse execute(UUID id) {
+        var ownerCompanyId = TenantContext.requireTenantId();
         return mapper.toResponse(contactPersonRepository
-                .findById(id)
+                .findByIdAndCustomerOwnerCompanyId(id, ownerCompanyId)
                 .orElseThrow(() -> new ResourceNotFoundException(ContactPerson.class, id)));
     }
 }

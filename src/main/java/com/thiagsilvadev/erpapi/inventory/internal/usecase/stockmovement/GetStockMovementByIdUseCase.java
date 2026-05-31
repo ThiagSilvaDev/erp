@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovement;
@@ -26,8 +27,9 @@ public class GetStockMovementByIdUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public StockMovementResponse execute(UUID id) {
+        var companyId = TenantContext.requireTenantId();
         return mapper.toResponse(movementRepository
-                .findById(id)
+                .findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(StockMovement.class, id)));
     }
 }

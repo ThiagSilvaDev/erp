@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,6 +22,7 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundExceptio
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CreateCustomerRequest;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
@@ -29,6 +31,7 @@ import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CreateCustomerUseCaseTest {
+    private static final UUID TENANT_ID = UUID.randomUUID();
 
     @Mock
     private CustomerRepository customerRepository;
@@ -39,10 +42,16 @@ class CreateCustomerUseCaseTest {
     @Mock
     private CustomerMapper mapper;
 
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
+
     @Test
     void shouldRejectMissingCompany() {
         CreateCustomerRequest request = customerRequest();
-        when(companyFacade.findById(request.ownerCompanyId())).thenReturn(Optional.empty());
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.empty());
 
         CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
 
@@ -57,8 +66,10 @@ class CreateCustomerUseCaseTest {
     @Test
     void shouldRejectDuplicatedDocument() {
         CreateCustomerRequest request = customerRequest();
-        when(companyFacade.findById(request.ownerCompanyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
-        when(customerRepository.existsByDocument("12345678900")).thenReturn(true);
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(customerRepository.existsByOwnerCompanyIdAndDocument(TENANT_ID, "12345678900"))
+                .thenReturn(true);
 
         CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
 
@@ -72,8 +83,10 @@ class CreateCustomerUseCaseTest {
         CreateCustomerRequest request = customerRequest();
         Contact contact = Contact.create("customer@example.com", "11912345678");
         Address address = address();
-        when(companyFacade.findById(request.ownerCompanyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
-        when(customerRepository.existsByDocument("12345678900")).thenReturn(false);
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(customerRepository.existsByOwnerCompanyIdAndDocument(TENANT_ID, "12345678900"))
+                .thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(contact);
         when(mapper.toAddress(request.address())).thenReturn(address);
         when(customerRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Customer.class)))
@@ -85,13 +98,16 @@ class CreateCustomerUseCaseTest {
 
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
         verify(customerRepository).saveAndFlush(customerCaptor.capture());
+        assertThat(customerCaptor.getValue().getOwnerCompanyId()).isEqualTo(TENANT_ID);
     }
 
     @Test
     void shouldTranslateDuplicateDocumentRace() {
         CreateCustomerRequest request = customerRequest();
-        when(companyFacade.findById(request.ownerCompanyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
-        when(customerRepository.existsByDocument("12345678900")).thenReturn(false);
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(customerRepository.existsByOwnerCompanyIdAndDocument(TENANT_ID, "12345678900"))
+                .thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(Contact.create("customer@example.com", "11912345678"));
         when(mapper.toAddress(request.address())).thenReturn(address());
         when(customerRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Customer.class)))
@@ -106,7 +122,6 @@ class CreateCustomerUseCaseTest {
         return new CreateCustomerRequest(
                 "Customer",
                 "123.456.789-00",
-                UUID.randomUUID(),
                 new com.thiagsilvadev.erpapi.customer.internal.dto.ContactRequest(
                         "customer@example.com", "11912345678"),
                 new com.thiagsilvadev.erpapi.customer.internal.dto.AddressRequest(

@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.repository;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.thiagsilvadev.erpapi.catalog.api.CategoryStatus;
@@ -14,6 +16,14 @@ public class CategorySpecification {
         return Specification.where(hasCode(criteria.code()))
                 .and(hasStatus(criteria.status()))
                 .and(hasNameLike(criteria.name()));
+    }
+
+    public static Specification<Category> withCriteriaForCompany(CategorySearchCriteria criteria, UUID companyId) {
+        return Specification.where(hasCompany(companyId)).and(withCriteria(criteria));
+    }
+
+    private static Specification<Category> hasCompany(UUID companyId) {
+        return (root, query, cb) -> cb.equal(root.get("companyId"), companyId);
     }
 
     private static Specification<Category> hasCode(String code) {

@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.model;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import jakarta.persistence.*;
 
@@ -11,8 +12,13 @@ import com.thiagsilvadev.erpapi.common.domain.model.Phone;
 @Table(
         name = "logistics_drivers",
         uniqueConstraints =
-                @UniqueConstraint(name = "uk_logistics_driver_license_number", columnNames = "license_number"))
+                @UniqueConstraint(
+                        name = "uk_logistics_driver_company_license_number",
+                        columnNames = {"company_id", "license_number"}))
 public class Driver extends AbstractBaseEntity {
+
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
 
     @Column(nullable = false, length = 120)
     private String name;
@@ -30,18 +36,23 @@ public class Driver extends AbstractBaseEntity {
 
     protected Driver() {}
 
-    private Driver(String name, String licenseNumber, String phone) {
+    private Driver(UUID companyId, String name, String licenseNumber, String phone) {
+        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.name = required(name, "Driver name cannot be blank");
         this.licenseNumber = normalize(licenseNumber, "Driver license number cannot be blank");
         this.phone = Phone.of(phone);
     }
 
-    public static Driver create(String name, String licenseNumber, String phone) {
-        return new Driver(name, licenseNumber, phone);
+    public static Driver create(UUID companyId, String name, String licenseNumber, String phone) {
+        return new Driver(companyId, name, licenseNumber, phone);
     }
 
     public String getName() {
         return name;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public String getLicenseNumber() {

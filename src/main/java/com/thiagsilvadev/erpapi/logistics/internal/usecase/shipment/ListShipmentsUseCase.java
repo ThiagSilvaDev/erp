@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.ShipmentResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.ShipmentSearchCriteria;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository;
@@ -25,8 +26,9 @@ public class ListShipmentsUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).READ)")
     public Page<ShipmentResponse> execute(ShipmentSearchCriteria criteria, Pageable pageable) {
+        var sellerCompanyId = TenantContext.requireTenantId();
         return shipmentRepository
-                .findAll(ShipmentSpecification.withCriteria(criteria), pageable)
+                .findAll(ShipmentSpecification.withCriteriaForSeller(criteria, sellerCompanyId), pageable)
                 .map(shipmentReader::toResponse);
     }
 }

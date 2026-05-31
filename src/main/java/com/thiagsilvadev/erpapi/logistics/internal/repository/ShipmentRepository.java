@@ -12,5 +12,11 @@ public interface ShipmentRepository extends JpaRepository<Shipment, UUID>, JpaSp
 
     boolean existsBySalesOrderId(UUID salesOrderId);
 
+    boolean existsBySellerCompanyIdAndSalesOrderId(UUID sellerCompanyId, UUID salesOrderId);
+
     Optional<Shipment> findBySalesOrderId(UUID salesOrderId);
+
+    Optional<Shipment> findBySellerCompanyIdAndSalesOrderId(UUID sellerCompanyId, UUID salesOrderId);
+
+    Optional<Shipment> findByIdAndSellerCompanyId(UUID id, UUID sellerCompanyId);
 }

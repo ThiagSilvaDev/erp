@@ -10,6 +10,7 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
@@ -55,17 +56,22 @@ public class CreateInvoiceUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
     public InvoiceResponse execute(CreateInvoiceRequest request) {
+        var companyId = TenantContext.requireTenantId();
         validateBillingParty(request.billingPartyType(), request.billingPartyId());
 
         if (request.salesOrderId() != null) {
             SalesOrderSnapshot order = salesFacade
                     .findOrderById(request.salesOrderId())
                     .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", request.salesOrderId()));
+            if (!companyId.equals(order.sellerCompanyId())) {
+                throw new ResourceNotFoundException("SalesOrder", request.salesOrderId());
+            }
             validateSalesOrderInvoice(request, order);
         }
 
         Invoice invoice = invoiceRepository.save(Invoice.create(
                 businessNumberService.next(BusinessNumberType.INVOICE),
+                companyId,
                 request.billingPartyType(),
                 request.billingPartyId(),
                 request.salesOrderId(),
@@ -74,7 +80,7 @@ public class CreateInvoiceUseCase {
                 request.dueDate()));
 
         ledgerEntryRepository.save(LedgerEntry.receivable(
-                invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
+                companyId, invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
 
         return mapper.toResponse(invoice);
     }
@@ -98,7 +104,7 @@ public class CreateInvoiceUseCase {
         if (!order.currencyCode().equalsIgnoreCase(request.currencyCode())) {
             throw new ConflictException("Invoice currency must match the sales order currency.");
         }
-        if (invoiceRepository.existsBySalesOrderId(order.id())) {
+        if (invoiceRepository.existsByCompanyIdAndSalesOrderId(order.sellerCompanyId(), order.id())) {
             throw new ConflictException("Sales order already has an invoice.");
         }
     }

@@ -3,14 +3,17 @@ package com.thiagsilvadev.erpapi.financial.internal.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 
 class FinancialAccountTest {
+    private static final UUID COMPANY_ID = UUID.randomUUID();
 
     @Test
     void shouldCreateValidAccount() {
         FinancialAccount account = FinancialAccount.create(
-                " Caixa Loja Principal ", FinancialAccountType.CASH_REGISTER, "   Main cash   ");
+                COMPANY_ID, " Caixa Loja Principal ", FinancialAccountType.CASH_REGISTER, "   Main cash   ");
 
         assertThat(account.getName()).isEqualTo("Caixa Loja Principal");
         assertThat(account.getType()).isEqualTo(FinancialAccountType.CASH_REGISTER);
@@ -20,7 +23,8 @@ class FinancialAccountTest {
 
     @Test
     void shouldCreateAccountWithoutDescription() {
-        FinancialAccount account = FinancialAccount.create("Itaú PJ", FinancialAccountType.BANK_ACCOUNT, null);
+        FinancialAccount account =
+                FinancialAccount.create(COMPANY_ID, "Itaú PJ", FinancialAccountType.BANK_ACCOUNT, null);
 
         assertThat(account.getName()).isEqualTo("Itaú PJ");
         assertThat(account.getType()).isEqualTo(FinancialAccountType.BANK_ACCOUNT);
@@ -29,21 +33,22 @@ class FinancialAccountTest {
 
     @Test
     void shouldFailWhenNameIsBlank() {
-        assertThatThrownBy(() -> FinancialAccount.create("   ", FinancialAccountType.BANK_ACCOUNT, null))
+        assertThatThrownBy(() -> FinancialAccount.create(COMPANY_ID, "   ", FinancialAccountType.BANK_ACCOUNT, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Financial account name is required");
     }
 
     @Test
     void shouldFailWhenTypeIsNull() {
-        assertThatThrownBy(() -> FinancialAccount.create("Itaú PJ", null, null))
+        assertThatThrownBy(() -> FinancialAccount.create(COMPANY_ID, "Itaú PJ", null, null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Financial account type is required");
     }
 
     @Test
     void shouldActivateAndDeactivate() {
-        FinancialAccount account = FinancialAccount.create("Itaú PJ", FinancialAccountType.BANK_ACCOUNT, null);
+        FinancialAccount account =
+                FinancialAccount.create(COMPANY_ID, "Itaú PJ", FinancialAccountType.BANK_ACCOUNT, null);
         assertThat(account.getStatus()).isEqualTo(FinancialResourceStatus.ACTIVE);
 
         account.deactivate();

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.customer.internal.dto.ContactPersonResponse;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CreateContactPersonRequest;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
@@ -32,8 +33,9 @@ public class CreateContactPersonUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public ContactPersonResponse execute(CreateContactPersonRequest request) {
+        var ownerCompanyId = TenantContext.requireTenantId();
         customerRepository
-                .findById(request.customerId())
+                .findByIdAndOwnerCompanyId(request.customerId(), ownerCompanyId)
                 .orElseThrow(() -> new ResourceNotFoundException(Customer.class, request.customerId()));
 
         ContactPerson contactPerson =

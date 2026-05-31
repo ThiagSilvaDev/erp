@@ -11,6 +11,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.exception.CategoryCodeAlreadyEx
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 
 @Component
 public class CreateCategoryUseCase {
@@ -26,13 +27,14 @@ public class CreateCategoryUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
     public CategoryResponse execute(CreateCategoryRequest request) {
+        var companyId = TenantContext.requireTenantId();
         String code = Category.normalizeCode(request.code());
 
-        if (categoryRepository.existsByCode(code)) {
+        if (categoryRepository.existsByCompanyIdAndCode(companyId, code)) {
             throw new CategoryCodeAlreadyExistsException(code);
         }
 
-        Category category = Category.create(request.code(), request.name(), request.description());
+        Category category = Category.create(companyId, request.code(), request.name(), request.description());
         Category savedCategory;
         try {
             savedCategory = categoryRepository.saveAndFlush(category);

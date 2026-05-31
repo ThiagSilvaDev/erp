@@ -38,7 +38,7 @@ public class LoadShipmentUseCase {
     public ShipmentResponse execute(UUID shipmentId, CreateTrackingEventRequest request) {
         Shipment shipment = shipmentReader.get(shipmentId);
         Instant occurredAt = TrackingRequests.occurredAt(request, clock);
-        inventoryFacade.consumeReservationsForSalesOrder(shipment.getSalesOrderId());
+        inventoryFacade.consumeReservationsForSalesOrder(shipment.getSellerCompanyId(), shipment.getSalesOrderId());
         shipment.load(occurredAt);
         trackingEventRepository.save(ShipmentTrackingEvent.create(
                 shipment,

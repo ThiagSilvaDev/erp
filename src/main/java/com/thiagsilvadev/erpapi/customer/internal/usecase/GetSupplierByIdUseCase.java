@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierResponse;
 import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;
@@ -26,7 +27,9 @@ public class GetSupplierByIdUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
     public SupplierResponse execute(UUID id) {
-        return mapper.toResponse(
-                supplierRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Supplier.class, id)));
+        var companyId = TenantContext.requireTenantId();
+        return mapper.toResponse(supplierRepository
+                .findByIdAndCompanyId(id, companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(Supplier.class, id)));
     }
 }

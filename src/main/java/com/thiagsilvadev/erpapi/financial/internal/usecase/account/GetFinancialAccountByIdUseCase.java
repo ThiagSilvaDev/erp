@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
 import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccount;
@@ -26,8 +27,9 @@ public class GetFinancialAccountByIdUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public FinancialAccountResponse execute(UUID id) {
+        var companyId = TenantContext.requireTenantId();
         return mapper.toResponse(accountRepository
-                .findById(id)
+                .findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(FinancialAccount.class, id)));
     }
 }

@@ -10,12 +10,13 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ShipmentTest {
+    private static final UUID COMPANY_ID = UUID.randomUUID();
 
     @Test
     void shouldFollowShipmentWorkflow() {
         Shipment shipment = shipment();
-        Driver driver = Driver.create("Driver", "CNH-1", "11999999999");
-        Vehicle vehicle = Vehicle.create("ABC1234", "Truck", 1000);
+        Driver driver = Driver.create(COMPANY_ID, "Driver", "CNH-1", "11999999999");
+        Vehicle vehicle = Vehicle.create(COMPANY_ID, "ABC1234", "Truck", 1000);
 
         shipment.assignDispatch(driver, vehicle, "Downtown", UUID.randomUUID(), "Customer dock");
         shipment.load(Instant.parse("2026-01-01T10:00:00Z"));
@@ -37,8 +38,8 @@ class ShipmentTest {
     void shouldRejectCancellationAfterLoading() {
         Shipment shipment = shipment();
         shipment.assignDispatch(
-                Driver.create("Driver", "CNH-1", "11999999999"),
-                Vehicle.create("ABC1234", "Truck", 1000),
+                Driver.create(COMPANY_ID, "Driver", "CNH-1", "11999999999"),
+                Vehicle.create(COMPANY_ID, "ABC1234", "Truck", 1000),
                 "Downtown",
                 UUID.randomUUID(),
                 "Customer dock");

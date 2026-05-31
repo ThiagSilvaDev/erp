@@ -35,17 +35,27 @@ public class InventoryBalanceService {
         Warehouse warehouse = warehouseRepository
                 .findById(warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, warehouseId));
+        return applyMovement(warehouse.getCompanyId(), productId, warehouseId, quantity, type);
+    }
+
+    @Transactional
+    public InventoryItem applyMovement(
+            UUID companyId, UUID productId, UUID warehouseId, int quantity, StockMovementType type) {
+        catalogFacade.requireProductExistsById(productId, companyId);
+        Warehouse warehouse = warehouseRepository
+                .findByIdAndCompanyId(warehouseId, companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, warehouseId));
         return switch (type) {
             case IN, TRANSFER_IN, ADJUSTMENT ->
                 itemRepository
-                        .findByProductIdAndWarehouseId(productId, warehouseId)
+                        .findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId)
                         .map(item -> {
                             item.increase(quantity);
                             return item;
                         })
                         .orElseGet(() -> itemRepository.save(InventoryItem.create(productId, warehouse, quantity)));
             case OUT, TRANSFER_OUT, RESERVE, RELEASE_RESERVATION -> {
-                InventoryItem item = getExistingItem(productId, warehouseId);
+                InventoryItem item = getExistingItem(companyId, productId, warehouseId);
                 applyExistingItemMovement(item, quantity, type);
                 yield item;
             }
@@ -55,6 +65,12 @@ public class InventoryBalanceService {
     private InventoryItem getExistingItem(UUID productId, UUID warehouseId) {
         return itemRepository
                 .findByProductIdAndWarehouseId(productId, warehouseId)
+                .orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId));
+    }
+
+    private InventoryItem getExistingItem(UUID companyId, UUID productId, UUID warehouseId) {
+        return itemRepository
+                .findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId));
     }
 

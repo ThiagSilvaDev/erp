@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.model.Payment;
@@ -26,7 +27,9 @@ public class GetPaymentByIdUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public PaymentResponse execute(UUID id) {
-        return mapper.toResponse(
-                paymentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Payment.class, id)));
+        var companyId = TenantContext.requireTenantId();
+        return mapper.toResponse(paymentRepository
+                .findByIdAndCompanyId(id, companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(Payment.class, id)));
     }
 }

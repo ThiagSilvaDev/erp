@@ -15,7 +15,11 @@ import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 @Entity
 @Table(
         name = "suppliers",
-        uniqueConstraints = {@UniqueConstraint(name = "uk_supplier_document", columnNames = "document")})
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_supplier_company_document",
+                    columnNames = {"company_id", "document"})
+        })
 public class Supplier extends AbstractBaseEntity {
 
     @Column(nullable = false)
@@ -24,7 +28,7 @@ public class Supplier extends AbstractBaseEntity {
     @Column(nullable = false, length = 32)
     private String document;
 
-    @Column(nullable = false)
+    @Column(name = "company_id", nullable = false)
     private UUID companyId;
 
     @Embedded

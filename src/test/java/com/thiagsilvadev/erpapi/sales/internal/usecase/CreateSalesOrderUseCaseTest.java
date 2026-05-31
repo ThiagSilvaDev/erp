@@ -147,7 +147,7 @@ class CreateSalesOrderUseCaseTest {
         when(customerFacade.findCustomerById(customerId))
                 .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", sellerCompanyId)));
         when(catalogFacade.findAllProductsByIdIn(
-                        java.util.Set.of(request.items().getFirst().productId())))
+                        java.util.Set.of(request.items().getFirst().productId()), sellerCompanyId))
                 .thenReturn(List.of());
 
         assertThatThrownBy(() -> useCase().execute(request))
@@ -209,7 +209,7 @@ class CreateSalesOrderUseCaseTest {
     }
 
     private void givenProduct(UUID productId) {
-        when(catalogFacade.findAllProductsByIdIn(java.util.Set.of(productId)))
+        when(catalogFacade.findAllProductsByIdIn(java.util.Set.of(productId), TenantContext.requireTenantId()))
                 .thenReturn(List.of(new ProductSnapshot(
                         productId,
                         "SKU-001",

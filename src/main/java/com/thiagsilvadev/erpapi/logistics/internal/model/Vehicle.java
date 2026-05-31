@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
@@ -7,8 +9,14 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 @Entity
 @Table(
         name = "logistics_vehicles",
-        uniqueConstraints = @UniqueConstraint(name = "uk_logistics_vehicle_plate", columnNames = "plate"))
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_logistics_vehicle_company_plate",
+                        columnNames = {"company_id", "plate"}))
 public class Vehicle extends AbstractBaseEntity {
+
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
 
     @Column(nullable = false, length = 20)
     private String plate;
@@ -25,7 +33,8 @@ public class Vehicle extends AbstractBaseEntity {
 
     protected Vehicle() {}
 
-    private Vehicle(String plate, String description, int capacity) {
+    private Vehicle(UUID companyId, String plate, String description, int capacity) {
+        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.plate = normalizePlate(plate);
         this.description = Driver.required(description, "Vehicle description cannot be blank");
         if (capacity <= 0) {
@@ -34,8 +43,12 @@ public class Vehicle extends AbstractBaseEntity {
         this.capacity = capacity;
     }
 
-    public static Vehicle create(String plate, String description, int capacity) {
-        return new Vehicle(plate, description, capacity);
+    public static Vehicle create(UUID companyId, String plate, String description, int capacity) {
+        return new Vehicle(companyId, plate, description, capacity);
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public String getPlate() {

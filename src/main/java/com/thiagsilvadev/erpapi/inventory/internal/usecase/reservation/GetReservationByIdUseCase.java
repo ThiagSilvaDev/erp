@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.InventoryReservation;
@@ -26,8 +27,9 @@ public class GetReservationByIdUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public ReservationResponse execute(UUID id) {
+        var companyId = TenantContext.requireTenantId();
         return mapper.toResponse(reservationRepository
-                .findById(id)
+                .findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(InventoryReservation.class, id)));
     }
 }

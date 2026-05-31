@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,9 +26,11 @@ import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 
 @ExtendWith(MockitoExtension.class)
 class CreateProductUseCaseTest {
+    private static final UUID COMPANY_ID = UUID.randomUUID();
 
     @Mock
     private ProductRepository productRepository;
@@ -44,12 +47,19 @@ class CreateProductUseCaseTest {
     @InjectMocks
     private CreateProductUseCase useCase;
 
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
+
     @Test
     void shouldRejectDuplicatedSku() {
         UUID categoryId = UUID.randomUUID();
+        TenantContext.setTenantId(COMPANY_ID);
         CreateProductRequest request = new CreateProductRequest(
                 " sku-1 ", "Product", null, new MoneyRequest(java.math.BigDecimal.TEN, "BRL"), categoryId);
-        when(productRepository.existsBySkuValue("SKU-1")).thenReturn(true);
+        when(productRepository.existsByCompanyIdAndSkuValue(COMPANY_ID, "SKU-1"))
+                .thenReturn(true);
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(SkuAlreadyExistsException.class);
 
@@ -60,10 +70,12 @@ class CreateProductUseCaseTest {
     @Test
     void shouldRejectMissingCategory() {
         UUID categoryId = UUID.randomUUID();
+        TenantContext.setTenantId(COMPANY_ID);
         CreateProductRequest request = new CreateProductRequest(
                 "sku-1", "Product", null, new MoneyRequest(java.math.BigDecimal.TEN, "BRL"), categoryId);
-        when(productRepository.existsBySkuValue("SKU-1")).thenReturn(false);
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+        when(productRepository.existsByCompanyIdAndSkuValue(COMPANY_ID, "SKU-1"))
+                .thenReturn(false);
+        when(categoryRepository.findByIdAndCompanyId(categoryId, COMPANY_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ResourceNotFoundException.class);
 
@@ -74,11 +86,13 @@ class CreateProductUseCaseTest {
     @Test
     void shouldTranslateDuplicateSkuRace() {
         UUID categoryId = UUID.randomUUID();
-        Category category = Category.create("RAW", "Raw materials", null);
+        TenantContext.setTenantId(COMPANY_ID);
+        Category category = Category.create(COMPANY_ID, "RAW", "Raw materials", null);
         CreateProductRequest request = new CreateProductRequest(
                 "sku-1", "Product", null, new MoneyRequest(java.math.BigDecimal.TEN, "BRL"), categoryId);
-        when(productRepository.existsBySkuValue("SKU-1")).thenReturn(false);
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+        when(productRepository.existsByCompanyIdAndSkuValue(COMPANY_ID, "SKU-1"))
+                .thenReturn(false);
+        when(categoryRepository.findByIdAndCompanyId(categoryId, COMPANY_ID)).thenReturn(Optional.of(category));
         when(productRepository.saveAndFlush(org.mockito.ArgumentMatchers.any()))
                 .thenThrow(new DataIntegrityViolationException("uk_catalog_product_sku"));
 

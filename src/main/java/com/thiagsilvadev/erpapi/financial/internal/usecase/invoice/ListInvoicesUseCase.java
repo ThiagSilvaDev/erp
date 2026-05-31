@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceSearchCriteria;
@@ -25,11 +26,12 @@ public class ListInvoicesUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public Page<InvoiceResponse> execute(InvoiceSearchCriteria criteria, Pageable pageable) {
+        var companyId = TenantContext.requireTenantId();
         if (criteria != null && criteria.salesOrderId() != null) {
             return invoiceRepository
-                    .findBySalesOrderId(criteria.salesOrderId(), pageable)
+                    .findByCompanyIdAndSalesOrderId(companyId, criteria.salesOrderId(), pageable)
                     .map(mapper::toResponse);
         }
-        return invoiceRepository.findAll(pageable).map(mapper::toResponse);
+        return invoiceRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
     }
 }

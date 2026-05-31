@@ -11,9 +11,12 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
         name = "inventory_stock_movements",
         uniqueConstraints =
                 @UniqueConstraint(
-                        name = "uk_inventory_stock_movement_movement_number",
-                        columnNames = "movement_number"))
+                        name = "uk_inventory_stock_movement_company_number",
+                        columnNames = {"company_id", "movement_number"}))
 public class StockMovement extends AbstractBaseEntity {
+
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
 
     @Column(name = "movement_number", nullable = false, updatable = false)
     private Long movementNumber;
@@ -39,11 +42,13 @@ public class StockMovement extends AbstractBaseEntity {
 
     private StockMovement(
             Long movementNumber,
+            UUID companyId,
             UUID productId,
             UUID warehouseId,
             int quantity,
             StockMovementType type,
             StockMovementReason reason) {
+        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
         }
@@ -57,31 +62,52 @@ public class StockMovement extends AbstractBaseEntity {
 
     public static StockMovement create(
             Long movementNumber,
+            UUID companyId,
             UUID productId,
             UUID warehouseId,
             int quantity,
             StockMovementType type,
             StockMovementReason reason) {
-        return new StockMovement(movementNumber, productId, warehouseId, quantity, type, reason);
+        return new StockMovement(movementNumber, companyId, productId, warehouseId, quantity, type, reason);
     }
 
     public static StockMovement createIn(
-            Long movementNumber, UUID productId, UUID warehouseId, int quantity, StockMovementReason reason) {
-        return create(movementNumber, productId, warehouseId, quantity, StockMovementType.IN, reason);
+            Long movementNumber,
+            UUID companyId,
+            UUID productId,
+            UUID warehouseId,
+            int quantity,
+            StockMovementReason reason) {
+        return create(movementNumber, companyId, productId, warehouseId, quantity, StockMovementType.IN, reason);
     }
 
     public static StockMovement createOut(
-            Long movementNumber, UUID productId, UUID warehouseId, int quantity, StockMovementReason reason) {
-        return create(movementNumber, productId, warehouseId, quantity, StockMovementType.OUT, reason);
+            Long movementNumber,
+            UUID companyId,
+            UUID productId,
+            UUID warehouseId,
+            int quantity,
+            StockMovementReason reason) {
+        return create(movementNumber, companyId, productId, warehouseId, quantity, StockMovementType.OUT, reason);
     }
 
     public static StockMovement createAdjustment(
-            Long movementNumber, UUID productId, UUID warehouseId, int quantity, StockMovementReason reason) {
-        return create(movementNumber, productId, warehouseId, quantity, StockMovementType.ADJUSTMENT, reason);
+            Long movementNumber,
+            UUID companyId,
+            UUID productId,
+            UUID warehouseId,
+            int quantity,
+            StockMovementReason reason) {
+        return create(
+                movementNumber, companyId, productId, warehouseId, quantity, StockMovementType.ADJUSTMENT, reason);
     }
 
     public Long getMovementNumber() {
         return movementNumber;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public UUID getProductId() {

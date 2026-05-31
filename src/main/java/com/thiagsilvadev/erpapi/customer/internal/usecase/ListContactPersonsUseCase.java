@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.customer.internal.dto.ContactPersonResponse;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.repository.ContactPersonRepository;
@@ -24,6 +25,9 @@ public class ListContactPersonsUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
     public Page<ContactPersonResponse> execute(Pageable pageable) {
-        return contactPersonRepository.findAll(pageable).map(mapper::toResponse);
+        var ownerCompanyId = TenantContext.requireTenantId();
+        return contactPersonRepository
+                .findAllByCustomerOwnerCompanyId(ownerCompanyId, pageable)
+                .map(mapper::toResponse);
     }
 }

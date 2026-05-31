@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
@@ -24,6 +25,7 @@ public class ListInventoryItemsUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public Page<InventoryItemResponse> execute(Pageable pageable) {
-        return itemRepository.findAll(pageable).map(mapper::toResponse);
+        var companyId = TenantContext.requireTenantId();
+        return itemRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
     }
 }

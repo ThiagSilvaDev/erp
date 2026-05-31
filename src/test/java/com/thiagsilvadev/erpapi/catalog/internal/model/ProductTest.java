@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,10 +16,11 @@ import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationExceptio
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
 
 class ProductTest {
+    private static final UUID COMPANY_ID = UUID.randomUUID();
 
     @Test
     void shouldNormalizeSkuNameAndDescription() {
-        Product product = Product.create(" sku-001 ", " Product ", "  ", money(), category());
+        Product product = Product.create(COMPANY_ID, " sku-001 ", " Product ", "  ", money(), category());
 
         assertThat(product.getSku()).isEqualTo("SKU-001");
         assertThat(product.getName()).isEqualTo("Product");
@@ -34,7 +36,8 @@ class ProductTest {
         Category category = category();
 
         var exception = catchThrowableOfType(
-                DomainValidationException.class, () -> Product.create(sku, name, null, basePrice, category));
+                DomainValidationException.class,
+                () -> Product.create(COMPANY_ID, sku, name, null, basePrice, category));
 
         assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.SKU_REQUIRED);
     }
@@ -48,7 +51,8 @@ class ProductTest {
         Category category = category();
 
         var exception = catchThrowableOfType(
-                DomainValidationException.class, () -> Product.create(sku, name, null, basePrice, category));
+                DomainValidationException.class,
+                () -> Product.create(COMPANY_ID, sku, name, null, basePrice, category));
 
         assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.NAME_REQUIRED);
     }
@@ -74,7 +78,7 @@ class ProductTest {
         Category category = category();
 
         var exception = catchThrowableOfType(
-                DomainValidationException.class, () -> Product.create(sku, name, null, null, category));
+                DomainValidationException.class, () -> Product.create(COMPANY_ID, sku, name, null, null, category));
 
         assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.BASE_PRICE_REQUIRED);
     }
@@ -97,7 +101,7 @@ class ProductTest {
         Money basePrice = money();
 
         var exception = catchThrowableOfType(
-                DomainValidationException.class, () -> Product.create(sku, name, null, basePrice, null));
+                DomainValidationException.class, () -> Product.create(COMPANY_ID, sku, name, null, basePrice, null));
 
         assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.CATEGORY_REQUIRED);
     }
@@ -114,7 +118,7 @@ class ProductTest {
     }
 
     private static Product product() {
-        return Product.create("SKU-001", "Product", null, money(), category());
+        return Product.create(COMPANY_ID, "SKU-001", "Product", null, money(), category());
     }
 
     private static Money money() {
@@ -122,6 +126,6 @@ class ProductTest {
     }
 
     private static Category category() {
-        return Category.create("RAW", "Raw materials", null);
+        return Category.create(COMPANY_ID, "RAW", "Raw materials", null);
     }
 }

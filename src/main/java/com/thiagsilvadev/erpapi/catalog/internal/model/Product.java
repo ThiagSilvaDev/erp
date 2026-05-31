@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -22,8 +24,15 @@ import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 @Entity
 @Table(
         name = "catalog_products",
-        uniqueConstraints = {@UniqueConstraint(name = "uk_catalog_product_sku", columnNames = "sku")})
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_catalog_product_company_sku",
+                    columnNames = {"company_id", "sku"})
+        })
 public class Product extends AbstractBaseEntity {
+
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
 
     @Embedded
     private Sku sku;
@@ -52,7 +61,8 @@ public class Product extends AbstractBaseEntity {
 
     protected Product() {}
 
-    private Product(Sku sku, String name, String description, Money basePrice, Category category) {
+    private Product(UUID companyId, Sku sku, String name, String description, Money basePrice, Category category) {
+        this.companyId = DomainAssert.requireNonNull(companyId, ProductErrorCode.CATEGORY_REQUIRED);
         this.sku = sku;
         this.name = name;
         this.description = description;
@@ -60,12 +70,15 @@ public class Product extends AbstractBaseEntity {
         this.category = category;
     }
 
-    public static Product create(String sku, String name, String description, Money basePrice, Category category) {
-        return create(Sku.of(sku), name, description, basePrice, category);
+    public static Product create(
+            UUID companyId, String sku, String name, String description, Money basePrice, Category category) {
+        return create(companyId, Sku.of(sku), name, description, basePrice, category);
     }
 
-    public static Product create(Sku sku, String name, String description, Money basePrice, Category category) {
+    public static Product create(
+            UUID companyId, Sku sku, String name, String description, Money basePrice, Category category) {
         return new Product(
+                companyId,
                 DomainAssert.requireNonNull(sku, ProductErrorCode.SKU_REQUIRED),
                 DomainAssert.requireNonBlank(name, ProductErrorCode.NAME_REQUIRED),
                 Strings.trimToNull(description),
@@ -90,6 +103,10 @@ public class Product extends AbstractBaseEntity {
 
     public String getSku() {
         return sku.getValue();
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public String getName() {

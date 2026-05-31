@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
 import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialAccountRepository;
@@ -24,6 +25,7 @@ public class ListFinancialAccountsUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
     public Page<FinancialAccountResponse> execute(Pageable pageable) {
-        return accountRepository.findAll(pageable).map(mapper::toResponse);
+        var companyId = TenantContext.requireTenantId();
+        return accountRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
     }
 }

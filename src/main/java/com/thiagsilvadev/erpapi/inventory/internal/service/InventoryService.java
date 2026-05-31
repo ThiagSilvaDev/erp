@@ -49,8 +49,24 @@ public class InventoryService implements InventoryFacade {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<InventoryItemSnapshot> findItem(UUID companyId, UUID productId, UUID warehouseId) {
+        return itemRepository
+                .findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId)
+                .map(itemMapper::toSnapshot);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<WarehouseSnapshot> findWarehouseByCode(String code) {
         return warehouseRepository.findByCode(Warehouse.normalizeCode(code)).map(warehouseMapper::toSnapshot);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<WarehouseSnapshot> findWarehouseByCode(UUID companyId, String code) {
+        return warehouseRepository
+                .findByCompanyIdAndCode(companyId, Warehouse.normalizeCode(code))
+                .map(warehouseMapper::toSnapshot);
     }
 
     @Override
@@ -60,8 +76,21 @@ public class InventoryService implements InventoryFacade {
                 .findByProductIdAndWarehouseId(productId, warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId));
         item.reserve(quantity);
-        InventoryReservation reservation =
-                reservationRepository.save(InventoryReservation.create(productId, warehouseId, quantity, salesOrderId));
+        InventoryReservation reservation = reservationRepository.save(
+                InventoryReservation.create(item.getCompanyId(), productId, warehouseId, quantity, salesOrderId));
+        return reservationMapper.toSnapshot(reservation);
+    }
+
+    @Override
+    @Transactional
+    public InventoryReservationSnapshot reserve(
+            UUID companyId, UUID productId, UUID warehouseId, int quantity, UUID salesOrderId) {
+        InventoryItem item = itemRepository
+                .findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId)
+                .orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId));
+        item.reserve(quantity);
+        InventoryReservation reservation = reservationRepository.save(
+                InventoryReservation.create(companyId, productId, warehouseId, quantity, salesOrderId));
         return reservationMapper.toSnapshot(reservation);
     }
 
@@ -78,10 +107,38 @@ public class InventoryService implements InventoryFacade {
 
     @Override
     @Transactional
+    public void releaseBySalesOrderId(UUID companyId, UUID salesOrderId) {
+        for (InventoryReservation reservation :
+                reservationRepository.findByCompanyIdAndSalesOrderId(companyId, salesOrderId)) {
+            itemRepository
+                    .findByCompanyIdAndProductIdAndWarehouseId(
+                            companyId, reservation.getProductId(), reservation.getWarehouseId())
+                    .ifPresent(item -> item.release(reservation.getQuantity()));
+            reservationRepository.delete(reservation);
+        }
+    }
+
+    @Override
+    @Transactional
     public void consumeReservationsForSalesOrder(UUID salesOrderId) {
         for (InventoryReservation reservation : reservationRepository.findBySalesOrderId(salesOrderId)) {
             InventoryItem item = itemRepository
                     .findByProductIdAndWarehouseId(reservation.getProductId(), reservation.getWarehouseId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            InventoryItem.class, reservation.getProductId() + "/" + reservation.getWarehouseId()));
+            item.consumeReserved(reservation.getQuantity());
+            reservationRepository.delete(reservation);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void consumeReservationsForSalesOrder(UUID companyId, UUID salesOrderId) {
+        for (InventoryReservation reservation :
+                reservationRepository.findByCompanyIdAndSalesOrderId(companyId, salesOrderId)) {
+            InventoryItem item = itemRepository
+                    .findByCompanyIdAndProductIdAndWarehouseId(
+                            companyId, reservation.getProductId(), reservation.getWarehouseId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             InventoryItem.class, reservation.getProductId() + "/" + reservation.getWarehouseId()));
             item.consumeReserved(reservation.getQuantity());

@@ -12,5 +12,11 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID>, JpaSp
 
     boolean existsByDocument(String document);
 
+    boolean existsByOwnerCompanyIdAndDocument(UUID ownerCompanyId, String document);
+
     Optional<Customer> findByDocument(String document);
+
+    Optional<Customer> findByIdAndOwnerCompanyId(UUID id, UUID ownerCompanyId);
+
+    Optional<Customer> findByOwnerCompanyIdAndDocument(UUID ownerCompanyId, String document);
 }

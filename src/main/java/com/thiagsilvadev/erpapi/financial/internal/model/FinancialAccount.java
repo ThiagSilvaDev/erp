@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.model;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.*;
 
@@ -9,8 +10,14 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 @Entity
 @Table(
         name = "financial_accounts",
-        uniqueConstraints = @UniqueConstraint(name = "uk_financial_account_name", columnNames = "name"))
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_financial_account_company_name",
+                        columnNames = {"company_id", "name"}))
 public class FinancialAccount extends AbstractBaseEntity {
+
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
 
     @Column(nullable = false, length = 120)
     private String name;
@@ -28,7 +35,8 @@ public class FinancialAccount extends AbstractBaseEntity {
 
     protected FinancialAccount() {}
 
-    private FinancialAccount(String name, FinancialAccountType type, String description) {
+    private FinancialAccount(UUID companyId, String name, FinancialAccountType type, String description) {
+        this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Financial account name is required");
         }
@@ -37,8 +45,8 @@ public class FinancialAccount extends AbstractBaseEntity {
         this.description = description == null ? null : description.trim();
     }
 
-    public static FinancialAccount create(String name, FinancialAccountType type, String description) {
-        return new FinancialAccount(name, type, description);
+    public static FinancialAccount create(UUID companyId, String name, FinancialAccountType type, String description) {
+        return new FinancialAccount(companyId, name, type, description);
     }
 
     public void deactivate() {
@@ -51,6 +59,10 @@ public class FinancialAccount extends AbstractBaseEntity {
 
     public String getName() {
         return name;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public FinancialAccountType getType() {

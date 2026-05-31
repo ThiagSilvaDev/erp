@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierResponse;
 import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierSearchCriteria;
@@ -26,8 +27,9 @@ public class ListSuppliersUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
     public Page<SupplierResponse> execute(SupplierSearchCriteria criteria, Pageable pageable) {
+        var companyId = TenantContext.requireTenantId();
         return supplierRepository
-                .findAll(CustomerSpecification.suppliers(criteria), pageable)
+                .findAll(CustomerSpecification.suppliersForCompany(criteria, companyId), pageable)
                 .map(mapper::toResponse);
     }
 }

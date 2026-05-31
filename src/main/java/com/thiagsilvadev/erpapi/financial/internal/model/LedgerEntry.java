@@ -12,6 +12,9 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 @Table(name = "ledger_entries")
 public class LedgerEntry extends AbstractBaseEntity {
 
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LedgerEntryType type;
@@ -34,7 +37,13 @@ public class LedgerEntry extends AbstractBaseEntity {
     protected LedgerEntry() {}
 
     private LedgerEntry(
-            LedgerEntryType type, UUID invoiceId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
+            UUID companyId,
+            LedgerEntryType type,
+            UUID invoiceId,
+            BigDecimal amount,
+            String currencyCode,
+            LocalDate dueDate) {
+        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.type = type;
         this.invoiceId = invoiceId;
         this.amount = amount;
@@ -42,8 +51,9 @@ public class LedgerEntry extends AbstractBaseEntity {
         this.dueDate = dueDate;
     }
 
-    public static LedgerEntry receivable(UUID invoiceId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
-        return new LedgerEntry(LedgerEntryType.RECEIVABLE, invoiceId, amount, currencyCode, dueDate);
+    public static LedgerEntry receivable(
+            UUID companyId, UUID invoiceId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
+        return new LedgerEntry(companyId, LedgerEntryType.RECEIVABLE, invoiceId, amount, currencyCode, dueDate);
     }
 
     public void settle() {
@@ -58,6 +68,10 @@ public class LedgerEntry extends AbstractBaseEntity {
 
     public LedgerEntryType getType() {
         return type;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public UUID getInvoiceId() {

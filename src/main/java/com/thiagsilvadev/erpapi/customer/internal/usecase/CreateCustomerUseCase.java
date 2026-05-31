@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CreateCustomerRequest;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
@@ -33,19 +34,20 @@ public class CreateCustomerUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public CustomerResponse execute(CreateCustomerRequest request) {
+        var ownerCompanyId = TenantContext.requireTenantId();
         companyFacade
-                .findById(request.ownerCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", request.ownerCompanyId()));
+                .findById(ownerCompanyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company", ownerCompanyId));
 
         String document = Customer.normalizeDocument(request.document());
-        if (customerRepository.existsByDocument(document)) {
+        if (customerRepository.existsByOwnerCompanyIdAndDocument(ownerCompanyId, document)) {
             throw duplicateDocument(document);
         }
 
         Customer customer = Customer.create(
                 request.name(),
                 request.document(),
-                request.ownerCompanyId(),
+                ownerCompanyId,
                 mapper.toContact(request.contact()),
                 mapper.toAddress(request.address()));
 

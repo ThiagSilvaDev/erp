@@ -19,10 +19,18 @@ public class CustomerSpecification {
                 .and(customerOwnerCompany(criteria.ownerCompanyId()));
     }
 
+    public static Specification<Customer> customersForCompany(CustomerSearchCriteria criteria, UUID ownerCompanyId) {
+        return Specification.where(customerOwnerCompany(ownerCompanyId)).and(customers(criteria));
+    }
+
     public static Specification<Supplier> suppliers(SupplierSearchCriteria criteria) {
         return Specification.where(supplierName(criteria.name()))
                 .and(supplierDocument(criteria.document()))
                 .and(supplierCompany(criteria.companyId()));
+    }
+
+    public static Specification<Supplier> suppliersForCompany(SupplierSearchCriteria criteria, UUID companyId) {
+        return Specification.where(supplierCompany(companyId)).and(suppliers(criteria));
     }
 
     private static Specification<Customer> customerName(String name) {

@@ -3,6 +3,7 @@
             "common::model",
             "common::exception",
             "common::numbering",
+            "common::tenant",
             "common::web",
             "company::api",
             "customer::api",

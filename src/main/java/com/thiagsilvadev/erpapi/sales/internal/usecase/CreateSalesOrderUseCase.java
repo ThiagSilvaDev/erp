@@ -63,8 +63,9 @@ public class CreateSalesOrderUseCase {
                 .map(CreateSalesOrderItemRequest::productId)
                 .collect(Collectors.toSet());
 
-        Map<UUID, ProductSnapshot> productMap = catalogFacade.findAllProductsByIdIn(productIds).stream()
-                .collect(Collectors.toMap(ProductSnapshot::id, p -> p));
+        Map<UUID, ProductSnapshot> productMap =
+                catalogFacade.findAllProductsByIdIn(productIds, sellerCompanyId).stream()
+                        .collect(Collectors.toMap(ProductSnapshot::id, p -> p));
 
         var items = request.items().stream()
                 .map(item -> {

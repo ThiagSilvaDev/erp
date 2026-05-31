@@ -55,6 +55,7 @@ public class SalesOrderFinancialListener {
 
         Invoice invoice = invoiceRepository.save(Invoice.create(
                 businessNumberService.next(BusinessNumberType.INVOICE),
+                order.sellerCompanyId(),
                 order.saleType() == SaleType.B2B ? BillingPartyType.COMPANY : BillingPartyType.CUSTOMER,
                 order.saleType() == SaleType.B2B ? order.buyerCompanyId() : order.customerId(),
                 event.salesOrderId(),
@@ -63,7 +64,11 @@ public class SalesOrderFinancialListener {
                 event.confirmedAt().plusDays(SALE_INVOICE_DUE_DAYS)));
 
         ledgerEntryRepository.save(LedgerEntry.receivable(
-                invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
+                invoice.getCompanyId(),
+                invoice.getId(),
+                invoice.getAmount(),
+                invoice.getCurrencyCode(),
+                invoice.getDueDate()));
     }
 
     @ApplicationModuleListener

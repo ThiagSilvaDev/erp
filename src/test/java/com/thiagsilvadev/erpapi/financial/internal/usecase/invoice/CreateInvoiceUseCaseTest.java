@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,6 +21,7 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
@@ -37,6 +39,7 @@ import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 
 @ExtendWith(MockitoExtension.class)
 class CreateInvoiceUseCaseTest {
+    private static final UUID TENANT_ID = UUID.randomUUID();
 
     @Mock
     private InvoiceRepository invoiceRepository;
@@ -59,9 +62,15 @@ class CreateInvoiceUseCaseTest {
     @Mock
     private BusinessNumberService businessNumberService;
 
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
+
     @Test
     void shouldCreateManualCustomerInvoice() {
         UUID customerId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.CUSTOMER, customerId, null);
         when(customerFacade.findCustomerById(customerId))
                 .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID())));
@@ -81,6 +90,7 @@ class CreateInvoiceUseCaseTest {
     void shouldCreateB2bSalesOrderInvoiceForBuyerCompany() {
         UUID salesOrderId = UUID.randomUUID();
         UUID buyerCompanyId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.COMPANY, buyerCompanyId, salesOrderId);
         when(companyFacade.findById(buyerCompanyId)).thenReturn(Optional.of(company(buyerCompanyId)));
         when(salesFacade.findOrderById(salesOrderId))
@@ -91,14 +101,15 @@ class CreateInvoiceUseCaseTest {
                         FulfillmentType.PICKUP,
                         PaymentMethod.PIX,
                         null,
-                        UUID.randomUUID(),
+                        TENANT_ID,
                         buyerCompanyId,
                         null,
                         OrderStatus.CONFIRMED,
                         new BigDecimal("20.00"),
                         "BRL",
                         Set.of())));
-        when(invoiceRepository.existsBySalesOrderId(salesOrderId)).thenReturn(false);
+        when(invoiceRepository.existsByCompanyIdAndSalesOrderId(TENANT_ID, salesOrderId))
+                .thenReturn(false);
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(201L);
         when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -115,6 +126,7 @@ class CreateInvoiceUseCaseTest {
     void shouldRejectSalesOrderInvoiceWithWrongBillingParty() {
         UUID salesOrderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.COMPANY, UUID.randomUUID(), salesOrderId);
         when(companyFacade.findById(request.billingPartyId()))
                 .thenReturn(Optional.of(company(request.billingPartyId())));
@@ -126,7 +138,7 @@ class CreateInvoiceUseCaseTest {
                         FulfillmentType.PICKUP,
                         PaymentMethod.PIX,
                         null,
-                        UUID.randomUUID(),
+                        TENANT_ID,
                         null,
                         customerId,
                         OrderStatus.CONFIRMED,
@@ -142,6 +154,7 @@ class CreateInvoiceUseCaseTest {
     void shouldReportMissingSalesOrderResourceName() {
         UUID customerId = UUID.randomUUID();
         UUID salesOrderId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.CUSTOMER, customerId, salesOrderId);
         when(customerFacade.findCustomerById(customerId))
                 .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID())));
@@ -157,6 +170,7 @@ class CreateInvoiceUseCaseTest {
     @Test
     void shouldReportMissingCompanyBillingPartyResourceName() {
         UUID companyId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.COMPANY, companyId, null);
         when(companyFacade.findById(companyId)).thenReturn(Optional.empty());
         var useCase = useCase();

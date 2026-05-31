@@ -12,5 +12,11 @@ public interface CategoryRepository extends JpaRepository<Category, UUID>, JpaSp
 
     boolean existsByCode(String code);
 
+    boolean existsByCompanyIdAndCode(UUID companyId, String code);
+
     Optional<Category> findByCode(String code);
+
+    Optional<Category> findByIdAndCompanyId(UUID id, UUID companyId);
+
+    Optional<Category> findByCompanyIdAndCode(UUID companyId, String code);
 }

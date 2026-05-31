@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
@@ -24,6 +25,7 @@ public class ListStockMovementsUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public Page<StockMovementResponse> execute(Pageable pageable) {
-        return movementRepository.findAll(pageable).map(mapper::toResponse);
+        var companyId = TenantContext.requireTenantId();
+        return movementRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
     }
 }

@@ -19,6 +19,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.model.Sku;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 
 @Component
 @Profile("dev")
@@ -28,6 +29,7 @@ class CatalogDevSeeder implements ApplicationRunner {
     static final String INDUSTRIAL_CATEGORY_CODE = "INDUSTRIAL";
     static final String OFFICE_CATEGORY_CODE = "OFFICE";
     static final String INDUSTRIAL_WIDGET_SKU = "SKU-001";
+    private static final String ACME_CNPJ = "97.986.234/0001-91";
 
     private static final List<CategorySeed> CATEGORIES = List.of(
             new CategorySeed(INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", "Seeded industrial catalog category"),
@@ -61,22 +63,31 @@ class CatalogDevSeeder implements ApplicationRunner {
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final CompanyFacade companyFacade;
 
-    CatalogDevSeeder(CategoryRepository categoryRepository, ProductRepository productRepository) {
+    CatalogDevSeeder(
+            CategoryRepository categoryRepository, ProductRepository productRepository, CompanyFacade companyFacade) {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
+        this.companyFacade = companyFacade;
     }
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        var companyId = companyFacade
+                .findByCnpj(ACME_CNPJ)
+                .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding catalog"))
+                .id();
         Map<String, Category> categories = CATEGORIES.stream()
-                .map(this::seedCategory)
+                .map(category -> seedCategory(companyId, category))
                 .collect(Collectors.toMap(Category::getCode, Function.identity()));
 
         for (ProductSeed product : PRODUCTS) {
-            if (!productRepository.existsBySkuValue(Sku.of(product.sku()).getValue())) {
+            if (!productRepository.existsByCompanyIdAndSkuValue(
+                    companyId, Sku.of(product.sku()).getValue())) {
                 productRepository.save(Product.create(
+                        companyId,
                         product.sku(),
                         product.name(),
                         product.description(),
@@ -86,11 +97,11 @@ class CatalogDevSeeder implements ApplicationRunner {
         }
     }
 
-    private Category seedCategory(CategorySeed category) {
+    private Category seedCategory(java.util.UUID companyId, CategorySeed category) {
         return categoryRepository
-                .findByCode(Category.normalizeCode(category.code()))
+                .findByCompanyIdAndCode(companyId, Category.normalizeCode(category.code()))
                 .orElseGet(() -> categoryRepository.save(
-                        Category.create(category.code(), category.name(), category.description())));
+                        Category.create(companyId, category.code(), category.name(), category.description())));
     }
 
     private record CategorySeed(String code, String name, String description) {}

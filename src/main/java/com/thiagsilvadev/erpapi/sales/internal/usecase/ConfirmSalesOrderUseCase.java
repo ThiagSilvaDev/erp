@@ -43,7 +43,8 @@ public class ConfirmSalesOrderUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
         order.confirm();
         for (SalesOrderItem item : order.getItems()) {
-            inventoryFacade.reserve(item.getProductId(), item.getWarehouseId(), item.getQuantity(), order.getId());
+            inventoryFacade.reserve(
+                    sellerCompanyId, item.getProductId(), item.getWarehouseId(), item.getQuantity(), order.getId());
         }
         eventPublisher.salesOrderConfirmed(order);
 

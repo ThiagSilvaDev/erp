@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.CreateStockMovementRequest;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
@@ -36,10 +37,12 @@ public class CreateStockMovementUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
     public StockMovementResponse execute(CreateStockMovementRequest request) {
+        var companyId = TenantContext.requireTenantId();
         InventoryItem item = inventoryBalanceService.applyMovement(
-                request.productId(), request.warehouseId(), request.quantity(), request.type());
+                companyId, request.productId(), request.warehouseId(), request.quantity(), request.type());
         StockMovement movement = movementRepository.save(StockMovement.create(
                 businessNumberService.next(BusinessNumberType.STOCK_MOVEMENT),
+                companyId,
                 item.getProductId(),
                 item.getWarehouse().getId(),
                 request.quantity(),

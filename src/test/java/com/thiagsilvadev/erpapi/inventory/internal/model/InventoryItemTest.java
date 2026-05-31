@@ -17,7 +17,7 @@ import com.thiagsilvadev.erpapi.inventory.internal.exception.InventoryErrorCode;
 
 class InventoryItemTest {
 
-    private final Warehouse warehouse = Warehouse.create("MAIN", "Main Warehouse");
+    private final Warehouse warehouse = Warehouse.create(UUID.randomUUID(), "MAIN", "Main Warehouse");
     private final UUID productId = UUID.randomUUID();
 
     @Test

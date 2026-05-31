@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
@@ -26,7 +27,9 @@ public class GetWarehouseByIdUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
     public WarehouseResponse execute(UUID id) {
-        return mapper.toResponse(
-                warehouseRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, id)));
+        var companyId = TenantContext.requireTenantId();
+        return mapper.toResponse(warehouseRepository
+                .findByIdAndCompanyId(id, companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, id)));
     }
 }

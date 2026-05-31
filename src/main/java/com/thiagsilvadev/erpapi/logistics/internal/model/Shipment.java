@@ -11,8 +11,12 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 @Table(
         name = "logistics_shipments",
         uniqueConstraints = {
-            @UniqueConstraint(name = "uk_logistics_shipment_number", columnNames = "shipment_number"),
-            @UniqueConstraint(name = "uk_logistics_shipment_sales_order", columnNames = "sales_order_id")
+            @UniqueConstraint(
+                    name = "uk_logistics_shipment_seller_number",
+                    columnNames = {"seller_company_id", "shipment_number"}),
+            @UniqueConstraint(
+                    name = "uk_logistics_shipment_seller_sales_order",
+                    columnNames = {"seller_company_id", "sales_order_id"})
         })
 public class Shipment extends AbstractBaseEntity {
 

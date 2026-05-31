@@ -15,7 +15,11 @@ import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 @Entity
 @Table(
         name = "customers",
-        uniqueConstraints = {@UniqueConstraint(name = "uk_customer_document", columnNames = "document")})
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_customer_owner_document",
+                    columnNames = {"owner_company_id", "document"})
+        })
 public class Customer extends AbstractBaseEntity {
 
     @Column(nullable = false)
@@ -24,7 +28,7 @@ public class Customer extends AbstractBaseEntity {
     @Column(nullable = false, length = 32)
     private String document;
 
-    @Column(nullable = false)
+    @Column(name = "owner_company_id", nullable = false)
     private UUID ownerCompanyId;
 
     @Embedded

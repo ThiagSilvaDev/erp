@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.vehicle.VehicleResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
@@ -24,6 +25,7 @@ public class ListVehiclesUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).READ)")
     public Page<VehicleResponse> execute(Pageable pageable) {
-        return vehicleRepository.findAll(pageable).map(mapper::toResponse);
+        var companyId = TenantContext.requireTenantId();
+        return vehicleRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
     }
 }

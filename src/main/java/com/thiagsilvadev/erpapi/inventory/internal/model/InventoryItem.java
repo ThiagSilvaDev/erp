@@ -16,10 +16,13 @@ import com.thiagsilvadev.erpapi.inventory.internal.exception.InventoryErrorCode;
         name = "inventory_items",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_inventory_item_product_warehouse",
-                    columnNames = {"product_id", "warehouse_id"})
+                    name = "uk_inventory_item_company_product_warehouse",
+                    columnNames = {"company_id", "product_id", "warehouse_id"})
         })
 public class InventoryItem extends AbstractBaseEntity {
+
+    @Column(name = "company_id", nullable = false, updatable = false)
+    private UUID companyId;
 
     @Column(name = "product_id", nullable = false, updatable = false)
     private UUID productId;
@@ -37,8 +40,10 @@ public class InventoryItem extends AbstractBaseEntity {
     protected InventoryItem() {}
 
     private InventoryItem(UUID productId, Warehouse warehouse, int quantityOnHand) {
+        this.companyId =
+                Objects.requireNonNull(warehouse, "Warehouse is required").getCompanyId();
         this.productId = Objects.requireNonNull(productId, "Product ID is required");
-        this.warehouse = Objects.requireNonNull(warehouse, "Warehouse is required");
+        this.warehouse = warehouse;
         this.quantityOnHand = DomainAssert.requireNonNegative(
                 quantityOnHand, InventoryErrorCode.QUANTITY_ON_HAND_MUST_BE_NON_NEGATIVE);
     }
@@ -87,6 +92,10 @@ public class InventoryItem extends AbstractBaseEntity {
 
     public UUID getProductId() {
         return productId;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
     }
 
     public Warehouse getWarehouse() {

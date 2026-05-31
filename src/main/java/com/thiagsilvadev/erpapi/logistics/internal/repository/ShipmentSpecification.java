@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.repository;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.thiagsilvadev.erpapi.logistics.internal.dto.shipment.ShipmentSearchCriteria;
@@ -20,5 +22,10 @@ public class ShipmentSpecification {
         Specification<Shipment> status =
                 (root, query, cb) -> criteria.status() == null ? null : cb.equal(root.get("status"), criteria.status());
         return salesOrder.and(driver).and(vehicle).and(status);
+    }
+
+    public static Specification<Shipment> withCriteriaForSeller(ShipmentSearchCriteria criteria, UUID sellerCompanyId) {
+        return ((Specification<Shipment>) (root, query, cb) -> cb.equal(root.get("sellerCompanyId"), sellerCompanyId))
+                .and(withCriteria(criteria));
     }
 }

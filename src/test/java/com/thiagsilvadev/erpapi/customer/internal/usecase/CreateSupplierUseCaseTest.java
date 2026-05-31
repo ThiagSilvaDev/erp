@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,6 +19,7 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.dto.AddressRequest;
 import com.thiagsilvadev.erpapi.customer.internal.dto.ContactRequest;
@@ -28,6 +30,7 @@ import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CreateSupplierUseCaseTest {
+    private static final UUID TENANT_ID = UUID.randomUUID();
 
     @Mock
     private SupplierRepository supplierRepository;
@@ -38,11 +41,18 @@ class CreateSupplierUseCaseTest {
     @Mock
     private CustomerMapper mapper;
 
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
+
     @Test
     void shouldCreateSupplier() {
         CreateSupplierRequest request = supplierRequest();
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
-        when(supplierRepository.existsByDocument("12345678900")).thenReturn(false);
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(supplierRepository.existsByCompanyIdAndDocument(TENANT_ID, "12345678900"))
+                .thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(Contact.create("supplier@example.com", "11912345678"));
         when(mapper.toAddress(request.address())).thenReturn(address());
         when(supplierRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Supplier.class)))
@@ -54,13 +64,17 @@ class CreateSupplierUseCaseTest {
 
         ArgumentCaptor<Supplier> supplierCaptor = ArgumentCaptor.forClass(Supplier.class);
         verify(supplierRepository).saveAndFlush(supplierCaptor.capture());
+        org.assertj.core.api.Assertions.assertThat(supplierCaptor.getValue().getCompanyId())
+                .isEqualTo(TENANT_ID);
     }
 
     @Test
     void shouldTranslateDuplicateDocumentRace() {
         CreateSupplierRequest request = supplierRequest();
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(org.mockito.Mockito.mock()));
-        when(supplierRepository.existsByDocument("12345678900")).thenReturn(false);
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(supplierRepository.existsByCompanyIdAndDocument(TENANT_ID, "12345678900"))
+                .thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(Contact.create("supplier@example.com", "11912345678"));
         when(mapper.toAddress(request.address())).thenReturn(address());
         when(supplierRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Supplier.class)))
@@ -75,7 +89,6 @@ class CreateSupplierUseCaseTest {
         return new CreateSupplierRequest(
                 "Supplier",
                 "123.456.789-00",
-                UUID.randomUUID(),
                 new ContactRequest("supplier@example.com", "11912345678"),
                 new AddressRequest("01001000", "Street", "10", null, "District", "City", "SP", "BR"));
     }

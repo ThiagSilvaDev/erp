@@ -11,4 +11,8 @@ import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
 public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, UUID> {
 
     Page<FinancialEntry> findByAccountId(UUID accountId, Pageable pageable);
+
+    Page<FinancialEntry> findAllByCompanyId(UUID companyId, Pageable pageable);
+
+    Page<FinancialEntry> findByCompanyIdAndAccountId(UUID companyId, UUID accountId, Pageable pageable);
 }

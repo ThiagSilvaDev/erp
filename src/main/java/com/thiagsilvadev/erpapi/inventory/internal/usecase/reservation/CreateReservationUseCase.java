@@ -3,6 +3,7 @@ package com.thiagsilvadev.erpapi.inventory.internal.usecase.reservation;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.CreateReservationRequest;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationMapper;
@@ -22,8 +23,9 @@ public class CreateReservationUseCase {
 
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
     public ReservationResponse execute(CreateReservationRequest request) {
+        var companyId = TenantContext.requireTenantId();
         InventoryReservationSnapshot reservation = inventoryService.reserve(
-                request.productId(), request.warehouseId(), request.quantity(), request.salesOrderId());
+                companyId, request.productId(), request.warehouseId(), request.quantity(), request.salesOrderId());
         return mapper.toResponse(reservation);
     }
 }

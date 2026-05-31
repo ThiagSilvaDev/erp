@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
 import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccount;
@@ -27,10 +28,12 @@ import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryReposit
 class FinancialDevSeeder implements ApplicationRunner {
 
     private static final String CUSTOMER_DOCUMENT = "12345678901";
+    private static final String ACME_CNPJ = "97.986.234/0001-91";
 
     private final InvoiceRepository invoiceRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
     private final FinancialAccountRepository accountRepository;
+    private final CompanyFacade companyFacade;
     private final CustomerFacade customerFacade;
     private final BusinessNumberService businessNumberService;
 
@@ -38,11 +41,13 @@ class FinancialDevSeeder implements ApplicationRunner {
             InvoiceRepository invoiceRepository,
             LedgerEntryRepository ledgerEntryRepository,
             FinancialAccountRepository accountRepository,
+            CompanyFacade companyFacade,
             CustomerFacade customerFacade,
             BusinessNumberService businessNumberService) {
         this.invoiceRepository = invoiceRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.accountRepository = accountRepository;
+        this.companyFacade = companyFacade;
         this.customerFacade = customerFacade;
         this.businessNumberService = businessNumberService;
     }
@@ -50,14 +55,23 @@ class FinancialDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (accountRepository.count() == 0) {
+        var companyId = companyFacade
+                .findByCnpj(ACME_CNPJ)
+                .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding finance"))
+                .id();
+
+        if (accountRepository
+                .findAllByCompanyId(companyId, org.springframework.data.domain.Pageable.unpaged())
+                .isEmpty()) {
             accountRepository.save(FinancialAccount.create(
-                    "Caixa Loja Principal", FinancialAccountType.CASH_REGISTER, "Caixa físico da loja"));
-            accountRepository.save(
-                    FinancialAccount.create("Itaú PJ", FinancialAccountType.BANK_ACCOUNT, "Conta corrente principal"));
+                    companyId, "Caixa Loja Principal", FinancialAccountType.CASH_REGISTER, "Caixa físico da loja"));
+            accountRepository.save(FinancialAccount.create(
+                    companyId, "Itaú PJ", FinancialAccountType.BANK_ACCOUNT, "Conta corrente principal"));
         }
 
-        if (invoiceRepository.count() > 0) {
+        if (!invoiceRepository
+                .findAllByCompanyId(companyId, org.springframework.data.domain.Pageable.unpaged())
+                .isEmpty()) {
             return;
         }
         var customer = customerFacade
@@ -65,6 +79,7 @@ class FinancialDevSeeder implements ApplicationRunner {
                 .orElseThrow(() -> new IllegalStateException("Seed customer must exist before seeding finance"));
         Invoice invoice = invoiceRepository.save(Invoice.create(
                 businessNumberService.next(BusinessNumberType.INVOICE),
+                companyId,
                 BillingPartyType.CUSTOMER,
                 customer.id(),
                 null,
@@ -72,6 +87,6 @@ class FinancialDevSeeder implements ApplicationRunner {
                 "BRL",
                 LocalDate.now().plusDays(15)));
         ledgerEntryRepository.save(LedgerEntry.receivable(
-                invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
+                companyId, invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
     }
 }

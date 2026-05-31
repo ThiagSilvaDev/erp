@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverRequest;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
@@ -26,15 +27,16 @@ public class CreateDriverUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).WRITE)")
     public DriverResponse execute(CreateDriverRequest request) {
+        var companyId = TenantContext.requireTenantId();
         String licenseNumber = Driver.normalizeLicenseNumber(request.licenseNumber());
-        if (driverRepository.existsByLicenseNumber(licenseNumber)) {
+        if (driverRepository.existsByCompanyIdAndLicenseNumber(companyId, licenseNumber)) {
             throw new ConflictException(
                     "Driver with this license number already exists.",
                     java.util.Map.of("licenseNumber", licenseNumber));
         }
         try {
-            return mapper.toResponse(
-                    driverRepository.saveAndFlush(Driver.create(request.name(), licenseNumber, request.phone())));
+            return mapper.toResponse(driverRepository.saveAndFlush(
+                    Driver.create(companyId, request.name(), licenseNumber, request.phone())));
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
                     "Driver with this license number already exists.",

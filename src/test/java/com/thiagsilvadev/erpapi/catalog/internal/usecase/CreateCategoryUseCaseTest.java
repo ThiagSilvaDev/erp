@@ -5,6 +5,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,9 +20,11 @@ import com.thiagsilvadev.erpapi.catalog.internal.exception.CategoryCodeAlreadyEx
 import com.thiagsilvadev.erpapi.catalog.internal.mapper.CatalogMapper;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.CreateCategoryUseCase;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 
 @ExtendWith(MockitoExtension.class)
 class CreateCategoryUseCaseTest {
+    private static final UUID COMPANY_ID = UUID.randomUUID();
 
     @Mock
     private CategoryRepository categoryRepository;
@@ -30,10 +35,16 @@ class CreateCategoryUseCaseTest {
     @InjectMocks
     private CreateCategoryUseCase useCase;
 
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
+
     @Test
     void shouldRejectDuplicatedCategoryCode() {
         CreateCategoryRequest request = new CreateCategoryRequest(" raw ", "Raw materials", null);
-        when(categoryRepository.existsByCode("RAW")).thenReturn(true);
+        TenantContext.setTenantId(COMPANY_ID);
+        when(categoryRepository.existsByCompanyIdAndCode(COMPANY_ID, "RAW")).thenReturn(true);
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(CategoryCodeAlreadyExistsException.class);
 
@@ -43,7 +54,8 @@ class CreateCategoryUseCaseTest {
     @Test
     void shouldTranslateDuplicateCategoryCodeRace() {
         CreateCategoryRequest request = new CreateCategoryRequest(" raw ", "Raw materials", null);
-        when(categoryRepository.existsByCode("RAW")).thenReturn(false);
+        TenantContext.setTenantId(COMPANY_ID);
+        when(categoryRepository.existsByCompanyIdAndCode(COMPANY_ID, "RAW")).thenReturn(false);
         when(categoryRepository.saveAndFlush(org.mockito.ArgumentMatchers.any()))
                 .thenThrow(new DataIntegrityViolationException("uk_catalog_category_code"));
 

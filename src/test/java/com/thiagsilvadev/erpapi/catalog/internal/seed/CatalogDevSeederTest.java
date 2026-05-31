@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,9 +21,12 @@ import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 
 @ExtendWith(MockitoExtension.class)
 class CatalogDevSeederTest {
+    private static final UUID COMPANY_ID = UUID.randomUUID();
 
     @Mock
     private CategoryRepository categoryRepository;
@@ -30,17 +34,24 @@ class CatalogDevSeederTest {
     @Mock
     private ProductRepository productRepository;
 
+    @Mock
+    private CompanyFacade companyFacade;
+
     @Test
     void shouldSeedCategoryAndProductWhenMissing() {
         Category industrialCategory =
-                Category.create(CatalogDevSeeder.INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", null);
-        Category officeCategory = Category.create(CatalogDevSeeder.OFFICE_CATEGORY_CODE, "Office Supplies", null);
-        when(categoryRepository.findByCode("INDUSTRIAL")).thenReturn(Optional.empty());
-        when(categoryRepository.findByCode("OFFICE")).thenReturn(Optional.empty());
+                Category.create(COMPANY_ID, CatalogDevSeeder.INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", null);
+        Category officeCategory =
+                Category.create(COMPANY_ID, CatalogDevSeeder.OFFICE_CATEGORY_CODE, "Office Supplies", null);
+        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company()));
+        when(categoryRepository.findByCompanyIdAndCode(COMPANY_ID, "INDUSTRIAL"))
+                .thenReturn(Optional.empty());
+        when(categoryRepository.findByCompanyIdAndCode(COMPANY_ID, "OFFICE")).thenReturn(Optional.empty());
         when(categoryRepository.save(any(Category.class))).thenReturn(industrialCategory, officeCategory);
-        seedSkus().forEach(sku -> when(productRepository.existsBySkuValue(sku)).thenReturn(false));
+        seedSkus().forEach(sku -> when(productRepository.existsByCompanyIdAndSkuValue(COMPANY_ID, sku))
+                .thenReturn(false));
 
-        new CatalogDevSeeder(categoryRepository, productRepository).run(null);
+        new CatalogDevSeeder(categoryRepository, productRepository, companyFacade).run(null);
 
         verify(categoryRepository, times(2)).save(any(Category.class));
 
@@ -70,13 +81,17 @@ class CatalogDevSeederTest {
     @Test
     void shouldSkipProductWhenAlreadySeeded() {
         Category industrialCategory =
-                Category.create(CatalogDevSeeder.INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", null);
-        Category officeCategory = Category.create(CatalogDevSeeder.OFFICE_CATEGORY_CODE, "Office Supplies", null);
-        when(categoryRepository.findByCode("INDUSTRIAL")).thenReturn(Optional.of(industrialCategory));
-        when(categoryRepository.findByCode("OFFICE")).thenReturn(Optional.of(officeCategory));
-        seedSkus().forEach(sku -> when(productRepository.existsBySkuValue(sku)).thenReturn(true));
+                Category.create(COMPANY_ID, CatalogDevSeeder.INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", null);
+        Category officeCategory =
+                Category.create(COMPANY_ID, CatalogDevSeeder.OFFICE_CATEGORY_CODE, "Office Supplies", null);
+        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company()));
+        when(categoryRepository.findByCompanyIdAndCode(COMPANY_ID, "INDUSTRIAL"))
+                .thenReturn(Optional.of(industrialCategory));
+        when(categoryRepository.findByCompanyIdAndCode(COMPANY_ID, "OFFICE")).thenReturn(Optional.of(officeCategory));
+        seedSkus().forEach(sku -> when(productRepository.existsByCompanyIdAndSkuValue(COMPANY_ID, sku))
+                .thenReturn(true));
 
-        new CatalogDevSeeder(categoryRepository, productRepository).run(null);
+        new CatalogDevSeeder(categoryRepository, productRepository, companyFacade).run(null);
 
         verify(categoryRepository, never()).save(any());
         verify(productRepository, never()).save(any());
@@ -86,5 +101,9 @@ class CatalogDevSeederTest {
         return List.of(
                 "SKU-001", "SKU-002", "SKU-003", "SKU-004", "SKU-005", "SKU-006", "SKU-007", "SKU-008", "SKU-009",
                 "SKU-010");
+    }
+
+    private static CompanySnapshot company() {
+        return new CompanySnapshot(COMPANY_ID, null, null, null, null, null, null, null, null, null);
     }
 }

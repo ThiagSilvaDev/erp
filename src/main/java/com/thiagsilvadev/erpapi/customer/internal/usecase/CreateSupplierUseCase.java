@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CreateSupplierRequest;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
@@ -33,19 +34,18 @@ public class CreateSupplierUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public SupplierResponse execute(CreateSupplierRequest request) {
-        companyFacade
-                .findById(request.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", request.companyId()));
+        var companyId = TenantContext.requireTenantId();
+        companyFacade.findById(companyId).orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 
         String document = Supplier.normalizeDocument(request.document());
-        if (supplierRepository.existsByDocument(document)) {
+        if (supplierRepository.existsByCompanyIdAndDocument(companyId, document)) {
             throw duplicateDocument(document);
         }
 
         Supplier supplier = Supplier.create(
                 request.name(),
                 request.document(),
-                request.companyId(),
+                companyId,
                 mapper.toContact(request.contact()),
                 mapper.toAddress(request.address()));
 
