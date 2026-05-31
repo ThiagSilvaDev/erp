@@ -16,7 +16,6 @@ public record CreateSalesOrderRequest(
         @NotNull FulfillmentType fulfillmentType,
         @Valid DeliveryRouteRequest deliveryRoute,
         @NotNull PaymentMethod paymentMethod,
-        @NotNull UUID sellerCompanyId,
         UUID buyerCompanyId,
         UUID customerId,
         @Valid @NotEmpty List<CreateSalesOrderItemRequest> items) {}

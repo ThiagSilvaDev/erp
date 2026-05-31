@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.sales.internal.repository;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderSearchCriteria;
@@ -23,5 +25,12 @@ public class SalesOrderSpecification {
         Specification<SalesOrder> status =
                 (root, query, cb) -> criteria.status() == null ? null : cb.equal(root.get("status"), criteria.status());
         return saleType.and(seller).and(buyer).and(customer).and(status);
+    }
+
+    public static Specification<SalesOrder> withCriteriaForSeller(
+            SalesOrderSearchCriteria criteria, UUID sellerCompanyId) {
+        Specification<SalesOrder> tenantSeller =
+                (root, query, cb) -> cb.equal(root.get("sellerCompanyId"), sellerCompanyId);
+        return tenantSeller.and(withCriteria(criteria));
     }
 }

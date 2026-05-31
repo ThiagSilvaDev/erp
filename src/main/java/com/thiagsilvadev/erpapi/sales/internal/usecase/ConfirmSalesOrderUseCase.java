@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.event.SalesOrderEventPublisher;
@@ -36,8 +37,10 @@ public class ConfirmSalesOrderUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).WRITE)")
     public SalesOrderResponse execute(UUID id) {
-        SalesOrder order =
-                orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
+        var sellerCompanyId = TenantContext.requireTenantId();
+        SalesOrder order = orderRepository
+                .findByIdAndSellerCompanyId(id, sellerCompanyId)
+                .orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
         order.confirm();
         for (SalesOrderItem item : order.getItems()) {
             inventoryFacade.reserve(item.getProductId(), item.getWarehouseId(), item.getQuantity(), order.getId());

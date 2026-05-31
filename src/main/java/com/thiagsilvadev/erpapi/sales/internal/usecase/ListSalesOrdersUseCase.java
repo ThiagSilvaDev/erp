@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderSearchCriteria;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
@@ -25,8 +26,9 @@ public class ListSalesOrdersUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).READ)")
     public Page<SalesOrderResponse> execute(SalesOrderSearchCriteria criteria, Pageable pageable) {
+        var sellerCompanyId = TenantContext.requireTenantId();
         return orderRepository
-                .findAll(SalesOrderSpecification.withCriteria(criteria), pageable)
+                .findAll(SalesOrderSpecification.withCriteriaForSeller(criteria, sellerCompanyId), pageable)
                 .map(responseAssembler::toResponse);
     }
 }

@@ -13,6 +13,7 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundExceptio
 import com.thiagsilvadev.erpapi.common.domain.model.GeoLocation;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
@@ -54,7 +55,9 @@ public class CreateSalesOrderUseCase {
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).WRITE)")
     public SalesOrderResponse execute(CreateSalesOrderRequest request) {
-        SalesBuyer buyer = resolveBuyer(request);
+        UUID sellerCompanyId = TenantContext.requireTenantId();
+
+        SalesBuyer buyer = resolveBuyer(request, sellerCompanyId);
 
         Set<UUID> productIds = request.items().stream()
                 .map(CreateSalesOrderItemRequest::productId)
@@ -86,7 +89,7 @@ public class CreateSalesOrderUseCase {
                 request.fulfillmentType(),
                 request.paymentMethod(),
                 deliveryRoute,
-                request.sellerCompanyId(),
+                sellerCompanyId,
                 buyer,
                 items);
         orderRepository.save(order);
@@ -94,26 +97,26 @@ public class CreateSalesOrderUseCase {
         return responseAssembler.toResponse(order);
     }
 
-    private SalesBuyer resolveBuyer(CreateSalesOrderRequest request) {
+    private SalesBuyer resolveBuyer(CreateSalesOrderRequest request, UUID sellerCompanyId) {
         SalesBuyer buyer = SalesBuyer.of(request.saleType(), request.buyerCompanyId(), request.customerId());
         CompanySnapshot seller = companyFacade
-                .findById(request.sellerCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", request.sellerCompanyId()));
+                .findById(sellerCompanyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company", sellerCompanyId));
 
         if (buyer.getSaleType() == SaleType.B2B) {
-            validateB2b(request, buyer, seller);
+            validateB2b(sellerCompanyId, buyer, seller);
             return buyer;
         }
 
-        validateB2c(request, buyer, seller);
+        validateB2c(sellerCompanyId, buyer, seller);
         return buyer;
     }
 
-    private void validateB2b(CreateSalesOrderRequest request, SalesBuyer buyer, CompanySnapshot seller) {
+    private void validateB2b(UUID sellerCompanyId, SalesBuyer buyer, CompanySnapshot seller) {
         if (seller.type() != CompanyType.FACTORY) {
             throw new IllegalArgumentException("B2B seller must be a factory");
         }
-        if (request.sellerCompanyId().equals(buyer.getBuyerCompanyId())) {
+        if (sellerCompanyId.equals(buyer.getBuyerCompanyId())) {
             throw new IllegalArgumentException("B2B buyer company cannot be the seller company");
         }
 
@@ -125,7 +128,7 @@ public class CreateSalesOrderUseCase {
         }
     }
 
-    private void validateB2c(CreateSalesOrderRequest request, SalesBuyer buyer, CompanySnapshot seller) {
+    private void validateB2c(UUID sellerCompanyId, SalesBuyer buyer, CompanySnapshot seller) {
         if (seller.type() != CompanyType.FACTORY && seller.type() != CompanyType.CORRESPONDENT) {
             throw new IllegalArgumentException("B2C seller must be a factory or correspondent");
         }
@@ -133,7 +136,7 @@ public class CreateSalesOrderUseCase {
         CustomerSnapshot customer = customerFacade
                 .findCustomerById(buyer.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", buyer.getCustomerId()));
-        if (!request.sellerCompanyId().equals(customer.ownerCompanyId())) {
+        if (!sellerCompanyId.equals(customer.ownerCompanyId())) {
             throw new IllegalArgumentException("B2C customer must belong to the seller company");
         }
     }

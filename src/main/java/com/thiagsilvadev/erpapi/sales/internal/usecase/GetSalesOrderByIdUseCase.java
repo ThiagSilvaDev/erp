@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
@@ -26,7 +27,9 @@ public class GetSalesOrderByIdUseCase {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).READ)")
     public SalesOrderResponse execute(UUID id) {
-        return responseAssembler.toResponse(
-                orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id)));
+        var sellerCompanyId = TenantContext.requireTenantId();
+        return responseAssembler.toResponse(orderRepository
+                .findByIdAndSellerCompanyId(id, sellerCompanyId)
+                .orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id)));
     }
 }

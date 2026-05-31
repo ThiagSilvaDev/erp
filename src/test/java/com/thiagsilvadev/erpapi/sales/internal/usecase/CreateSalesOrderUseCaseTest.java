@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -23,6 +24,7 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundExceptio
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
@@ -58,11 +60,17 @@ class CreateSalesOrderUseCaseTest {
     @Mock
     private BusinessNumberService businessNumberService;
 
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
+
     @Test
     void shouldCreateB2bOrder() {
         UUID sellerCompanyId = UUID.randomUUID();
         UUID buyerCompanyId = UUID.randomUUID();
-        CreateSalesOrderRequest request = request(SaleType.B2B, sellerCompanyId, buyerCompanyId, null);
+        CreateSalesOrderRequest request = request(SaleType.B2B, buyerCompanyId, null);
+        TenantContext.setTenantId(sellerCompanyId);
         givenCompany(sellerCompanyId, CompanyType.FACTORY);
         givenCompany(buyerCompanyId, CompanyType.CORRESPONDENT);
         givenProduct(request.items().getFirst().productId());
@@ -85,7 +93,8 @@ class CreateSalesOrderUseCaseTest {
     void shouldCreateB2cOrder() {
         UUID sellerCompanyId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
-        CreateSalesOrderRequest request = request(SaleType.B2C, sellerCompanyId, null, customerId);
+        CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
+        TenantContext.setTenantId(sellerCompanyId);
         givenCompany(sellerCompanyId, CompanyType.CORRESPONDENT);
         when(customerFacade.findCustomerById(customerId))
                 .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", sellerCompanyId)));
@@ -108,7 +117,8 @@ class CreateSalesOrderUseCaseTest {
     @Test
     void shouldRejectB2bWhenBuyerEqualsSeller() {
         UUID companyId = UUID.randomUUID();
-        CreateSalesOrderRequest request = request(SaleType.B2B, companyId, companyId, null);
+        CreateSalesOrderRequest request = request(SaleType.B2B, companyId, null);
+        TenantContext.setTenantId(companyId);
         givenCompany(companyId, CompanyType.FACTORY);
 
         assertThatThrownBy(() -> useCase().execute(request)).isInstanceOf(IllegalArgumentException.class);
@@ -118,7 +128,8 @@ class CreateSalesOrderUseCaseTest {
     void shouldRejectB2cCustomerFromAnotherOwnerCompany() {
         UUID sellerCompanyId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
-        CreateSalesOrderRequest request = request(SaleType.B2C, sellerCompanyId, null, customerId);
+        CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
+        TenantContext.setTenantId(sellerCompanyId);
         givenCompany(sellerCompanyId, CompanyType.FACTORY);
         when(customerFacade.findCustomerById(customerId))
                 .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID())));
@@ -130,7 +141,8 @@ class CreateSalesOrderUseCaseTest {
     void shouldReportMissingProductResourceName() {
         UUID sellerCompanyId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
-        CreateSalesOrderRequest request = request(SaleType.B2C, sellerCompanyId, null, customerId);
+        CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
+        TenantContext.setTenantId(sellerCompanyId);
         givenCompany(sellerCompanyId, CompanyType.FACTORY);
         when(customerFacade.findCustomerById(customerId))
                 .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", sellerCompanyId)));
@@ -148,7 +160,8 @@ class CreateSalesOrderUseCaseTest {
     void shouldReportMissingCustomerResourceName() {
         UUID sellerCompanyId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
-        CreateSalesOrderRequest request = request(SaleType.B2C, sellerCompanyId, null, customerId);
+        CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
+        TenantContext.setTenantId(sellerCompanyId);
         givenCompany(sellerCompanyId, CompanyType.FACTORY);
         when(customerFacade.findCustomerById(customerId)).thenReturn(Optional.empty());
 
@@ -156,6 +169,27 @@ class CreateSalesOrderUseCaseTest {
                 .isInstanceOf(ResourceNotFoundException.class)
                 .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
                         .containsEntry("resourceName", "Customer"));
+    }
+
+    @Test
+    void shouldUseCurrentTenantAsSellerCompany() {
+        UUID tenantId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
+        TenantContext.setTenantId(tenantId);
+        givenCompany(tenantId, CompanyType.CORRESPONDENT);
+        when(customerFacade.findCustomerById(customerId))
+                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", tenantId)));
+        givenProduct(request.items().getFirst().productId());
+        when(businessNumberService.next(BusinessNumberType.SALES_ORDER)).thenReturn(102L);
+        when(orderRepository.save(org.mockito.ArgumentMatchers.any(SalesOrder.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase().execute(request);
+
+        ArgumentCaptor<SalesOrder> orderCaptor = ArgumentCaptor.forClass(SalesOrder.class);
+        verify(orderRepository).save(orderCaptor.capture());
+        assertThat(orderCaptor.getValue().getSellerCompanyId()).isEqualTo(tenantId);
     }
 
     private CreateSalesOrderUseCase useCase() {
@@ -186,14 +220,12 @@ class CreateSalesOrderUseCaseTest {
                         null)));
     }
 
-    private static CreateSalesOrderRequest request(
-            SaleType saleType, UUID sellerCompanyId, UUID buyerCompanyId, UUID customerId) {
+    private static CreateSalesOrderRequest request(SaleType saleType, UUID buyerCompanyId, UUID customerId) {
         return new CreateSalesOrderRequest(
                 saleType,
                 FulfillmentType.PICKUP,
                 null,
                 PaymentMethod.PIX,
-                sellerCompanyId,
                 buyerCompanyId,
                 customerId,
                 List.of(new CreateSalesOrderItemRequest(UUID.randomUUID(), UUID.randomUUID(), 2)));
