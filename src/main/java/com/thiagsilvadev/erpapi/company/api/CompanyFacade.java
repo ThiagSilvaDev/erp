@@ -7,6 +7,8 @@ public interface CompanyFacade {
 
     Optional<CompanySnapshot> findById(UUID id);
 
+    void requireCompanyExistsById(UUID id);
+
     Optional<CompanySnapshot> findByCnpj(String cnpj);
 
     Optional<CompanyAddressSnapshot> findAddressByCompanyId(UUID id);

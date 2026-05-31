@@ -7,7 +7,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
@@ -56,9 +55,7 @@ public class CreateUserUseCase {
             throw new EmailAlreadyExistsException(contact.getEmail());
         }
 
-        companyFacade
-                .findById(request.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", request.companyId()));
+        companyFacade.requireCompanyExistsById(request.companyId());
 
         User user = User.create(
                 request.firstName(),

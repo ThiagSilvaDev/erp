@@ -6,11 +6,13 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.company.api.CompanyAddressSnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
+import com.thiagsilvadev.erpapi.company.internal.model.Company;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyContactRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 
@@ -40,6 +42,14 @@ public class CompanyService implements CompanyFacade {
                         companyContactRepository
                                 .findByCompanyIdAndPrimaryContactTrue(id)
                                 .orElse(null)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void requireCompanyExistsById(UUID id) {
+        if (!companyRepository.existsById(id)) {
+            throw new ResourceNotFoundException(Company.class, id);
+        }
     }
 
     @Override

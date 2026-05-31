@@ -5,12 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -25,7 +23,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
-import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
@@ -78,7 +75,9 @@ class CreateUserUseCaseTest {
     void shouldRejectMissingCompany() {
         CreateUserRequest request = userRequest();
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.empty());
+        doThrow(new ResourceNotFoundException("Company", request.companyId()))
+                .when(companyFacade)
+                .requireCompanyExistsById(request.companyId());
 
         assertThatThrownBy(() -> useCase.execute(request))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -95,7 +94,6 @@ class CreateUserUseCaseTest {
         CreateUserRequest request = userRequest();
         UUID userId = UUID.randomUUID();
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(mock(CompanySnapshot.class)));
         when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             ReflectionTestUtils.setField(user, "id", userId);
@@ -133,7 +131,6 @@ class CreateUserUseCaseTest {
     void shouldTranslateDuplicateEmailRace() {
         CreateUserRequest request = userRequest();
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(mock(CompanySnapshot.class)));
         when(userRepository.saveAndFlush(any(User.class)))
                 .thenThrow(new DataIntegrityViolationException("uk_user_email"));
 
@@ -148,7 +145,6 @@ class CreateUserUseCaseTest {
         CreateUserRequest request = userRequest();
         UUID userId = UUID.randomUUID();
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
-        when(companyFacade.findById(request.companyId())).thenReturn(Optional.of(mock(CompanySnapshot.class)));
         when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             ReflectionTestUtils.setField(user, "id", userId);
