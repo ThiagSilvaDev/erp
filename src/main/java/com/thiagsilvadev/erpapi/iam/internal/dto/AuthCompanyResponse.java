@@ -4,4 +4,4 @@ import java.util.UUID;
 
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 
-public record AuthCompanyResponse(UUID companyId, UserRole role) {}
+public record AuthCompanyResponse(UUID companyId, String tradeName, String cnpj, UserRole role) {}

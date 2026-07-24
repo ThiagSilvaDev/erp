@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +21,11 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import com.thiagsilvadev.erpapi.iam.internal.dto.AuthCompanyResponse;
+import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
+import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
+import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthMapper;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthUserResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
@@ -48,13 +53,17 @@ class LoginUseCaseTest {
     private UserMembershipFacade userMembershipFacade;
 
     @Mock
+    private CompanyFacade companyFacade;
+
+    @Mock
     private AuthMapper authMapper;
 
     private LoginUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new LoginUseCase(jwtTokenService, authenticationManager, userMembershipFacade, authMapper);
+        useCase = new LoginUseCase(
+                jwtTokenService, authenticationManager, userMembershipFacade, companyFacade, authMapper);
     }
 
     @Test
@@ -69,13 +78,11 @@ class LoginUseCaseTest {
                 .thenReturn(authentication);
         var membership = new UserMembershipSnapshot(userId, companyId, UserRole.ADMIN, UserMembershipStatus.ACTIVE);
         when(userMembershipFacade.findActiveMemberships(userId)).thenReturn(List.of(membership));
+        when(companyFacade.findById(companyId)).thenReturn(Optional.of(company(companyId, "Acme")));
         when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global-token", 3600));
         when(jwtTokenService.issueScoped(principal, membership)).thenReturn(new IssuedToken("scoped-token", 3600));
         when(authMapper.toAuthUserResponse(principal))
                 .thenReturn(new AuthUserResponse(userId, "user@example.com", "ADMIN"));
-        when(authMapper.toAuthCompanyResponse(membership))
-                .thenReturn(new AuthCompanyResponse(companyId, UserRole.ADMIN));
-
         LoginResponse response = useCase.execute(new LoginRequest("User@Example.com", "secret123"));
 
         assertThat(response.accessToken()).isEqualTo("global-token");
@@ -86,6 +93,8 @@ class LoginUseCaseTest {
         assertThat(response.user().role()).isEqualTo("ADMIN");
         assertThat(response.availableCompanies()).hasSize(1);
         assertThat(response.availableCompanies().getFirst().companyId()).isEqualTo(companyId);
+        assertThat(response.availableCompanies().getFirst().tradeName()).isEqualTo("Acme");
+        assertThat(response.availableCompanies().getFirst().cnpj()).isEqualTo("11222333000181");
         assertThat(response.scopedToken().accessToken()).isEqualTo("scoped-token");
     }
 
@@ -98,20 +107,18 @@ class LoginUseCaseTest {
         when(authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
                 .thenReturn(authentication);
-        when(userMembershipFacade.findActiveMemberships(userId))
-                .thenReturn(List.of(
-                        new UserMembershipSnapshot(
-                                userId, UUID.randomUUID(), UserRole.ADMIN, UserMembershipStatus.ACTIVE),
-                        new UserMembershipSnapshot(
-                                userId, UUID.randomUUID(), UserRole.MANAGER, UserMembershipStatus.ACTIVE)));
+        var firstMembership =
+                new UserMembershipSnapshot(userId, UUID.randomUUID(), UserRole.ADMIN, UserMembershipStatus.ACTIVE);
+        var secondMembership =
+                new UserMembershipSnapshot(userId, UUID.randomUUID(), UserRole.MANAGER, UserMembershipStatus.ACTIVE);
+        when(userMembershipFacade.findActiveMemberships(userId)).thenReturn(List.of(firstMembership, secondMembership));
+        when(companyFacade.findById(firstMembership.companyId()))
+                .thenReturn(Optional.of(company(firstMembership.companyId(), "Acme")));
+        when(companyFacade.findById(secondMembership.companyId()))
+                .thenReturn(Optional.of(company(secondMembership.companyId(), "Beta")));
         when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global-token", 3600));
         when(authMapper.toAuthUserResponse(principal))
                 .thenReturn(new AuthUserResponse(userId, "user@example.com", "ADMIN"));
-        when(authMapper.toAuthCompanyResponse(any(UserMembershipSnapshot.class)))
-                .thenAnswer(inv -> {
-                    UserMembershipSnapshot m = inv.getArgument(0);
-                    return new AuthCompanyResponse(m.companyId(), m.role());
-                });
 
         LoginResponse response = useCase.execute(new LoginRequest("user@example.com", "secret123"));
 
@@ -174,5 +181,19 @@ class LoginUseCaseTest {
 
         verify(jwtTokenService, never()).issueGlobal(any());
         verify(authMapper, never()).toAuthUserResponse(any());
+    }
+
+    private static CompanySnapshot company(UUID companyId, String tradeName) {
+        return new CompanySnapshot(
+                companyId,
+                1L,
+                tradeName + " Ltda",
+                tradeName,
+                Cnpj.create("11222333000181"),
+                CompanyStatus.ACTIVE,
+                CompanyType.FACTORY,
+                null,
+                null,
+                null);
     }
 }

@@ -16,12 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthCompanyResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthUserResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.usecase.ListUserCompaniesUseCase;
 import com.thiagsilvadev.erpapi.iam.internal.usecase.LoginUseCase;
 import com.thiagsilvadev.erpapi.iam.internal.usecase.SelectCompanyUseCase;
+import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 class AuthControllerTest {
 
@@ -42,9 +44,14 @@ class AuthControllerTest {
     @Test
     void shouldLogin() throws Exception {
         UUID userId = UUID.randomUUID();
+        UUID companyId = UUID.randomUUID();
         when(loginUseCase.execute(any(LoginRequest.class)))
                 .thenReturn(LoginResponse.bearer(
-                        "jwt-token", 3600, new AuthUserResponse(userId, "user@example.com", "ADMIN"), List.of(), null));
+                        "jwt-token",
+                        3600,
+                        new AuthUserResponse(userId, "user@example.com", "ADMIN"),
+                        List.of(new AuthCompanyResponse(companyId, "Acme", "11222333000181", UserRole.ADMIN)),
+                        null));
 
         mockMvc.perform(
                         post("/api/v1/auth/login")
@@ -62,6 +69,10 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.expiresIn").value(3600))
                 .andExpect(jsonPath("$.user.id").value(userId.toString()))
                 .andExpect(jsonPath("$.user.email").value("user@example.com"))
-                .andExpect(jsonPath("$.user.role").value("ADMIN"));
+                .andExpect(jsonPath("$.user.role").value("ADMIN"))
+                .andExpect(jsonPath("$.availableCompanies[0].companyId").value(companyId.toString()))
+                .andExpect(jsonPath("$.availableCompanies[0].tradeName").value("Acme"))
+                .andExpect(jsonPath("$.availableCompanies[0].cnpj").value("11222333000181"))
+                .andExpect(jsonPath("$.availableCompanies[0].role").value("ADMIN"));
     }
 }

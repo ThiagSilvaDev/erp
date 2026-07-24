@@ -11,6 +11,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthCompanyResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthMapper;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
@@ -31,16 +34,19 @@ public class LoginUseCase {
     private final JwtTokenService jwtTokenService;
     private final AuthenticationManager authenticationManager;
     private final UserMembershipFacade userMembershipFacade;
+    private final CompanyFacade companyFacade;
     private final AuthMapper authMapper;
 
     public LoginUseCase(
             JwtTokenService jwtTokenService,
             AuthenticationManager authenticationManager,
             UserMembershipFacade userMembershipFacade,
+            CompanyFacade companyFacade,
             AuthMapper authMapper) {
         this.jwtTokenService = jwtTokenService;
         this.authenticationManager = authenticationManager;
         this.userMembershipFacade = userMembershipFacade;
+        this.companyFacade = companyFacade;
         this.authMapper = authMapper;
     }
 
@@ -64,8 +70,20 @@ public class LoginUseCase {
                 token.value(),
                 token.expiresIn(),
                 authMapper.toAuthUserResponse(principal),
-                memberships.stream().map(authMapper::toAuthCompanyResponse).toList(),
+                memberships.stream().map(this::toAuthCompanyResponse).toList(),
                 scopedToken);
+    }
+
+    private AuthCompanyResponse toAuthCompanyResponse(UserMembershipSnapshot membership) {
+        var company = companyFacade
+                .findById(membership.companyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company", membership.companyId()));
+
+        return new AuthCompanyResponse(
+                membership.companyId(),
+                company.tradeName(),
+                company.cnpj() != null ? company.cnpj().getNumber() : null,
+                membership.role());
     }
 
     private Authentication authenticate(LoginRequest request) {
