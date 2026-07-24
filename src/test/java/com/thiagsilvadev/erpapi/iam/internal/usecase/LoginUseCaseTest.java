@@ -26,6 +26,7 @@ import com.thiagsilvadev.erpapi.iam.internal.dto.AuthUserResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.exception.InvalidCredentialsException;
+import com.thiagsilvadev.erpapi.iam.internal.exception.NoActiveMembershipException;
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService.IssuedToken;
@@ -131,7 +132,7 @@ class LoginUseCaseTest {
         when(userMembershipFacade.findActiveMemberships(userId)).thenReturn(List.of());
 
         assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "secret123")))
-                .isInstanceOf(InvalidCredentialsException.class);
+                .isInstanceOf(NoActiveMembershipException.class);
 
         verify(jwtTokenService, never()).issueGlobal(any());
         verify(authMapper, never()).toAuthUserResponse(any());

@@ -2,6 +2,8 @@ package com.thiagsilvadev.erpapi.iam.internal.usecase;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,6 +16,7 @@ import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyResponse;
 import com.thiagsilvadev.erpapi.iam.internal.exception.InvalidCredentialsException;
+import com.thiagsilvadev.erpapi.iam.internal.exception.NoActiveMembershipException;
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService.IssuedToken;
@@ -22,6 +25,8 @@ import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
 
 @Component
 public class LoginUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(LoginUseCase.class);
 
     private final JwtTokenService jwtTokenService;
     private final AuthenticationManager authenticationManager;
@@ -48,7 +53,8 @@ public class LoginUseCase {
         }
         List<UserMembershipSnapshot> memberships = userMembershipFacade.findActiveMemberships(principal.getUserId());
         if (memberships.isEmpty()) {
-            throw new InvalidCredentialsException();
+            log.warn("Login failed: no active memberships. userId={}", principal.getUserId());
+            throw new NoActiveMembershipException();
         }
 
         IssuedToken token = jwtTokenService.issueGlobal(principal);
@@ -67,6 +73,7 @@ public class LoginUseCase {
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         } catch (AuthenticationException exception) {
+            log.warn("Login failed: invalid credentials.");
             throw new InvalidCredentialsException();
         }
     }
