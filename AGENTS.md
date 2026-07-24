@@ -1,53 +1,56 @@
+# AGENTS.md
+
 # Repository Guidelines
 
-## Project Overview
+## Overview
 
-This is a Java 21 Spring Boot ERP API organized as a Modular Monolith using Spring Modulith.
+This repository is a Java 21 Spring Boot ERP API built as a **Modular Monolith** using **Spring Modulith**.
 
-Main code lives in:
+Source:
 
 ```text
 src/main/java/com/thiagsilvadev/erpapi
 ```
 
-Tests mirror the source structure:
+Tests:
 
 ```text
 src/test/java/com/thiagsilvadev/erpapi
 ```
 
-Business modules include:
+Business modules:
 
-* catalog
-* company
-* customer
-* financial
-* iam
-* inventory
-* logistics
-* sales
-* user
+- catalog
+- company
+- customer
+- financial
+- iam
+- inventory
+- logistics
+- sales
+- user
 
 Each module exposes public contracts through `api` and keeps implementation details inside `internal`.
 
-Always run:
+Before completing any task, run:
 
 ```bash
 ./mvnw verify
 ```
 
-before finishing changes.
-
 ---
 
-## Working Rules
+# Working Rules
 
-* Always understand the owning module before making changes.
-* Keep changes local to the affected module whenever possible.
-* Preserve existing naming conventions and architectural patterns.
-* Prefer minimal, targeted edits over broad rewrites.
-* Do not introduce new frameworks, abstractions, or dependencies unless clearly justified.
-* If a requested change violates module boundaries, explain the issue and propose a Modulith-compatible solution.
+Before making changes:
+
+1. Identify the owning module.
+2. Follow existing patterns before introducing new ones.
+3. Keep changes local to the affected module.
+4. Make the smallest change that satisfies the request.
+5. Add or update tests whenever behavior changes.
+
+Do not introduce new frameworks, abstractions, or dependencies unless clearly justified.
 
 ---
 
@@ -55,96 +58,109 @@ before finishing changes.
 
 ## Core Principles
 
-* Modular Monolith using Spring Modulith.
-* Rich Domain Model.
-* Smart factories and dumb constructors.
-* Thin controllers.
-* Use cases to orchestrate business workflows.
-* Repositories are persistence-only.
-* Entities protect business invariants.
-
-## Layer Responsibilities
-
-### Controllers
-
-* Accept and validate external requests.
-* Convert requests into use case invocations.
-* Never contain business logic.
-* Never access repositories directly.
-
-### Use Cases
-
-* Orchestrate business workflows.
-* Define transaction boundaries.
-* Coordinate repositories, facades, domain entities, and events.
-
-### Repositories
-
-* Persistence only.
-* No orchestration.
-* No business rules.
-
-### Entities
-
-* Own business invariants.
-* Expose behavior instead of setters.
-* Prevent invalid state transitions.
+- Modular Monolith with Spring Modulith.
+- Rich domain model.
+- Smart factories, simple constructors.
+- Thin controllers.
+- Use cases orchestrate workflows.
+- Repositories handle persistence only.
+- Entities enforce business rules.
 
 ---
 
-## Module Boundaries
+# Module Boundaries
 
-* Respect Spring Modulith boundaries strictly.
-* Cross-module communication is allowed only through another module's `api` package.
-* Never import another module's `internal` classes.
-* Never inject another module's repositories, services, entities, DTOs, or mappers.
-* Never expose JPA entities outside the owning module.
+Spring Modulith boundaries are mandatory.
 
-### Preferred Communication
+## Allowed
 
-Reads:
+Cross-module communication only through another module's `api`.
+
+Examples:
 
 ```java
-CompanySnapshot company = companyFacade.findById(companyId);
+CompanySnapshot company = companyFacade.findById(id);
 ```
-
-Immediate writes:
 
 ```java
 inventoryFacade.reserveStock(command);
 ```
 
-Eventual consistency:
-
 ```java
 applicationEventPublisher.publishEvent(event);
 ```
 
-### Avoid
+## Forbidden
 
-```java
-@Autowired
-private CompanyRepository repository;
-```
+Never import another module's `internal` package.
 
-across module boundaries.
+Never inject another module's:
+
+- repositories
+- entities
+- DTOs
+- mappers
+- services
+
+Never expose JPA entities outside their owning module.
 
 ---
 
-## Domain Model
+# Layer Responsibilities
 
-### Entities
+## Controllers
 
-* Prefer rich domain models over anemic entities.
-* Avoid public setters.
-* Use intention-revealing methods.
+Responsibilities:
 
-Good:
+- receive requests
+- validate input
+- invoke use cases
+- return responses
+
+Never:
+
+- implement business rules
+- access repositories
+- coordinate workflows
+
+---
+
+## Use Cases
+
+Responsibilities:
+
+- orchestrate business workflows
+- define transactions
+- invoke repositories
+- invoke module APIs
+- publish events
+
+---
+
+## Repositories
+
+Responsibilities:
+
+- persistence only
+
+Never:
+
+- contain business logic
+- orchestrate workflows
+- publish events
+
+---
+
+## Entities
+
+Entities own business invariants.
+
+Prefer:
 
 ```java
 order.confirm();
-inventory.reserve(quantity);
 company.activate();
+inventory.reserve(quantity);
 ```
 
 Avoid:
@@ -153,40 +169,36 @@ Avoid:
 order.setStatus(CONFIRMED);
 ```
 
-### Construction
-
-Use smart factories and dumb constructors.
-
-Good:
-
-```java
-SalesOrder.create(...);
-InventoryItem.create(...);
-```
-
-Constructors should perform assignments only.
-
-### Value Objects
-
-Use value objects for domain concepts such as:
-
-* Money
-* Address
-* Email
-* Phone
-* Cnpj
-* GeoLocation
-
-Domain-specific value objects belong to their owning module.
+Avoid public setters.
 
 ---
 
-## Module Structure
+# Domain Modeling
 
-Each module should follow:
+Use smart factory methods.
 
-```text
-<module>/
+Example:
+
+```java
+SalesOrder.create(...);
+```
+
+Constructors should primarily assign values.
+
+Use value objects for concepts such as:
+
+- Money
+- Email
+- Address
+- Phone
+- Cnpj
+
+---
+
+# Module Structure
+
+```
+module/
 ├── api
 └── internal
 ```
@@ -195,75 +207,39 @@ Each module should follow:
 
 Public contracts only:
 
-* Facades
-* Commands
-* Snapshots
-* Events
-* Enums
+- Facades
+- Commands
+- Snapshots
+- Events
+- Enums
 
 ### internal
 
-Implementation details:
+Implementation details.
 
-```text
-internal/controller
-internal/dto
-internal/usecase
-internal/model
-internal/repository
-internal/mapper
+Typical packages:
+
 ```
-
-Additional packages are allowed when justified:
-
-```text
-internal/domain
-internal/model/domain
+controller
+dto
+usecase
+model
+repository
+mapper
 ```
-
-Move to feature-based packaging when folders start containing multiple unrelated flows.
 
 ---
 
-## Shared Code
+# Persistence
 
-Use `common` only for true cross-cutting concerns.
+- Keep JPA entities inside `internal/model`.
+- Use DTOs at REST boundaries.
+- Prefer IDs over cross-module entity relationships.
+- Use `FetchType.LAZY`.
+- Use `@Enumerated(EnumType.STRING)`.
+- Use `@Version` when concurrent updates are possible.
 
-Allowed examples:
-
-* Validation helpers
-* Shared exception handling
-* Security primitives
-* Generic value objects
-* Utilities reused by multiple modules
-
-Domain-specific code belongs in the owning module.
-
-When unsure, keep code inside the owning module.
-
----
-
-## Persistence
-
-### General
-
-* Keep JPA entities inside `internal/model`.
-* REST controllers must use request/response DTOs.
-* Prefer IDs instead of JPA relationships across modules.
-* Use plural table names.
-* Use snake_case column names.
-
-### JPA
-
-* Prefer `FetchType.LAZY`.
-* Use `@Enumerated(EnumType.STRING)`.
-* Use `@Version` for optimistic locking where concurrent updates are possible.
-* Avoid public setters.
-* Keep transaction boundaries outside entities.
-
-### Transactions
-
-Use transactions in use cases or application services.
+Transactions belong in use cases.
 
 Commands:
 
@@ -277,61 +253,54 @@ Queries:
 @Transactional(readOnly = true)
 ```
 
-Repositories and entities must not define transaction boundaries.
-
 ---
 
-## Mapping
+# Mapping
 
-Prefer manual mappers by default.
+Prefer manual mapping.
 
-Use MapStruct only when generated code clearly reduces maintenance and repetitive boilerplate.
+Use MapStruct only when it significantly reduces repetitive boilerplate.
 
-Mapper naming:
+Naming:
 
 ```text
 CustomerMapper
-SalesOrderMapper
+OrderMapper
 PaymentMapper
 ```
 
-Use clear method names:
+Methods:
 
 ```java
-toResponse(...)
-toSnapshot(...)
 toEntity(...)
+toSnapshot(...)
+toResponse(...)
 ```
 
 ---
 
-## Validation, Errors, and Logging
+# Validation & Errors
 
-### Validation
+Validate:
 
-* Validate external input at REST boundaries using Bean Validation.
-* Validate business invariants inside the domain model.
+- external input with Bean Validation
+- business rules inside the domain model
 
-### Exceptions
+Use domain-specific exceptions.
 
-Use domain-specific exceptions for business rule violations.
+Examples:
 
-Common exceptions:
+- ResourceNotFoundException
+- ConflictException
+- DomainValidationException
 
-* ResourceNotFoundException
-* ConflictException
-* DomainValidationException
+Controllers should not translate exceptions manually.
 
-REST exception translation belongs in global handlers, never controllers.
+---
 
-### Logging
+# Logging
 
-* Never log secrets.
-* Never log passwords.
-* Never log tokens.
-* Never log sensitive business data.
-* Prefer structured logging.
-* Use placeholders instead of string concatenation.
+Use structured logging.
 
 Good:
 
@@ -339,127 +308,117 @@ Good:
 log.info("Payment processed. paymentId={}", paymentId);
 ```
 
+Never log:
+
+- passwords
+- JWTs
+- secrets
+- sensitive business data
+
 ---
 
-## Database Migrations
+# Shared Code
+
+`common` is only for true cross-cutting concerns such as:
+
+- validation
+- security
+- exception handling
+- generic utilities
+
+Business logic belongs in its owning module.
+
+When unsure, keep code inside the module.
+
+---
+
+# Testing
+
+Use:
+
+- JUnit 5
+- AssertJ
+- Mockito
+- Spring Test
+- Spring Modulith Test
+
+Rules:
+
+- add tests when behavior changes
+- test business rules
+- test failure paths
+- keep `ApplicationModularityTests` passing
+
+Prefer deterministic tests.
+
+Avoid time-based sleeps when possible.
+
+Exception assertions should contain only the action expected to fail.
+
+---
+
+# Build
+
+Useful commands:
+
+```bash
+docker compose up -d
+
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+
+./mvnw spotless:apply
+
+./mvnw test
+
+./mvnw verify
+```
+
+Always finish with:
+
+```bash
+./mvnw verify
+```
+
+---
+
+# Security
+
+- Never commit secrets.
+- Never commit production credentials.
+- Document required environment variables.
+
+Development JWT secret:
+
+```text
+ERP_IAM_JWT_SECRET
+```
+
+---
+
+# Database
 
 No migration tool is currently configured.
 
-Do not introduce ad hoc SQL files.
+Do not add ad hoc SQL scripts.
 
-If migrations become necessary:
-
-* Introduce Flyway.
-* Store migrations in:
+If migrations become necessary, use Flyway:
 
 ```text
 src/main/resources/db/migration
-```
-
-Examples:
-
-```text
-V1__create_sales_tables.sql
-V2__add_customer_status.sql
 ```
 
 Never rely on Hibernate auto-DDL in production.
 
 ---
 
-## Build, Test, and Development Commands
+# Agent Behavior
 
-```bash
-docker compose up -d
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-./mvnw spotless:apply
-./mvnw -q test
-./mvnw verify
-```
+Always:
 
----
+- preserve module boundaries
+- preserve architectural patterns
+- prefer existing conventions
+- keep changes focused
+- avoid unnecessary abstractions
 
-## Testing Guidelines
-
-Use:
-
-* JUnit 5
-* AssertJ
-* Mockito
-* Spring Test
-* Spring Modulith Test
-
-### General Rules
-
-* Add tests whenever behavior changes.
-* Test business rules.
-* Test failure paths.
-* Add integration tests when module interactions change.
-* Keep `ApplicationModularityTests` passing.
-
-### Exception Assertions
-
-Prepare all data before the assertion.
-
-The exception lambda should contain only the action expected to fail.
-
-Good:
-
-```java
-var exception = catchThrowableOfType(
-        DomainValidationException.class,
-        () -> salesOrder.confirm()
-);
-```
-
-Avoid:
-
-```java
-assertThatThrownBy(() ->
-        SalesOrder.create(
-                UUID.randomUUID(),
-                UUID.randomUUID()))
-```
-
----
-
-## Commit and Pull Request Guidelines
-
-Use Conventional Commits.
-
-Examples:
-
-```text
-feat(logistics): add shipment workflow
-fix(financial): prevent duplicate payment processing
-refactor(company): extract address value object
-```
-
----
-
-## Security and Configuration
-
-* Never commit secrets.
-* Never commit production credentials.
-* Keep environment-specific configuration outside source control.
-* Document required environment variables.
-
-Local JWT development uses:
-
-```text
-ERP_IAM_JWT_SECRET
-```
-
-Production environments must provide secure values externally.
-
----
-
-## Agent Behavior
-
-* Prefer minimal, focused changes.
-* Preserve package structure.
-* Preserve module boundaries.
-* Preserve architectural patterns.
-* Avoid introducing unnecessary abstractions.
-* Avoid moving code across modules without justification.
-* When uncertain, follow existing patterns in the affected module.
+When uncertain, follow the existing implementation style of the affected module.
