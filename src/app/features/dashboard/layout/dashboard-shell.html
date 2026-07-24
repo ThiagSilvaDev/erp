@@ -24,76 +24,17 @@
         </li>
       }
 
-      <li nz-submenu nzOpen nzTitle="Catalog" nzIcon="appstore">
-        <ul>
-          @for (item of catalogItems; track item.path) {
-            <li nz-menu-item nzMatchRouter>
-              <a [routerLink]="item.path">{{ item.label }}</a>
-            </li>
-          }
-        </ul>
-      </li>
-
-      <li nz-submenu nzOpen nzTitle="Contacts" nzIcon="contacts">
-        <ul>
-          @for (item of contactItems; track item.path) {
-            <li nz-menu-item nzMatchRouter>
-              <a [routerLink]="item.path">{{ item.label }}</a>
-            </li>
-          }
-        </ul>
-      </li>
-
-      <li nz-submenu nzOpen nzTitle="Sales" nzIcon="shopping-cart">
-        <ul>
-          @for (item of salesItems; track item.path) {
-            <li nz-menu-item nzMatchRouter>
-              <a [routerLink]="item.path">{{ item.label }}</a>
-            </li>
-          }
-        </ul>
-      </li>
-
-      <li nz-submenu nzOpen nzTitle="Logistics" nzIcon="truck">
-        <ul>
-          @for (item of logisticsItems; track item.path) {
-            <li nz-menu-item nzMatchRouter>
-              <a [routerLink]="item.path">{{ item.label }}</a>
-            </li>
-          }
-        </ul>
-      </li>
-
-      <li nz-submenu nzOpen nzTitle="Inventory" nzIcon="database">
-        <ul>
-          @for (item of inventoryItems; track item.path) {
-            <li nz-menu-item nzMatchRouter>
-              <a [routerLink]="item.path">{{ item.label }}</a>
-            </li>
-          }
-        </ul>
-      </li>
-
-      <li nz-submenu nzOpen nzTitle="Financial" nzIcon="wallet">
-        <ul>
-          @for (item of financialItems; track item.path) {
-            <li nz-menu-item nzMatchRouter>
-              <a [routerLink]="item.path">{{ item.label }}</a>
-            </li>
-          }
-        </ul>
-      </li>
-
-
-      <li nz-submenu nzOpen nzTitle="Admin" nzIcon="apartment">
-        <ul>
-          @for (item of organizationItems; track item.path) {
-            <li nz-menu-item nzMatchRouter>
-              <a [routerLink]="item.path">{{ item.label }}</a>
-            </li>
-          }
-        </ul>
-      </li>
+      @for (group of submenuGroups; track group.title) {
+        <li nz-submenu nzOpen [nzTitle]="group.title" [nzIcon]="group.icon">
+          <ul>
+            @for (item of group.items; track item.path) {
+              <li nz-menu-item nzMatchRouter>
+                <a [routerLink]="item.path">{{ item.label }}</a>
+              </li>
+            }
+          </ul>
+        </li>
+      }
 
     </ul>
   </nz-sider>
