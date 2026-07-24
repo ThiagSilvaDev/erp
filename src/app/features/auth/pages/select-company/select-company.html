@@ -39,6 +39,9 @@
                   }
                 </div>
                 <div class="company-meta">
+                  @if (company.legalName && company.tradeName) {
+                    <span>{{ company.tradeName }}</span>
+                  }
                   <span>{{ companyDocument(company) }}</span>
                 </div>
               </div>
