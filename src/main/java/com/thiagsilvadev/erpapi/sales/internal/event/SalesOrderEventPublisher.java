@@ -23,14 +23,14 @@ public class SalesOrderEventPublisher {
     }
 
     public void salesOrderConfirmed(SalesOrder order) {
-        eventPublisher.publishEvent(SalesOrderConfirmedEvent.confirmed(order.getId(), LocalDate.now(clock)));
+        eventPublisher.publishEvent(new SalesOrderConfirmedEvent(order.getId(), LocalDate.now(clock)));
     }
 
     public void salesOrderDeliveryRequested(SalesOrder order) {
-        eventPublisher.publishEvent(SalesOrderDeliveryRequestedEvent.requested(order.getId()));
+        eventPublisher.publishEvent(new SalesOrderDeliveryRequestedEvent(order.getId()));
     }
 
     public void salesOrderCancelled(SalesOrder order) {
-        eventPublisher.publishEvent(SalesOrderCancelledEvent.cancelled(order.getId()));
+        eventPublisher.publishEvent(new SalesOrderCancelledEvent(order.getId()));
     }
 }
