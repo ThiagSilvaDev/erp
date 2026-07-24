@@ -55,12 +55,23 @@
           </button>
           <nz-dropdown-menu #actionsMenu="nzDropdownMenu">
             <ul nz-menu>
-              <li nz-menu-item (click)="viewRecord.emit(row)">Detail</li>
+              <li
+                nz-menu-item
+                tabindex="0"
+                (click)="viewRecord.emit(row)"
+                (keydown.enter)="viewRecord.emit(row)"
+                (keydown.space)="viewRecord.emit(row)"
+              >
+                Detail
+              </li>
               @for (action of menuActions(row); track action.label) {
                 <li
                   nz-menu-item
+                  tabindex="0"
                   [nzDisabled]="activeAction() === actionKey(action, row)"
                   (click)="runRecordAction.emit({ action, record: row })"
+                  (keydown.enter)="runRecordAction.emit({ action, record: row })"
+                  (keydown.space)="runRecordAction.emit({ action, record: row })"
                 >
                   <span>{{ action.label }}</span>
                 </li>

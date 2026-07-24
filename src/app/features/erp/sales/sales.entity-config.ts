@@ -96,14 +96,6 @@ export function salesOrdersEntityConfig(): EntityConfig {
     ],
     createFields: [
       {
-        key: 'sellerCompanyId',
-        label: 'Seller company',
-        required: true,
-        type: 'select',
-        optionsKey: 'companies',
-        section: 'Customer',
-      },
-      {
         key: 'customerId',
         label: 'Customer',
         type: 'select',
@@ -166,7 +158,6 @@ export function salesOrdersEntityConfig(): EntityConfig {
         fulfillmentType:
           (text(value['fulfillmentType']) as CreateSalesOrderRequestFulfillmentType) ||
           CreateSalesOrderRequestFulfillmentType.PICKUP,
-        sellerCompanyId: text(value['sellerCompanyId']),
         customerId: text(value['customerId']) || undefined,
         deliveryRoute: deliveryRoute(value),
         items: salesOrderItems(value),

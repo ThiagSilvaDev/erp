@@ -80,10 +80,6 @@ export class SelectCompany {
     return company.cnpj ?? company.role ?? 'No CNPJ';
   }
 
-  companyCode(company: CompanyChoice): string {
-    return '';
-  }
-
   isSelecting(company: CompanyChoice): boolean {
     return this.selectedCompanyId() === company.companyId;
   }

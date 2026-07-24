@@ -134,7 +134,6 @@ describe('EntityCreatePage', () => {
     createComponent('sales-orders');
 
     expect(optionsFacade.loadOptions).toHaveBeenCalledWith([
-      'companies',
       'customers',
       'products',
       'warehouses',
@@ -160,7 +159,6 @@ describe('EntityCreatePage', () => {
     const component = fixture.componentInstance;
 
     component.createForm().setValue({
-      sellerCompanyId: 'company-1',
       customerId: 'customer-1',
       paymentMethod: 'CASH',
       fulfillmentType: 'PICKUP',
@@ -185,7 +183,6 @@ describe('EntityCreatePage', () => {
       saleType: 'B2C',
       paymentMethod: 'CASH',
       fulfillmentType: 'PICKUP',
-      sellerCompanyId: 'company-1',
       customerId: 'customer-1',
       deliveryRoute: undefined,
       items: [
@@ -214,7 +211,6 @@ describe('EntityCreatePage', () => {
     const component = fixture.componentInstance;
 
     component.createForm().setValue({
-      sellerCompanyId: 'company-1',
       customerId: 'customer-1',
       paymentMethod: 'CASH',
       fulfillmentType: 'PICKUP',
@@ -232,7 +228,6 @@ describe('EntityCreatePage', () => {
     const component = fixture.componentInstance;
 
     component.createForm().setValue({
-      sellerCompanyId: 'company-1',
       customerId: 'customer-1',
       paymentMethod: 'PIX',
       fulfillmentType: 'DELIVERY',
@@ -259,7 +254,6 @@ describe('EntityCreatePage', () => {
       saleType: 'B2C',
       paymentMethod: 'PIX',
       fulfillmentType: 'DELIVERY',
-      sellerCompanyId: 'company-1',
       customerId: 'customer-1',
       deliveryRoute: {
         routeName: 'Route A',

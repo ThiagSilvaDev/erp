@@ -185,7 +185,6 @@ describe('PdvPage', () => {
 
     component.saleForm.patchValue({
       targetType: 'customer',
-      sellerCompanyId: 'company-1',
       customerId: 'customer-1',
       warehouseId: 'warehouse-1',
     });
@@ -197,7 +196,6 @@ describe('PdvPage', () => {
 
     expect(sales.createSalesOrder).toHaveBeenCalledWith({
       saleType: CreateSalesOrderRequestSaleType.B2C,
-      sellerCompanyId: 'company-1',
       buyerCompanyId: undefined,
       customerId: 'customer-1',
       paymentMethod: CreateSalesOrderRequestPaymentMethod.CASH,
@@ -216,7 +214,6 @@ describe('PdvPage', () => {
 
     component.saleForm.patchValue({
       targetType: 'company',
-      sellerCompanyId: 'company-1',
       buyerCompanyId: 'company-2',
       warehouseId: 'warehouse-1',
     });
@@ -227,7 +224,6 @@ describe('PdvPage', () => {
 
     expect(sales.createSalesOrder).toHaveBeenCalledWith({
       saleType: CreateSalesOrderRequestSaleType.B2B,
-      sellerCompanyId: 'company-1',
       buyerCompanyId: 'company-2',
       customerId: undefined,
       paymentMethod: CreateSalesOrderRequestPaymentMethod.CASH,
@@ -243,7 +239,6 @@ describe('PdvPage', () => {
 
     component.saleForm.patchValue({
       targetType: 'customer',
-      sellerCompanyId: 'company-1',
       customerId: 'customer-1',
       warehouseId: 'warehouse-1',
       fulfillmentType: CreateSalesOrderRequestFulfillmentType.DELIVERY,
@@ -256,7 +251,6 @@ describe('PdvPage', () => {
 
     expect(sales.createSalesOrder).toHaveBeenCalledWith({
       saleType: CreateSalesOrderRequestSaleType.B2C,
-      sellerCompanyId: 'company-1',
       buyerCompanyId: undefined,
       customerId: 'customer-1',
       paymentMethod: CreateSalesOrderRequestPaymentMethod.CASH,

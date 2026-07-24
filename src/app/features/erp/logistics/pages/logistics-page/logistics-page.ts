@@ -29,7 +29,6 @@ import type {
   CreateTrackingEventRequest,
   DriverResponse,
   ShipmentResponse,
-  ShipmentResponseStatus,
   ShipmentSearchCriteriaStatus,
   VehicleResponse,
 } from '@generated-api/modules/logistics/dtos';

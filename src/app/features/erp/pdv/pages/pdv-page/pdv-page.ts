@@ -47,7 +47,6 @@ type PdvTargetType = 'customer' | 'company';
 
 type SaleForm = FormGroup<{
   targetType: FormControl<PdvTargetType>;
-  sellerCompanyId: FormControl<string>;
   customerId: FormControl<string>;
   buyerCompanyId: FormControl<string>;
   warehouseId: FormControl<string>;
@@ -123,7 +122,6 @@ export class PdvPage {
 
   readonly saleForm: SaleForm = new FormGroup({
     targetType: new FormControl<PdvTargetType>('customer', { nonNullable: true }),
-    sellerCompanyId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     customerId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     buyerCompanyId: new FormControl('', { nonNullable: true }),
     warehouseId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -340,7 +338,6 @@ export class PdvPage {
           targetType === 'company'
             ? CreateSalesOrderRequestSaleType.B2B
             : CreateSalesOrderRequestSaleType.B2C,
-        sellerCompanyId: value.sellerCompanyId,
         buyerCompanyId: targetType === 'company' ? value.buyerCompanyId : undefined,
         customerId: targetType === 'customer' ? value.customerId : undefined,
         paymentMethod: value.paymentMethod,
@@ -551,7 +548,7 @@ export class PdvPage {
             (warehouses.content ?? []).map((warehouse) => this.warehouseOption(warehouse)),
           );
         },
-        error: () => this.lookupError.set('Unable to load seller, buyer, or warehouse options.'),
+        error: () => this.lookupError.set('Unable to load buyer, customer, or warehouse options.'),
       });
   }
 

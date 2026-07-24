@@ -10,29 +10,12 @@
 
   <form nz-form nzLayout="vertical" class="sale-context" [formGroup]="saleForm">
     <nz-form-item class="m-0">
-      <nz-form-label nzFor="sale-target">Sell to</nz-form-label>
-      <nz-form-control>
-        <nz-radio-group id="sale-target" formControlName="targetType" class="target-toggle">
-          <label nz-radio-button nzValue="customer">Customer</label>
-          <label nz-radio-button nzValue="company">Company</label>
+        <nz-form-label nzFor="sale-target">Sell to</nz-form-label>
+        <nz-form-control>
+          <nz-radio-group id="sale-target" formControlName="targetType" class="target-toggle">
+          <label nz-radio-button for="sale-target-customer" nzValue="customer">Customer</label>
+          <label nz-radio-button for="sale-target-company" nzValue="company">Company</label>
         </nz-radio-group>
-      </nz-form-control>
-    </nz-form-item>
-
-    <nz-form-item class="m-0">
-      <nz-form-label nzFor="seller-company" nzRequired>Seller company</nz-form-label>
-      <nz-form-control nzErrorTip="Seller company is required.">
-        <nz-select
-          id="seller-company"
-          formControlName="sellerCompanyId"
-          nzShowSearch
-          nzPlaceHolder="Select seller"
-          [nzLoading]="companiesLoading()"
-        >
-          @for (option of companyOptions(); track option.value) {
-            <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
-          }
-        </nz-select>
       </nz-form-control>
     </nz-form-item>
 
@@ -105,7 +88,13 @@
       <nz-form-control nzErrorTip="Fulfillment type is required.">
         <nz-radio-group id="fulfillment-type" formControlName="fulfillmentType" class="target-toggle">
           @for (option of fulfillmentTypeOptions; track option.value) {
-            <label nz-radio-button [nzValue]="option.value">{{ option.label }}</label>
+            <label
+              nz-radio-button
+              [attr.for]="'fulfillment-type-' + option.value"
+              [nzValue]="option.value"
+            >
+              {{ option.label }}
+            </label>
           }
         </nz-radio-group>
       </nz-form-control>

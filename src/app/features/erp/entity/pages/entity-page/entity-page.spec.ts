@@ -141,7 +141,6 @@ describe('EntityPage', () => {
     const component = fixture.componentInstance;
 
     component.createForm().setValue({
-      sellerCompanyId: 'company-1',
       customerId: 'customer-1',
       paymentMethod: 'CASH',
       fulfillmentType: 'PICKUP',
@@ -158,7 +157,6 @@ describe('EntityPage', () => {
       saleType: 'B2C',
       paymentMethod: 'CASH',
       fulfillmentType: 'PICKUP',
-      sellerCompanyId: 'company-1',
       customerId: 'customer-1',
       deliveryRoute: undefined,
       items: [{ productId: 'product-1', warehouseId: 'warehouse-1', quantity: 3 }],
