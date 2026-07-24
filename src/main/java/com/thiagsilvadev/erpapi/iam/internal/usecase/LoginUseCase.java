@@ -9,8 +9,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.iam.internal.dto.AuthCompanyResponse;
-import com.thiagsilvadev.erpapi.iam.internal.dto.AuthUserResponse;
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthMapper;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyResponse;
@@ -27,14 +26,17 @@ public class LoginUseCase {
     private final JwtTokenService jwtTokenService;
     private final AuthenticationManager authenticationManager;
     private final UserMembershipFacade userMembershipFacade;
+    private final AuthMapper authMapper;
 
     public LoginUseCase(
             JwtTokenService jwtTokenService,
             AuthenticationManager authenticationManager,
-            UserMembershipFacade userMembershipFacade) {
+            UserMembershipFacade userMembershipFacade,
+            AuthMapper authMapper) {
         this.jwtTokenService = jwtTokenService;
         this.authenticationManager = authenticationManager;
         this.userMembershipFacade = userMembershipFacade;
+        this.authMapper = authMapper;
     }
 
     @Transactional(readOnly = true)
@@ -56,8 +58,8 @@ public class LoginUseCase {
         return LoginResponse.bearer(
                 token.value(),
                 token.expiresIn(),
-                toAuthUserResponse(principal),
-                memberships.stream().map(this::toAuthCompanyResponse).toList(),
+                authMapper.toAuthUserResponse(principal),
+                memberships.stream().map(authMapper::toAuthCompanyResponse).toList(),
                 scopedToken);
     }
 
@@ -68,14 +70,6 @@ public class LoginUseCase {
         } catch (AuthenticationException exception) {
             throw new InvalidCredentialsException();
         }
-    }
-
-    private AuthUserResponse toAuthUserResponse(IamUserDetails principal) {
-        return new AuthUserResponse(principal.getUserId(), principal.getEmail(), principal.getRole());
-    }
-
-    private AuthCompanyResponse toAuthCompanyResponse(UserMembershipSnapshot membership) {
-        return new AuthCompanyResponse(membership.companyId(), membership.role());
     }
 
     private SelectCompanyResponse scopedToken(IamUserDetails principal, UserMembershipSnapshot membership) {

@@ -20,6 +20,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthCompanyResponse;
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthMapper;
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthUserResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.exception.InvalidCredentialsException;
@@ -43,11 +46,14 @@ class LoginUseCaseTest {
     @Mock
     private UserMembershipFacade userMembershipFacade;
 
+    @Mock
+    private AuthMapper authMapper;
+
     private LoginUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new LoginUseCase(jwtTokenService, authenticationManager, userMembershipFacade);
+        useCase = new LoginUseCase(jwtTokenService, authenticationManager, userMembershipFacade, authMapper);
     }
 
     @Test
@@ -64,6 +70,10 @@ class LoginUseCaseTest {
         when(userMembershipFacade.findActiveMemberships(userId)).thenReturn(List.of(membership));
         when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global-token", 3600));
         when(jwtTokenService.issueScoped(principal, membership)).thenReturn(new IssuedToken("scoped-token", 3600));
+        when(authMapper.toAuthUserResponse(principal))
+                .thenReturn(new AuthUserResponse(userId, "user@example.com", "ADMIN"));
+        when(authMapper.toAuthCompanyResponse(membership))
+                .thenReturn(new AuthCompanyResponse(companyId, UserRole.ADMIN));
 
         LoginResponse response = useCase.execute(new LoginRequest("User@Example.com", "secret123"));
 
@@ -94,6 +104,13 @@ class LoginUseCaseTest {
                         new UserMembershipSnapshot(
                                 userId, UUID.randomUUID(), UserRole.MANAGER, UserMembershipStatus.ACTIVE)));
         when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global-token", 3600));
+        when(authMapper.toAuthUserResponse(principal))
+                .thenReturn(new AuthUserResponse(userId, "user@example.com", "ADMIN"));
+        when(authMapper.toAuthCompanyResponse(any(UserMembershipSnapshot.class)))
+                .thenAnswer(inv -> {
+                    UserMembershipSnapshot m = inv.getArgument(0);
+                    return new AuthCompanyResponse(m.companyId(), m.role());
+                });
 
         LoginResponse response = useCase.execute(new LoginRequest("user@example.com", "secret123"));
 
@@ -117,6 +134,7 @@ class LoginUseCaseTest {
                 .isInstanceOf(InvalidCredentialsException.class);
 
         verify(jwtTokenService, never()).issueGlobal(any());
+        verify(authMapper, never()).toAuthUserResponse(any());
     }
 
     @Test
@@ -129,6 +147,7 @@ class LoginUseCaseTest {
                 .isInstanceOf(InvalidCredentialsException.class);
 
         verify(jwtTokenService, never()).issueGlobal(any());
+        verify(authMapper, never()).toAuthUserResponse(any());
     }
 
     @Test
@@ -140,6 +159,7 @@ class LoginUseCaseTest {
                 .isInstanceOf(InvalidCredentialsException.class);
 
         verify(jwtTokenService, never()).issueGlobal(any());
+        verify(authMapper, never()).toAuthUserResponse(any());
     }
 
     @Test
@@ -152,5 +172,6 @@ class LoginUseCaseTest {
                 .isInstanceOf(InvalidCredentialsException.class);
 
         verify(jwtTokenService, never()).issueGlobal(any());
+        verify(authMapper, never()).toAuthUserResponse(any());
     }
 }
