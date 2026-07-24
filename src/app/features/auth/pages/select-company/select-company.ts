@@ -73,7 +73,7 @@ export class SelectCompany {
   }
 
   companyName(company: CompanyChoice): string {
-    return company.tradeName || company.legalName || company.companyId || 'Company';
+    return company.legalName || company.tradeName || 'Company';
   }
 
   companyDocument(company: CompanyChoice): string {
