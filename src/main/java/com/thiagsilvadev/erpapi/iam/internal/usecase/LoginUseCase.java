@@ -52,8 +52,7 @@ public class LoginUseCase {
         }
 
         IssuedToken token = jwtTokenService.issueGlobal(principal);
-        SelectCompanyResponse scopedToken =
-                memberships.size() == 1 ? scopedToken(principal, memberships.getFirst()) : null;
+        SelectCompanyResponse scopedToken = maybeAutoScope(principal, memberships);
 
         return LoginResponse.bearer(
                 token.value(),
@@ -70,6 +69,13 @@ public class LoginUseCase {
         } catch (AuthenticationException exception) {
             throw new InvalidCredentialsException();
         }
+    }
+
+    private SelectCompanyResponse maybeAutoScope(IamUserDetails principal, List<UserMembershipSnapshot> memberships) {
+        if (memberships.size() != 1) {
+            return null;
+        }
+        return scopedToken(principal, memberships.getFirst());
     }
 
     private SelectCompanyResponse scopedToken(IamUserDetails principal, UserMembershipSnapshot membership) {
