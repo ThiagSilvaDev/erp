@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzDropdownMenuComponent, NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -10,7 +10,15 @@ import { EntityAction, EntityColumn, EntityRecord } from '../../models/entity-vi
 
 @Component({
   selector: 'app-entity-data-table',
-  imports: [NzButtonModule, NzDropDownModule, NzIconModule, NzMenuModule, NzTableModule, NzTagModule],
+  imports: [
+    NzButtonModule,
+    NzDropDownModule,
+    NzIconModule,
+    NzMenuModule,
+    NzTableModule,
+    NzTagModule,
+    NzDropdownMenuComponent,
+  ],
   templateUrl: './entity-data-table.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
