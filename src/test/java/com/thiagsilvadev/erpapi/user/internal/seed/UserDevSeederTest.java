@@ -2,7 +2,6 @@ package com.thiagsilvadev.erpapi.user.internal.seed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,10 +57,22 @@ class UserDevSeederTest {
         UUID acmeId = UUID.randomUUID();
         UUID partnerId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        when(userRepository.existsByContactEmailValue(UserDevSeeder.ADMIN_EMAIL))
-                .thenReturn(false);
         when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(acmeId)));
         when(companyFacade.findByCnpj("17.018.282/0001-57")).thenReturn(Optional.of(company(partnerId)));
+        when(userMembershipRepository.findByUserIdAndCompanyId(any(), any()))
+                .thenReturn(Optional.of(UserMembership.create(UUID.randomUUID(), UUID.randomUUID(), UserRole.ADMIN)));
+
+        when(userRepository.existsByContactEmailValue(any())).thenReturn(true);
+        when(userRepository.existsByContactEmailValue(UserDevSeeder.ADMIN_EMAIL))
+                .thenReturn(false);
+        when(userRepository.findByContactEmailValue(any()))
+                .thenReturn(Optional.of(User.create(
+                        "Skip",
+                        "User",
+                        Contact.create("skip@example.com", "11987654321"),
+                        LocalDate.of(1990, 1, 1),
+                        UserRole.OPERATOR,
+                        acmeId)));
         when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             ReflectionTestUtils.setField(user, "id", userId);
@@ -115,19 +126,25 @@ class UserDevSeederTest {
         UUID acmeId = UUID.randomUUID();
         UUID partnerId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        User existingUser = User.create(
+        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(acmeId)));
+        when(companyFacade.findByCnpj("17.018.282/0001-57")).thenReturn(Optional.of(company(partnerId)));
+
+        when(userRepository.existsByContactEmailValue(any())).thenReturn(false);
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userMembershipRepository.findByUserIdAndCompanyId(any(), any()))
+                .thenReturn(Optional.of(UserMembership.create(UUID.randomUUID(), acmeId, UserRole.ADMIN)));
+
+        User adminUser = User.create(
                 "Admin",
                 "Acme",
                 Contact.create(UserDevSeeder.ADMIN_EMAIL, "11987654321"),
                 LocalDate.of(1990, 1, 1),
                 UserRole.ADMIN,
                 acmeId);
-        ReflectionTestUtils.setField(existingUser, "id", userId);
+        ReflectionTestUtils.setField(adminUser, "id", userId);
         when(userRepository.existsByContactEmailValue(UserDevSeeder.ADMIN_EMAIL))
                 .thenReturn(true);
-        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(acmeId)));
-        when(companyFacade.findByCnpj("17.018.282/0001-57")).thenReturn(Optional.of(company(partnerId)));
-        when(userRepository.findByContactEmailValue(UserDevSeeder.ADMIN_EMAIL)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByContactEmailValue(UserDevSeeder.ADMIN_EMAIL)).thenReturn(Optional.of(adminUser));
         when(userMembershipRepository.findByUserIdAndCompanyId(userId, acmeId))
                 .thenReturn(Optional.of(UserMembership.create(userId, acmeId, UserRole.ADMIN)));
         when(userMembershipRepository.findByUserIdAndCompanyId(userId, partnerId))
@@ -141,14 +158,15 @@ class UserDevSeederTest {
                         userMembershipRepository)
                 .run(null);
 
-        verify(userRepository, never()).saveAndFlush(any());
+        verify(userRepository, times(4)).saveAndFlush(any());
+        verify(credentialProvisioningFacade, times(4)).provision(any());
+        verify(eventPublisher, times(4)).userCreated(any());
+
         ArgumentCaptor<UserMembership> membershipCaptor = ArgumentCaptor.forClass(UserMembership.class);
         verify(userMembershipRepository).save(membershipCaptor.capture());
         assertThat(membershipCaptor.getValue().getUserId()).isEqualTo(userId);
         assertThat(membershipCaptor.getValue().getCompanyId()).isEqualTo(partnerId);
         assertThat(membershipCaptor.getValue().getRole()).isEqualTo(UserRole.ADMIN);
-        verify(credentialProvisioningFacade, never()).provision(any());
-        verify(eventPublisher, never()).userCreated(any());
     }
 
     private static User savedUser(User user, UUID id) {

@@ -31,6 +31,7 @@ class UserDevSeeder implements ApplicationRunner {
     static final String ADMIN_PASSWORD = "ChangeMe123!";
     private static final String ACME_CNPJ = "97.986.234/0001-91";
     private static final String PARTNER_CNPJ = "17.018.282/0001-57";
+    private static final String SEED_PASSWORD = "ChangeMe123!";
 
     private final UserRepository userRepository;
     private final CompanyFacade companyFacade;
@@ -54,7 +55,6 @@ class UserDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(@NonNull ApplicationArguments args) {
-        Contact contact = Contact.create(ADMIN_EMAIL, "11987654321");
         CompanySnapshot acme = companyFacade
                 .findByCnpj(ACME_CNPJ)
                 .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding users"));
@@ -62,21 +62,55 @@ class UserDevSeeder implements ApplicationRunner {
                 .findByCnpj(PARTNER_CNPJ)
                 .orElseThrow(() -> new IllegalStateException("Seed partner company must exist before seeding users"));
 
-        if (userRepository.existsByContactEmailValue(contact.getEmail())) {
+        seedUser("Admin", "Acme", ADMIN_EMAIL, LocalDate.of(1990, 1, 1), UserRole.ADMIN, acme, partner);
+        seedUser(
+                "Mariana", "Silva", "mariana@acme.example", LocalDate.of(1992, 5, 15), UserRole.MANAGER, acme, partner);
+        seedUser(
+                "Carlos",
+                "Oliveira",
+                "carlos@acme.example",
+                LocalDate.of(1988, 11, 3),
+                UserRole.OPERATOR,
+                acme,
+                partner);
+        seedUser(
+                "Juliana",
+                "Santos",
+                "juliana@partner.example",
+                LocalDate.of(1995, 8, 22),
+                UserRole.MANAGER,
+                partner,
+                acme);
+        seedUser(
+                "Bruno", "Costa", "bruno@partner.example", LocalDate.of(1993, 3, 10), UserRole.OPERATOR, partner, acme);
+    }
+
+    private void seedUser(
+            String firstName,
+            String lastName,
+            String email,
+            LocalDate birthDate,
+            UserRole role,
+            CompanySnapshot primaryCompany,
+            CompanySnapshot... otherCompanies) {
+        if (userRepository.existsByContactEmailValue(email)) {
             User user = userRepository
-                    .findByContactEmailValue(contact.getEmail())
+                    .findByContactEmailValue(email)
                     .orElseThrow(() -> new IllegalStateException("Seed user lookup failed after existence check"));
-            seedMemberships(user, acme, partner);
+            seedMemberships(user, primaryCompany);
+            seedMemberships(user, otherCompanies);
             return;
         }
 
-        User user = User.create("Admin", "Acme", contact, LocalDate.of(1990, 1, 1), UserRole.ADMIN, acme.id());
+        Contact contact = Contact.create(email, "11987654321");
+        User user = User.create(firstName, lastName, contact, birthDate, role, primaryCompany.id());
         User savedUser = userRepository.saveAndFlush(user);
-        seedMemberships(savedUser, acme, partner);
+        seedMemberships(savedUser, primaryCompany);
+        seedMemberships(savedUser, otherCompanies);
         credentialProvisioningFacade.provision(new CredentialProvisioningRequest(
                 savedUser.getId(),
                 savedUser.getContact().getEmail(),
-                ADMIN_PASSWORD,
+                SEED_PASSWORD,
                 savedUser.getRole().name()));
         eventPublisher.userCreated(savedUser);
     }
