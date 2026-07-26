@@ -69,6 +69,8 @@ public class IamSecurityConfiguration {
                         .permitAll()
                         .requestMatchers("/api/v1/auth/companies")
                         .permitAll()
+                        .requestMatchers("/actuator/health/**")
+                        .permitAll()
                         .requestMatchers("/api/v1/**")
                         .access(tokenUse("scoped"))
                         .requestMatchers("/v3/api-docs")

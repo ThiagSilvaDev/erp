@@ -7,3 +7,18 @@ services:
       - 'POSTGRES_USER=myuser'
     ports:
       - '5432:5432'
+  lgtm:
+    image: 'grafana/otel-lgtm:0.29.1'
+    environment:
+      - 'GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/otel-lgtm/grafana/conf/provisioning/dashboards/custom/erp-api-dashboard.json'
+    ports:
+      - '3000:3000'
+      - '4317:4317'
+      - '4318:4318'
+    volumes:
+      - 'lgtm-data:/data'
+      - './observability/grafana/dashboards-provisioning.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/custom.yaml:ro'
+      - './observability/grafana/erp-api-dashboard.json:/otel-lgtm/grafana/conf/provisioning/dashboards/custom/erp-api-dashboard.json:ro'
+
+volumes:
+  lgtm-data:

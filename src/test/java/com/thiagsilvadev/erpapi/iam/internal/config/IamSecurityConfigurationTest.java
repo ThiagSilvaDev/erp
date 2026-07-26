@@ -95,6 +95,11 @@ class IamSecurityConfigurationTest {
     }
 
     @Test
+    void shouldAllowPublicHealthEndpoint() throws Exception {
+        mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
+    }
+
+    @Test
     void shouldAllowGlobalTokenForSelectCompanyEndpoint() throws Exception {
         mockMvc.perform(post("/api/v1/auth/select-company").header("Authorization", "Bearer " + tokenWithUse("global")))
                 .andExpect(status().isNotFound());

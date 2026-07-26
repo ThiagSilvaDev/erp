@@ -11,6 +11,8 @@ identity and access management, inventory, logistics, sales, and users.
 - Spring Modulith
 - Spring Data JPA and PostgreSQL
 - Spring Security with JWT bearer tokens
+- Micrometer and OpenTelemetry
+- Grafana LGTM (Loki, Grafana, Tempo, and Mimir)
 - Bean Validation
 - MapStruct
 - Springdoc OpenAPI
@@ -55,7 +57,7 @@ The Maven Wrapper is included, so a separate Maven installation is not needed.
 
 ## Running locally
 
-Start PostgreSQL:
+Start PostgreSQL and the local observability stack:
 
 ```bash
 docker compose up -d
@@ -68,7 +70,8 @@ Run the application with the development profile:
 ```
 
 The API starts at `http://localhost:8080`. The development profile creates the
-schema through Hibernate and loads deterministic sample data.
+schema through Hibernate, loads deterministic sample data, and exports
+telemetry to the local LGTM stack.
 
 Development-only administrator credentials:
 
@@ -127,6 +130,51 @@ http://localhost:8080/v3/api-docs
 The API is rooted at `/api/v1`. Endpoint groups include authentication,
 catalog, companies, customers, suppliers, users, inventory, sales, finance,
 and logistics.
+
+## Observability
+
+The development profile exports logs, metrics, and traces over OTLP to the
+Grafana LGTM service in `compose.yaml`.
+
+| Service | URL | Credentials |
+| --- | --- | --- |
+| Grafana | `http://localhost:3000` | `admin` / `admin` |
+| OTLP HTTP | `http://localhost:4318` | None |
+| OTLP gRPC | `http://localhost:4317` | None |
+| Application health | `http://localhost:8080/actuator/health` | None |
+
+Grafana opens the provisioned **ERP API Observability** dashboard by default.
+It displays HTTP request rate, server errors, p95 latency, JVM heap usage, and
+process CPU usage. Metrics are published every ten seconds, so new applications
+or requests may take a short time to appear.
+
+Application logs are available through the Loki data source and request traces
+through Tempo. Spring Boot adds `traceId` and `spanId` correlation values to
+request logs, allowing a log entry to be matched to its trace without a custom
+request ID.
+
+The development endpoints can be overridden independently:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT='http://localhost:4318'
+# Or configure signal-specific endpoints:
+export OTEL_EXPORTER_OTLP_LOGS_ENDPOINT='http://localhost:4318/v1/logs'
+export OTEL_EXPORTER_OTLP_METRICS_ENDPOINT='http://localhost:4318/v1/metrics'
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT='http://localhost:4318/v1/traces'
+```
+
+OTLP export is disabled outside the `dev` profile. A deployed environment must
+explicitly enable OpenTelemetry and OTLP metrics export and provide collector
+endpoints:
+
+```bash
+export MANAGEMENT_OPENTELEMETRY_ENABLED=true
+export MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED=true
+export OTEL_EXPORTER_OTLP_ENDPOINT='https://collector.example'
+```
+
+The bundled LGTM container is intended only for local development and testing;
+it is not a production observability deployment.
 
 ## Configuration
 
