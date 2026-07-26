@@ -7,13 +7,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.thiagsilvadev.erpapi.common.domain.model.Plate;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Vehicle;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
-    boolean existsByPlate(String plate);
+    boolean existsByPlate(Plate plate);
 
-    boolean existsByCompanyIdAndPlate(UUID companyId, String plate);
+    boolean existsByCompanyIdAndPlate(UUID companyId, Plate plate);
 
     Optional<Vehicle> findByIdAndCompanyId(UUID id, UUID companyId);
 

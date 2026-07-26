@@ -5,6 +5,8 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.model.Plate;
+import com.thiagsilvadev.erpapi.common.domain.model.PlateType;
 
 @Entity
 @Table(
@@ -18,8 +20,10 @@ public class Vehicle extends AbstractBaseEntity {
     @Column(name = "company_id", nullable = false, updatable = false)
     private UUID companyId;
 
-    @Column(nullable = false, length = 20)
-    private String plate;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "plate", nullable = false, length = 10))
+    @AttributeOverride(name = "type", column = @Column(name = "plate_type", nullable = false, length = 20))
+    private Plate plate;
 
     @Column(nullable = false)
     private String description;
@@ -35,7 +39,7 @@ public class Vehicle extends AbstractBaseEntity {
 
     private Vehicle(UUID companyId, String plate, String description, int capacity) {
         this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
-        this.plate = normalizePlate(plate);
+        this.plate = Plate.of(plate, PlateType.MERCOSUL);
         this.description = Driver.required(description, "Vehicle description cannot be blank");
         if (capacity <= 0) {
             throw new IllegalArgumentException("Vehicle capacity must be positive");
@@ -52,6 +56,10 @@ public class Vehicle extends AbstractBaseEntity {
     }
 
     public String getPlate() {
+        return plate.getValue();
+    }
+
+    public Plate getLicensePlate() {
         return plate;
     }
 
@@ -65,9 +73,5 @@ public class Vehicle extends AbstractBaseEntity {
 
     public LogisticsResourceStatus getStatus() {
         return status;
-    }
-
-    public static String normalizePlate(String plate) {
-        return Driver.required(plate, "Vehicle plate cannot be blank").toUpperCase();
     }
 }

@@ -28,15 +28,17 @@ public class CreateVehicleUseCase {
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).WRITE)")
     public VehicleResponse execute(CreateVehicleRequest request) {
         var companyId = TenantContext.requireTenantId();
-        String plate = Vehicle.normalizePlate(request.plate());
+        var vehicle = Vehicle.create(companyId, request.plate(), request.description(), request.capacity());
+        var plate = vehicle.getLicensePlate();
         if (vehicleRepository.existsByCompanyIdAndPlate(companyId, plate)) {
-            throw new ConflictException("Vehicle with this plate already exists.", java.util.Map.of("plate", plate));
+            throw new ConflictException(
+                    "Vehicle with this plate already exists.", java.util.Map.of("plate", plate.getValue()));
         }
         try {
-            return mapper.toResponse(vehicleRepository.saveAndFlush(
-                    Vehicle.create(companyId, plate, request.description(), request.capacity())));
+            return mapper.toResponse(vehicleRepository.saveAndFlush(vehicle));
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException("Vehicle with this plate already exists.", java.util.Map.of("plate", plate));
+            throw new ConflictException(
+                    "Vehicle with this plate already exists.", java.util.Map.of("plate", plate.getValue()));
         }
     }
 }

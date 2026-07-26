@@ -1,12 +1,17 @@
 package com.thiagsilvadev.erpapi.logistics.internal.seed;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import com.thiagsilvadev.erpapi.common.domain.model.Plate;
+import com.thiagsilvadev.erpapi.common.domain.model.PlateType;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
@@ -16,6 +21,7 @@ import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
 
 class LogisticsDevSeederTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
+    private static final Plate SEED_PLATE = Plate.of(LogisticsDevSeeder.VEHICLE_PLATE, PlateType.MERCOSUL);
 
     @Test
     void shouldSeedDriverAndVehicleWhenMissing() {
@@ -36,7 +42,7 @@ class LogisticsDevSeederTest {
         CompanyFacade companyFacade = companyFacade();
         when(driverRepository.existsByCompanyIdAndLicenseNumber(COMPANY_ID, LogisticsDevSeeder.DRIVER_LICENSE_NUMBER))
                 .thenReturn(true);
-        when(vehicleRepository.existsByCompanyIdAndPlate(COMPANY_ID, LogisticsDevSeeder.VEHICLE_PLATE))
+        when(vehicleRepository.existsByCompanyIdAndPlate(eq(COMPANY_ID), eq(SEED_PLATE)))
                 .thenReturn(true);
 
         new LogisticsDevSeeder(driverRepository, vehicleRepository, companyFacade).run(null);

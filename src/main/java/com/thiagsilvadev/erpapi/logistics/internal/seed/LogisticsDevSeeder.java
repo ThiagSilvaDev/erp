@@ -7,6 +7,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.domain.model.Plate;
+import com.thiagsilvadev.erpapi.common.domain.model.PlateType;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Vehicle;
@@ -19,7 +21,7 @@ import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
 class LogisticsDevSeeder implements ApplicationRunner {
 
     static final String DRIVER_LICENSE_NUMBER = "CNH-001";
-    static final String VEHICLE_PLATE = "ABC1234";
+    static final String VEHICLE_PLATE = "ABC1D23";
     private static final String ACME_CNPJ = "97.986.234/0001-91";
 
     private final DriverRepository driverRepository;
@@ -43,7 +45,7 @@ class LogisticsDevSeeder implements ApplicationRunner {
         if (!driverRepository.existsByCompanyIdAndLicenseNumber(companyId, DRIVER_LICENSE_NUMBER)) {
             driverRepository.save(Driver.create(companyId, "Alex Driver", DRIVER_LICENSE_NUMBER, "11999999999"));
         }
-        if (!vehicleRepository.existsByCompanyIdAndPlate(companyId, VEHICLE_PLATE)) {
+        if (!vehicleRepository.existsByCompanyIdAndPlate(companyId, Plate.of(VEHICLE_PLATE, PlateType.MERCOSUL))) {
             vehicleRepository.save(Vehicle.create(companyId, VEHICLE_PLATE, "Box truck", 1000));
         }
     }
