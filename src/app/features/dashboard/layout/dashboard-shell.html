@@ -53,16 +53,48 @@
       </button>
 
       <div class="header-user">
-        <a
+        <button
           nz-button
           nzType="default"
+          type="button"
           class="company-switch"
-          routerLink="/select-company"
           title="Change company"
+          aria-label="Change company"
+          nz-dropdown
+          [nzDropdownMenu]="companyMenu"
+          nzTrigger="click"
+          nzPlacement="bottomRight"
         >
           <nz-icon nzType="apartment" />
           <span>{{ state.companyLabel() }}</span>
-        </a>
+          <nz-icon nzType="down" class="company-switch-caret" />
+        </button>
+        <nz-dropdown-menu #companyMenu="nzDropdownMenu">
+          <ul nz-menu class="company-menu">
+            @for (company of state.companies(); track state.trackCompany($index, company)) {
+              <li
+                nz-menu-item
+                tabindex="0"
+                [nzSelected]="state.isActiveCompany(company)"
+                [nzDisabled]="state.switchingCompanyId() !== null"
+                (click)="state.switchCompany(company)"
+                (keydown.enter)="state.switchCompany(company)"
+                (keydown.space)="state.switchCompany(company)"
+              >
+                <span class="company-option">
+                  <span class="company-option-name">{{ state.companyName(company) }}</span>
+                  @if (state.isSwitchingCompany(company)) {
+                    <nz-icon nzType="loading" />
+                  } @else if (state.isActiveCompany(company)) {
+                    <nz-icon nzType="check" class="company-option-check" />
+                  }
+                </span>
+              </li>
+            } @empty {
+              <li nz-menu-item nzDisabled>No companies available</li>
+            }
+          </ul>
+        </nz-dropdown-menu>
         <span class="max-w-48 truncate text-sm text-slate-600 md:max-w-72">
           {{ state.userLabel() }}
         </span>

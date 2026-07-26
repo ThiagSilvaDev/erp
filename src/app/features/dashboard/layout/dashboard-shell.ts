@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
@@ -21,7 +22,15 @@ interface SubmenuGroup {
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterLink, RouterOutlet, NzButtonModule, NzIconModule, NzLayoutModule, NzMenuModule],
+  imports: [
+    RouterLink,
+    RouterOutlet,
+    NzButtonModule,
+    NzDropDownModule,
+    NzIconModule,
+    NzLayoutModule,
+    NzMenuModule,
+  ],
   templateUrl: './dashboard-shell.html',
   styleUrl: './dashboard-shell.css',
   providers: [DashboardShellStateService],
