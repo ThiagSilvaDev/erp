@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -17,6 +18,12 @@ import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 public interface SalesOrderRepository extends JpaRepository<SalesOrder, UUID>, JpaSpecificationExecutor<SalesOrder> {
 
     Optional<SalesOrder> findByIdAndSellerCompanyId(UUID id, UUID sellerCompanyId);
+
+    long countBySellerCompanyId(UUID sellerCompanyId);
+
+    @Modifying(flushAutomatically = true)
+    @Query(value = "update sales_orders set created_at = :createdAt where id = :id", nativeQuery = true)
+    void updateCreatedAtForDevSeed(@Param("id") UUID id, @Param("createdAt") Instant createdAt);
 
     @Query(
             value =

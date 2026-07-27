@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,6 +20,12 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, UU
     Optional<StockMovement> findByIdAndCompanyId(UUID id, UUID companyId);
 
     Page<StockMovement> findAllByCompanyId(UUID companyId, Pageable pageable);
+
+    long countByCompanyId(UUID companyId);
+
+    @Modifying(flushAutomatically = true)
+    @Query(value = "update inventory_stock_movements set created_at = :createdAt where id = :id", nativeQuery = true)
+    void updateCreatedAtForDevSeed(@Param("id") UUID id, @Param("createdAt") Instant createdAt);
 
     @Query(
             value =

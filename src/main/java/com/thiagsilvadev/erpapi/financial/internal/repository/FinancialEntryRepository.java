@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,6 +22,10 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
     Page<FinancialEntry> findAllByCompanyId(UUID companyId, Pageable pageable);
 
     Page<FinancialEntry> findByCompanyIdAndAccountId(UUID companyId, UUID accountId, Pageable pageable);
+
+    @Modifying(flushAutomatically = true)
+    @Query(value = "update financial_entries set occurred_at = :occurredAt where id = :id", nativeQuery = true)
+    void updateOccurredAtForDevSeed(@Param("id") UUID id, @Param("occurredAt") Instant occurredAt);
 
     @Query(
             value =

@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -25,6 +26,12 @@ public interface ShipmentRepository extends JpaRepository<Shipment, UUID>, JpaSp
     Optional<Shipment> findBySellerCompanyIdAndSalesOrderId(UUID sellerCompanyId, UUID salesOrderId);
 
     Optional<Shipment> findByIdAndSellerCompanyId(UUID id, UUID sellerCompanyId);
+
+    long countBySellerCompanyId(UUID sellerCompanyId);
+
+    @Modifying(flushAutomatically = true)
+    @Query(value = "update logistics_shipments set created_at = :createdAt where id = :id", nativeQuery = true)
+    void updateCreatedAtForDevSeed(@Param("id") UUID id, @Param("createdAt") Instant createdAt);
 
     @Query(
             value =
