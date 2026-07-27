@@ -1,11 +1,11 @@
 package com.thiagsilvadev.erpapi.inventory.internal.service;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.reporting.ComparativePeriod;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryKpiFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryKpiSnapshot;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
@@ -16,15 +16,20 @@ class InventoryKpiService implements InventoryKpiFacade {
 
     private final InventoryItemRepository itemRepository;
     private final StockMovementRepository movementRepository;
+    private final InventoryKpiCalculator calculator;
 
-    InventoryKpiService(InventoryItemRepository itemRepository, StockMovementRepository movementRepository) {
+    InventoryKpiService(
+            InventoryItemRepository itemRepository,
+            StockMovementRepository movementRepository,
+            InventoryKpiCalculator calculator) {
         this.itemRepository = itemRepository;
         this.movementRepository = movementRepository;
+        this.calculator = calculator;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public InventoryKpiSnapshot load(UUID companyId, Instant fromInclusive, Instant toExclusive) {
+    public InventoryKpiSnapshot calculate(UUID companyId, ComparativePeriod period) {
         var currentRow = itemRepository.findKpiRow(companyId);
         var current = new InventoryKpiSnapshot.Current(
                 currentRow.getItemCount(),
@@ -32,15 +37,18 @@ class InventoryKpiService implements InventoryKpiFacade {
                 currentRow.getReservedQuantity(),
                 currentRow.getAvailableQuantity(),
                 currentRow.getOutOfStockItems());
-        var movements = movementRepository.findKpiRows(companyId, fromInclusive, toExclusive).stream()
-                .map(row -> new InventoryKpiSnapshot.DailyMovement(
-                        row.getDate(),
-                        row.getInbound(),
-                        row.getOutbound(),
-                        row.getReserved(),
-                        row.getReleased(),
-                        row.getAdjusted()))
-                .toList();
-        return new InventoryKpiSnapshot(current, movements);
+        var movements =
+                movementRepository
+                        .findKpiRows(companyId, period.queryFromInclusive(), period.queryToExclusive())
+                        .stream()
+                        .map(row -> new InventoryKpiCalculator.MovementRow(
+                                row.getDate(),
+                                row.getInbound(),
+                                row.getOutbound(),
+                                row.getReserved(),
+                                row.getReleased(),
+                                row.getAdjusted()))
+                        .toList();
+        return calculator.calculate(current, movements, period);
     }
 }

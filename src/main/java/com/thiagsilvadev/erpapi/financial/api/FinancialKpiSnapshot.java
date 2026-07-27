@@ -3,19 +3,40 @@ package com.thiagsilvadev.erpapi.financial.api;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
-public record FinancialKpiSnapshot(
-        List<DailyInvoice> invoices, List<DailyCollection> collections, List<Receivable> receivables) {
+public record FinancialKpiSnapshot(Totals current, Totals previous, Receivables receivables, List<Trend> trend) {
 
     public FinancialKpiSnapshot {
-        invoices = List.copyOf(invoices);
-        collections = List.copyOf(collections);
-        receivables = List.copyOf(receivables);
+        trend = List.copyOf(trend);
     }
 
-    public record DailyInvoice(LocalDate date, String currencyCode, long count, BigDecimal amount) {}
+    public record Totals(long invoices, Map<String, BigDecimal> invoiced, Map<String, BigDecimal> collected) {
 
-    public record DailyCollection(LocalDate date, String currencyCode, BigDecimal amount) {}
+        public Totals {
+            invoiced = Map.copyOf(invoiced);
+            collected = Map.copyOf(collected);
+        }
+    }
 
-    public record Receivable(String currencyCode, BigDecimal openAmount, BigDecimal overdueAmount) {}
+    public record Receivables(Map<String, BigDecimal> open, Map<String, BigDecimal> overdue) {
+
+        public Receivables {
+            open = Map.copyOf(open);
+            overdue = Map.copyOf(overdue);
+        }
+    }
+
+    public record Trend(
+            LocalDate from,
+            LocalDate to,
+            long invoices,
+            Map<String, BigDecimal> invoiced,
+            Map<String, BigDecimal> collected) {
+
+        public Trend {
+            invoiced = Map.copyOf(invoiced);
+            collected = Map.copyOf(collected);
+        }
+    }
 }

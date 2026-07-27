@@ -3,6 +3,7 @@
             "common::model",
             "common::exception",
             "common::numbering",
+            "common::reporting",
             "common::tenant",
             "common::validation",
             "common::web",

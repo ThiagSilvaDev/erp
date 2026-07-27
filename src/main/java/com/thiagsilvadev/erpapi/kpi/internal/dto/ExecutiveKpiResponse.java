@@ -33,9 +33,9 @@ public record ExecutiveKpiResponse(
 
     public record MoneyValue(String currencyCode, BigDecimal amount) {}
 
-    public record Sales(SalesCards cards, List<SalesTrend> trend) {}
+    public record Sales(SalesMetrics metrics, List<SalesTrend> trend) {}
 
-    public record SalesCards(
+    public record SalesMetrics(
             CountComparison orders,
             CountComparison confirmedOrders,
             CountComparison cancelledOrders,
@@ -51,9 +51,9 @@ public record ExecutiveKpiResponse(
             long cancelledOrders,
             List<MoneyValue> confirmedRevenue) {}
 
-    public record Financial(FinancialCards cards, List<FinancialTrend> trend) {}
+    public record Financial(FinancialMetrics metrics, List<FinancialTrend> trend) {}
 
-    public record FinancialCards(
+    public record FinancialMetrics(
             CountComparison invoices,
             List<MoneyComparison> invoiced,
             List<MoneyComparison> collected,
@@ -63,12 +63,12 @@ public record ExecutiveKpiResponse(
     public record FinancialTrend(
             LocalDate from, LocalDate to, long invoices, List<MoneyValue> invoiced, List<MoneyValue> collected) {}
 
-    public record Inventory(InventoryCurrent current, InventoryMovementCards movements, List<InventoryTrend> trend) {}
+    public record Inventory(InventoryCurrent current, InventoryMovementMetrics metrics, List<InventoryTrend> trend) {}
 
     public record InventoryCurrent(
             long itemCount, long quantityOnHand, long reservedQuantity, long availableQuantity, long outOfStockItems) {}
 
-    public record InventoryMovementCards(
+    public record InventoryMovementMetrics(
             CountComparison inbound,
             CountComparison outbound,
             CountComparison reserved,
@@ -78,11 +78,11 @@ public record ExecutiveKpiResponse(
     public record InventoryTrend(
             LocalDate from, LocalDate to, long inbound, long outbound, long reserved, long released, long adjusted) {}
 
-    public record Logistics(LogisticsCurrent current, LogisticsCards cards, List<LogisticsTrend> trend) {}
+    public record Logistics(LogisticsCurrent current, LogisticsMetrics metrics, List<LogisticsTrend> trend) {}
 
     public record LogisticsCurrent(long created, long dispatchAssigned, long loaded, long inTransit) {}
 
-    public record LogisticsCards(
+    public record LogisticsMetrics(
             CountComparison created,
             CountComparison delivered,
             CountComparison cancelled,

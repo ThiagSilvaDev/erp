@@ -4,19 +4,26 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-public record LogisticsKpiSnapshot(Current current, List<Daily> daily) {
+public record LogisticsKpiSnapshot(Current current, Totals currentTotals, Totals previousTotals, List<Trend> trend) {
 
     public LogisticsKpiSnapshot {
-        daily = List.copyOf(daily);
+        trend = List.copyOf(trend);
     }
 
     public record Current(long created, long dispatchAssigned, long loaded, long inTransit) {}
 
-    public record Daily(
-            LocalDate date,
+    public record Totals(
             long created,
             long delivered,
             long cancelled,
-            BigDecimal deliveryHoursTotal,
-            long deliveriesWithDuration) {}
+            BigDecimal deliveryPercentage,
+            BigDecimal averageDeliveryHours) {}
+
+    public record Trend(
+            LocalDate from,
+            LocalDate to,
+            long created,
+            long delivered,
+            long cancelled,
+            BigDecimal averageDeliveryHours) {}
 }

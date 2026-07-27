@@ -1,9 +1,10 @@
 package com.thiagsilvadev.erpapi.sales.api;
 
-import java.time.Instant;
 import java.util.UUID;
+
+import com.thiagsilvadev.erpapi.common.reporting.ComparativePeriod;
 
 public interface SalesKpiFacade {
 
-    SalesKpiSnapshot load(UUID companyId, Instant fromInclusive, Instant toExclusive);
+    SalesKpiSnapshot calculate(UUID companyId, ComparativePeriod period);
 }

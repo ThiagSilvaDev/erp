@@ -1,10 +1,11 @@
 package com.thiagsilvadev.erpapi.financial.api;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.thiagsilvadev.erpapi.common.reporting.ComparativePeriod;
+
 public interface FinancialKpiFacade {
 
-    FinancialKpiSnapshot load(UUID companyId, Instant fromInclusive, Instant toExclusive, LocalDate receivablesAsOf);
+    FinancialKpiSnapshot calculate(UUID companyId, ComparativePeriod period, LocalDate receivablesAsOf);
 }

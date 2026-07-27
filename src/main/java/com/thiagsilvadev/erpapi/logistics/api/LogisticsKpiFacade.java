@@ -1,9 +1,10 @@
 package com.thiagsilvadev.erpapi.logistics.api;
 
-import java.time.Instant;
 import java.util.UUID;
+
+import com.thiagsilvadev.erpapi.common.reporting.ComparativePeriod;
 
 public interface LogisticsKpiFacade {
 
-    LogisticsKpiSnapshot load(UUID companyId, Instant fromInclusive, Instant toExclusive);
+    LogisticsKpiSnapshot calculate(UUID companyId, ComparativePeriod period);
 }

@@ -5,9 +5,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.thiagsilvadev.erpapi.common.reporting.ComparativePeriod;
+import com.thiagsilvadev.erpapi.common.reporting.DateRange;
 import com.thiagsilvadev.erpapi.kpi.internal.dto.KpiBucket;
 import com.thiagsilvadev.erpapi.kpi.internal.dto.KpiCriteria;
 
@@ -45,12 +49,23 @@ public class KpiPeriodResolver {
             LocalDate previousTo,
             KpiBucket bucket) {
 
-        Instant queryFrom() {
-            return previousFrom.atStartOfDay(ZoneOffset.UTC).toInstant();
+        ComparativePeriod comparativePeriod() {
+            return new ComparativePeriod(
+                    new DateRange(from, to), new DateRange(previousFrom, previousTo), trendRanges());
         }
 
-        Instant queryToExclusive() {
-            return to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+        private List<DateRange> trendRanges() {
+            List<DateRange> ranges = new ArrayList<>();
+            LocalDate cursor = from;
+            while (!cursor.isAfter(to)) {
+                LocalDate end = bucket.end(cursor);
+                if (end.isAfter(to)) {
+                    end = to;
+                }
+                ranges.add(new DateRange(cursor, end));
+                cursor = end.plusDays(1);
+            }
+            return ranges;
         }
     }
 }

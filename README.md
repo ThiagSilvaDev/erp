@@ -146,8 +146,10 @@ curl 'http://localhost:8080/api/v1/kpis/executive?from=2026-07-01&to=2026-07-31&
 provided or both omitted. When omitted, the endpoint returns the latest 30
 days. `bucket` accepts `DAY`, `WEEK`, or `MONTH` and defaults to `DAY`; ranges
 are limited to 366 days. Monetary totals are returned separately by currency,
-and period-backed cards include comparison with the immediately preceding
-equal-length period.
+and period-backed metrics include comparison with the immediately preceding
+equal-length period. Each business section exposes its summary under `metrics`
+and its time series under `trend`; inventory and logistics also include a
+point-in-time `current` snapshot.
 
 ## Observability
 

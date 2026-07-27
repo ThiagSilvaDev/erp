@@ -24,8 +24,8 @@ class KpiPeriodResolverTest {
         assertThat(period.previousFrom()).isEqualTo("2026-05-29");
         assertThat(period.previousTo()).isEqualTo("2026-06-27");
         assertThat(period.bucket()).isEqualTo(KpiBucket.DAY);
-        assertThat(period.queryFrom()).isEqualTo("2026-05-29T00:00:00Z");
-        assertThat(period.queryToExclusive()).isEqualTo("2026-07-28T00:00:00Z");
+        assertThat(period.comparativePeriod().queryFromInclusive()).isEqualTo("2026-05-29T00:00:00Z");
+        assertThat(period.comparativePeriod().queryToExclusive()).isEqualTo("2026-07-28T00:00:00Z");
     }
 
     @Test
@@ -39,5 +39,22 @@ class KpiPeriodResolverTest {
         assertThat(period.previousFrom()).isEqualTo("2026-06-24");
         assertThat(period.previousTo()).isEqualTo("2026-06-30");
         assertThat(period.bucket()).isEqualTo(KpiBucket.WEEK);
+    }
+
+    @Test
+    void shouldClipWeekAndMonthTrendRangesToRequestedPeriod() {
+        var resolver = new KpiPeriodResolver(CLOCK);
+
+        var weekly = resolver.resolve(new KpiCriteria(
+                java.time.LocalDate.parse("2026-07-02"), java.time.LocalDate.parse("2026-07-15"), KpiBucket.WEEK));
+        assertThat(weekly.comparativePeriod().trendRanges())
+                .extracting(range -> range.from() + "/" + range.to())
+                .containsExactly("2026-07-02/2026-07-05", "2026-07-06/2026-07-12", "2026-07-13/2026-07-15");
+
+        var monthly = resolver.resolve(new KpiCriteria(
+                java.time.LocalDate.parse("2026-01-15"), java.time.LocalDate.parse("2026-03-02"), KpiBucket.MONTH));
+        assertThat(monthly.comparativePeriod().trendRanges())
+                .extracting(range -> range.from() + "/" + range.to())
+                .containsExactly("2026-01-15/2026-01-31", "2026-02-01/2026-02-28", "2026-03-01/2026-03-02");
     }
 }
