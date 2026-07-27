@@ -52,6 +52,7 @@ export default defineConfig({
     'ContactPersons',
   ),
   inventory: moduleConfig('inventory', 'inventory', 'Inventory', 'Inventory'),
+  kpis: moduleConfig('kpis', 'kpis', 'Kpis', 'Kpis'),
   sales: moduleConfig('sales', 'sales', 'Sales', 'Sales'),
   users: moduleConfig('users', 'users', 'Users', 'Users'),
   logistics: moduleConfig('logistics', 'logistics', 'Logistics', 'Logistics'),

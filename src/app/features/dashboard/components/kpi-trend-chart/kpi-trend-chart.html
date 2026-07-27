@@ -1,0 +1,116 @@
+<nz-card class="h-full border-slate-200 shadow-none">
+  <div class="mb-4">
+    <h3 class="m-0 text-base font-semibold text-slate-950">{{ chart().title }}</h3>
+    <p class="m-0 mt-1 text-xs text-slate-500">{{ chart().description }}</p>
+  </div>
+
+  <div class="mb-3 flex flex-wrap gap-x-4 gap-y-2" aria-label="Chart legend">
+    @for (series of chart().series; track series.key) {
+      <span class="inline-flex items-center gap-1.5 text-xs text-slate-600">
+        <span
+          class="h-2.5 w-2.5 rounded-full"
+          aria-hidden="true"
+          [style.background-color]="series.color"
+        ></span>
+        {{ series.label }}
+      </span>
+    }
+  </div>
+
+  @if (chart().buckets.length) {
+    <div class="chart-scroll">
+      <svg
+        class="chart"
+        role="img"
+        [attr.aria-label]="chart().title + '. ' + chart().description"
+        [attr.viewBox]="viewBox"
+      >
+        @for (tick of yTicks(); track tick.value) {
+          <line
+            class="grid-line"
+            [attr.x1]="58"
+            [attr.x2]="742"
+            [attr.y1]="tick.y"
+            [attr.y2]="tick.y"
+          />
+          <text class="axis-label" x="50" [attr.y]="tick.y + 4" text-anchor="end">
+            {{ tick.label }}
+          </text>
+        }
+
+        @for (tick of xTicks(); track tick.index) {
+          <text
+            class="axis-label"
+            [attr.x]="tick.x"
+            y="244"
+            [attr.text-anchor]="
+              tick.index === 0
+                ? 'start'
+                : tick.index === chart().buckets.length - 1
+                  ? 'end'
+                  : 'middle'
+            "
+          >
+            {{ tick.label }}
+          </text>
+        }
+
+        @for (rendered of renderedSeries(); track rendered.series.key) {
+          @for (segment of rendered.segments; track $index) {
+            <polyline
+              class="series-line"
+              fill="none"
+              [attr.stroke]="rendered.series.color"
+              [attr.points]="segment"
+            />
+          }
+          @for (point of rendered.points; track point.index) {
+            <circle
+              class="series-point"
+              tabindex="0"
+              r="3.5"
+              [attr.aria-label]="pointLabel(rendered, point)"
+              [attr.cx]="point.x"
+              [attr.cy]="point.y"
+              [attr.fill]="rendered.series.color"
+            >
+              <title>{{ pointLabel(rendered, point) }}</title>
+            </circle>
+          }
+        }
+      </svg>
+    </div>
+
+    <details class="mt-3 border-t border-slate-100 pt-3">
+      <summary class="cursor-pointer text-xs font-semibold text-blue-700">View data table</summary>
+      <div class="mt-3 overflow-x-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Period</th>
+              @for (series of chart().series; track series.key) {
+                <th scope="col">{{ series.label }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (bucket of chart().buckets; track bucket.key; let bucketIndex = $index) {
+              <tr>
+                <th scope="row">{{ bucket.accessibleLabel }}</th>
+                @for (series of chart().series; track series.key) {
+                  <td>{{ formatValue(series.values[bucketIndex] ?? null) }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </details>
+  } @else {
+    <div
+      class="flex min-h-52 items-center justify-center rounded border border-dashed border-slate-200"
+    >
+      <span class="text-sm text-slate-500">No trend buckets available.</span>
+    </div>
+  }
+</nz-card>

@@ -6,7 +6,7 @@ import { partyFields, partyPayload, partySearch } from '../entity/config/party-e
 import { CompaniesOptionLoader } from '../entity/data-access/entity-option-loaders';
 import { EntityConfig } from '../entity/models/entity-view-model';
 import { provideEntityFeature } from '../entity/providers/entity-feature.provider';
-import { pageData, text } from '../entity/utils/entity-utils';
+import { pageData } from '../entity/utils/entity-utils';
 
 export function customersEntityConfig(): EntityConfig {
   const customers = inject(CustomersService);
@@ -23,7 +23,7 @@ export function customersEntityConfig(): EntityConfig {
     detailFields: [
       { key: 'name', label: 'Name' },
       { key: 'document', label: 'Document' },
-      { key: 'companyId', label: 'Company ID' },
+      { key: 'ownerCompanyId', label: 'Company ID' },
       { key: 'contact.email', label: 'Email' },
       { key: 'contact.phone', label: 'Phone' },
       { key: 'address.city', label: 'City' },
@@ -38,7 +38,6 @@ export function customersEntityConfig(): EntityConfig {
       return customers.createCustomer({
         name: payload.name,
         document: payload.document,
-        ownerCompanyId: text(value['companyId']),
         contact: payload.contact,
         address: payload.address,
       });

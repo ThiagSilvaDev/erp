@@ -1,10 +1,115 @@
-<section class="mx-auto grid w-full max-w-7xl gap-4">
-  <div class="flex flex-col gap-1 border-b border-slate-200 pb-3">
-    <h1 class="m-0 text-xl font-semibold text-slate-950">Dashboard</h1>
-    <p class="m-0 text-sm text-slate-500">Operational overview from the ERP API.</p>
-  </div>
+<section class="mx-auto grid w-full max-w-screen-2xl gap-5">
+  <header
+    class="flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between"
+  >
+    <div class="min-w-0">
+      <div class="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
+        Executive overview
+      </div>
+      <h1 class="m-0 text-2xl font-semibold text-slate-950">Company performance</h1>
+      <p class="m-0 mt-1 text-sm text-slate-500">
+        Sales, finance, inventory, and logistics in one UTC-based view.
+      </p>
+    </div>
 
-  <app-dashboard-summary-cards [cards]="cards()" />
+    @if (data(); as dashboard) {
+      <div class="text-left text-xs text-slate-500 lg:text-right">
+        <div>{{ dashboard.period.label }} · {{ dashboard.period.bucket }}</div>
+        <div>Generated {{ dashboard.generatedAtLabel }}</div>
+      </div>
+    }
+  </header>
 
-  <app-recent-records-table [records]="recentRecords()" [isLoading]="isLoading()" />
+  <nz-card class="border-slate-200 shadow-none">
+    <form class="filter-grid" (submit)="applyFilters($event)">
+      <label class="filter-field">
+        <span>From</span>
+        <input type="date" [formField]="filterForm.from" />
+      </label>
+      <label class="filter-field">
+        <span>To</span>
+        <input type="date" [formField]="filterForm.to" />
+      </label>
+      <label class="filter-field">
+        <span>Bucket</span>
+        <select [formField]="filterForm.bucket">
+          <option value="DAY">Day</option>
+          <option value="WEEK">Week</option>
+          <option value="MONTH">Month</option>
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button nz-button nzType="primary" type="submit" [disabled]="filterForm().invalid()">
+          Apply
+        </button>
+        <button nz-button type="button" (click)="resetFilters()">Reset</button>
+      </div>
+    </form>
+    @if (filterError(); as message) {
+      <p class="m-0 mt-2 text-xs font-medium text-rose-700" role="alert">{{ message }}</p>
+    }
+  </nz-card>
+
+  @if (error(); as loadError) {
+    <nz-alert
+      nzShowIcon
+      [nzType]="loadError.kind === 'forbidden' ? 'warning' : 'error'"
+      [nzMessage]="errorTitle(loadError)"
+      [nzDescription]="loadError.message"
+    />
+    @if (loadError.details.length) {
+      <ul class="m-0 rounded border border-slate-200 bg-white px-8 py-3 text-sm text-slate-600">
+        @for (detail of loadError.details; track detail) {
+          <li>{{ detail }}</li>
+        }
+      </ul>
+    }
+    @if (loadError.kind !== 'forbidden') {
+      <div>
+        <button nz-button nzType="primary" type="button" (click)="retry()">Try again</button>
+      </div>
+    }
+  }
+
+  @if (isLoading() && !data()) {
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      @for (item of [1, 2, 3, 4]; track item) {
+        <nz-card class="border-slate-200 shadow-none">
+          <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 2 }" />
+        </nz-card>
+      }
+    </div>
+  }
+
+  @if (data(); as dashboard) {
+    <div class="rounded border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-900">
+      Comparing <strong>{{ dashboard.period.label }}</strong> with
+      <strong>{{ dashboard.period.comparisonLabel }}</strong
+      >. Dates and {{ dashboard.period.bucket.toLowerCase() }} buckets use
+      {{ dashboard.period.timezone }}.
+    </div>
+
+    @for (section of dashboard.sections; track section.id) {
+      <section class="grid gap-3" [attr.aria-labelledby]="section.id + '-title'">
+        <div>
+          <h2 class="m-0 text-lg font-semibold text-slate-950" [id]="section.id + '-title'">
+            {{ section.title }}
+          </h2>
+          <p class="m-0 mt-0.5 text-sm text-slate-500">{{ section.description }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          @for (card of section.cards; track card.id) {
+            <app-kpi-metric-card [card]="card" />
+          }
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 2xl:grid-cols-2">
+          @for (chart of section.charts; track chart.id) {
+            <app-kpi-trend-chart [chart]="chart" />
+          }
+        </div>
+      </section>
+    }
+  }
 </section>
