@@ -9,6 +9,7 @@
             "customer::api",
             "financial::api",
             "inventory::api",
+            "kpi::api",
             "logistics::api",
             "sales::api",
             "user::api"

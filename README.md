@@ -32,6 +32,7 @@ The code is organized by business capability under
 | `financial` | Accounts, ledger entries, invoices, and payments |
 | `iam` | Authentication, JWT issuance, and authorization |
 | `inventory` | Warehouses, stock, movements, and reservations |
+| `kpi` | Tenant-scoped executive business indicators |
 | `logistics` | Drivers, vehicles, shipments, and tracking |
 | `sales` | Sales orders and their lifecycle |
 | `user` | Users and company memberships |
@@ -129,7 +130,24 @@ http://localhost:8080/v3/api-docs
 
 The API is rooted at `/api/v1`. Endpoint groups include authentication,
 catalog, companies, customers, suppliers, users, inventory, sales, finance,
-and logistics.
+logistics, and executive KPIs.
+
+### Executive KPIs
+
+The tenant-scoped executive dashboard is available to administrators and
+managers:
+
+```bash
+curl 'http://localhost:8080/api/v1/kpis/executive?from=2026-07-01&to=2026-07-31&bucket=WEEK' \
+  --header 'Authorization: Bearer <scoped-token>'
+```
+
+`from` and `to` are inclusive UTC calendar dates and must either both be
+provided or both omitted. When omitted, the endpoint returns the latest 30
+days. `bucket` accepts `DAY`, `WEEK`, or `MONTH` and defaults to `DAY`; ranges
+are limited to 366 days. Monetary totals are returned separately by currency,
+and period-backed cards include comparison with the immediately preceding
+equal-length period.
 
 ## Observability
 

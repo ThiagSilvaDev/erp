@@ -9,6 +9,7 @@ import com.thiagsilvadev.erpapi.company.api.CompanyPermissions;
 import com.thiagsilvadev.erpapi.customer.api.CustomerPermissions;
 import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
+import com.thiagsilvadev.erpapi.kpi.api.KpiPermissions;
 import com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions;
 import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
 import com.thiagsilvadev.erpapi.user.api.UserPermissions;
@@ -25,6 +26,7 @@ class RolePermissionResolverTest {
                 .containsAll(CustomerPermissions.ALL)
                 .containsAll(FinancialPermissions.ALL)
                 .containsAll(InventoryPermissions.ALL)
+                .containsAll(KpiPermissions.ALL)
                 .containsAll(LogisticsPermissions.ALL)
                 .containsAll(SalesPermissions.ALL)
                 .containsAll(UserPermissions.ALL)
@@ -43,7 +45,8 @@ class RolePermissionResolverTest {
                         LogisticsPermissions.WRITE,
                         LogisticsPermissions.DISPATCH,
                         LogisticsPermissions.TRACK,
-                        FinancialPermissions.READ);
+                        FinancialPermissions.READ,
+                        KpiPermissions.READ);
     }
 
     @Test
@@ -53,7 +56,8 @@ class RolePermissionResolverTest {
                         CatalogPermissions.READ,
                         InventoryPermissions.READ,
                         LogisticsPermissions.READ,
-                        LogisticsPermissions.TRACK);
+                        LogisticsPermissions.TRACK)
+                .doesNotContain(KpiPermissions.READ);
     }
 
     @Test

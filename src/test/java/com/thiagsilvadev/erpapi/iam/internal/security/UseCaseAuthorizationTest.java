@@ -52,6 +52,7 @@ class UseCaseAuthorizationTest {
         "com.thiagsilvadev.erpapi.inventory.internal.usecase.reservation.ListReservationsUseCase",
         "com.thiagsilvadev.erpapi.inventory.internal.usecase.stockmovement.ListStockMovementsUseCase",
         "com.thiagsilvadev.erpapi.inventory.internal.usecase.warehouse.ListWarehousesUseCase",
+        "com.thiagsilvadev.erpapi.kpi.internal.usecase.GetExecutiveKpisUseCase",
         "com.thiagsilvadev.erpapi.sales.internal.usecase.CancelSalesOrderUseCase",
         "com.thiagsilvadev.erpapi.sales.internal.usecase.ConfirmSalesOrderUseCase",
         "com.thiagsilvadev.erpapi.sales.internal.usecase.CreateSalesOrderUseCase",

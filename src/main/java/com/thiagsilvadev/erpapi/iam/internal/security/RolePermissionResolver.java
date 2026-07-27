@@ -11,6 +11,7 @@ import com.thiagsilvadev.erpapi.company.api.CompanyPermissions;
 import com.thiagsilvadev.erpapi.customer.api.CustomerPermissions;
 import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
+import com.thiagsilvadev.erpapi.kpi.api.KpiPermissions;
 import com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions;
 import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
 
@@ -32,7 +33,8 @@ public class RolePermissionResolver {
                         LogisticsPermissions.WRITE,
                         LogisticsPermissions.DISPATCH,
                         LogisticsPermissions.TRACK,
-                        FinancialPermissions.READ);
+                        FinancialPermissions.READ,
+                        KpiPermissions.READ);
             case "OPERATOR" ->
                 Set.of(
                         CatalogPermissions.READ,
@@ -57,6 +59,7 @@ public class RolePermissionResolver {
         permissions.addAll(CustomerPermissions.ALL);
         permissions.addAll(FinancialPermissions.ALL);
         permissions.addAll(InventoryPermissions.ALL);
+        permissions.addAll(KpiPermissions.ALL);
         permissions.addAll(LogisticsPermissions.ALL);
         permissions.addAll(SalesPermissions.ALL);
         permissions.addAll(USER_PERMISSIONS);
