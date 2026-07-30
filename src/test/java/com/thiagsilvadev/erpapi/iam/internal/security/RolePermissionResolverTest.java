@@ -61,6 +61,13 @@ class RolePermissionResolverTest {
     }
 
     @Test
+    void shouldResolveDriverPermissions() {
+        assertThat(resolver.resolve("DRIVER"))
+                .containsExactly(LogisticsPermissions.DRIVER_WORKFLOW)
+                .doesNotContain(LogisticsPermissions.READ, LogisticsPermissions.DISPATCH);
+    }
+
+    @Test
     void shouldReturnEmptyPermissionsForUnknownRoleString() {
         assertThat(resolver.resolve("UNKNOWN")).isEmpty();
     }

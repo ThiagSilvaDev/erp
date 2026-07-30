@@ -25,6 +25,7 @@ import com.thiagsilvadev.erpapi.logistics.internal.model.*;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
+import com.thiagsilvadev.erpapi.user.api.UserFacade;
 
 @Component
 @Profile("dev")
@@ -32,6 +33,7 @@ import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
 class LogisticsDevSeeder implements ApplicationRunner {
 
     static final String DRIVER_LICENSE_NUMBER = "CNH-001";
+    static final String DRIVER_EMAIL = "alex.driver@acme.example";
     static final String VEHICLE_PLATE = "ABC1D23";
     private static final String ACME_CNPJ = "97.986.234/0001-91";
     private static final UUID ORIGIN_WAREHOUSE_ID = namedId("logistics-seed-warehouse");
@@ -57,6 +59,7 @@ class LogisticsDevSeeder implements ApplicationRunner {
     private final ShipmentRepository shipmentRepository;
     private final CompanyFacade companyFacade;
     private final BusinessNumberService businessNumberService;
+    private final UserFacade userFacade;
     private final Clock clock;
 
     LogisticsDevSeeder(
@@ -65,12 +68,14 @@ class LogisticsDevSeeder implements ApplicationRunner {
             ShipmentRepository shipmentRepository,
             CompanyFacade companyFacade,
             BusinessNumberService businessNumberService,
+            UserFacade userFacade,
             Clock clock) {
         this.driverRepository = driverRepository;
         this.vehicleRepository = vehicleRepository;
         this.shipmentRepository = shipmentRepository;
         this.companyFacade = companyFacade;
         this.businessNumberService = businessNumberService;
+        this.userFacade = userFacade;
         this.clock = clock;
     }
 
@@ -81,10 +86,13 @@ class LogisticsDevSeeder implements ApplicationRunner {
                 .findByCnpj(ACME_CNPJ)
                 .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding logistics"))
                 .id();
+        UUID driverUserId = userFacade
+                .findByEmail(DRIVER_EMAIL)
+                .orElseThrow(() -> new IllegalStateException("Seed driver user must exist before seeding logistics"))
+                .id();
         Driver driver = driverRepository
                 .findByCompanyIdAndLicenseNumber(companyId, DRIVER_LICENSE_NUMBER)
-                .orElseGet(() -> driverRepository.save(
-                        Driver.create(companyId, "Alex Driver", DRIVER_LICENSE_NUMBER, "11999999999")));
+                .orElseGet(() -> driverRepository.save(Driver.create(companyId, driverUserId, DRIVER_LICENSE_NUMBER)));
         Plate plate = Plate.of(VEHICLE_PLATE, PlateType.MERCOSUL);
         Vehicle vehicle = vehicleRepository
                 .findByCompanyIdAndPlate(companyId, plate)

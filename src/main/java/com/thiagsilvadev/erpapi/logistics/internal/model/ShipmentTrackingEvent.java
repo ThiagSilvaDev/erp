@@ -1,6 +1,8 @@
 package com.thiagsilvadev.erpapi.logistics.internal.model;
 
 import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.*;
 
@@ -27,20 +29,45 @@ public class ShipmentTrackingEvent extends AbstractBaseEntity {
     @Column
     private String notes;
 
+    @Column(name = "performed_by_user_id")
+    private UUID performedByUserId;
+
     protected ShipmentTrackingEvent() {}
 
     private ShipmentTrackingEvent(
-            Shipment shipment, ShipmentStatus status, Instant occurredAt, String location, String notes) {
-        this.shipment = java.util.Objects.requireNonNull(shipment, "Shipment is required");
-        this.status = java.util.Objects.requireNonNull(status, "Tracking status is required");
-        this.occurredAt = java.util.Objects.requireNonNull(occurredAt, "Occurred timestamp is required");
+            Shipment shipment,
+            ShipmentStatus status,
+            Instant occurredAt,
+            String location,
+            String notes,
+            UUID performedByUserId) {
+        this.shipment = Objects.requireNonNull(shipment, "Shipment is required");
+        this.status = Objects.requireNonNull(status, "Tracking status is required");
+        this.occurredAt = Objects.requireNonNull(occurredAt, "Occurred timestamp is required");
         this.location = trimToNull(location);
         this.notes = trimToNull(notes);
+        this.performedByUserId = performedByUserId;
     }
 
     public static ShipmentTrackingEvent create(
             Shipment shipment, ShipmentStatus status, Instant occurredAt, String location, String notes) {
-        return new ShipmentTrackingEvent(shipment, status, occurredAt, location, notes);
+        return new ShipmentTrackingEvent(shipment, status, occurredAt, location, notes, null);
+    }
+
+    public static ShipmentTrackingEvent createByUser(
+            Shipment shipment,
+            ShipmentStatus status,
+            Instant occurredAt,
+            String location,
+            String notes,
+            UUID performedByUserId) {
+        return new ShipmentTrackingEvent(
+                shipment,
+                status,
+                occurredAt,
+                location,
+                notes,
+                Objects.requireNonNull(performedByUserId, "Performed-by user is required"));
     }
 
     public Shipment getShipment() {
@@ -61,6 +88,10 @@ public class ShipmentTrackingEvent extends AbstractBaseEntity {
 
     public String getNotes() {
         return notes;
+    }
+
+    public UUID getPerformedByUserId() {
+        return performedByUserId;
     }
 
     private static String trimToNull(String value) {

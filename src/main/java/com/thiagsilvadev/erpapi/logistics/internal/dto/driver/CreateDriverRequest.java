@@ -1,5 +1,8 @@
 package com.thiagsilvadev.erpapi.logistics.internal.dto.driver;
 
-import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
 
-public record CreateDriverRequest(@NotBlank String name, @NotBlank String licenseNumber, @NotBlank String phone) {}
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record CreateDriverRequest(@NotNull UUID userId, @NotBlank String licenseNumber) {}

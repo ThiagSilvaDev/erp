@@ -17,6 +17,10 @@ public interface DriverRepository extends JpaRepository<Driver, UUID> {
 
     Optional<Driver> findByCompanyIdAndLicenseNumber(UUID companyId, String licenseNumber);
 
+    boolean existsByCompanyIdAndUserId(UUID companyId, UUID userId);
+
+    Optional<Driver> findByCompanyIdAndUserId(UUID companyId, UUID userId);
+
     Optional<Driver> findByIdAndCompanyId(UUID id, UUID companyId);
 
     Page<Driver> findAllByCompanyId(UUID companyId, Pageable pageable);

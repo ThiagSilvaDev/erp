@@ -7,12 +7,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.thiagsilvadev.erpapi.logistics.internal.model.LogisticsResourceStatus;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Shipment;
 
 public interface ShipmentRepository extends JpaRepository<Shipment, UUID>, JpaSpecificationExecutor<Shipment> {
@@ -26,6 +29,12 @@ public interface ShipmentRepository extends JpaRepository<Shipment, UUID>, JpaSp
     Optional<Shipment> findBySellerCompanyIdAndSalesOrderId(UUID sellerCompanyId, UUID salesOrderId);
 
     Optional<Shipment> findByIdAndSellerCompanyId(UUID id, UUID sellerCompanyId);
+
+    Optional<Shipment> findByIdAndSellerCompanyIdAndDriverUserIdAndDriverStatus(
+            UUID id, UUID sellerCompanyId, UUID driverUserId, LogisticsResourceStatus driverStatus);
+
+    Page<Shipment> findAllBySellerCompanyIdAndDriverUserIdAndDriverStatus(
+            UUID sellerCompanyId, UUID driverUserId, LogisticsResourceStatus driverStatus, Pageable pageable);
 
     long countBySellerCompanyId(UUID sellerCompanyId);
 

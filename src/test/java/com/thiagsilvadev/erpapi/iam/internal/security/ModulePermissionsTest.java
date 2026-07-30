@@ -58,7 +58,8 @@ class ModulePermissionsTest {
                         LogisticsPermissions.READ,
                         LogisticsPermissions.WRITE,
                         LogisticsPermissions.DISPATCH,
-                        LogisticsPermissions.TRACK);
+                        LogisticsPermissions.TRACK,
+                        LogisticsPermissions.DRIVER_WORKFLOW);
     }
 
     @Test

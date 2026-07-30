@@ -1,17 +1,23 @@
 package com.thiagsilvadev.erpapi;
 
 import static org.mockito.Mockito.mock;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration;
 import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.modulith.events.config.EventPublicationAutoConfiguration;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
@@ -48,11 +54,31 @@ import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
             EventPublicationAutoConfiguration.class
         },
         excludeName = JpaEventPublicationAutoConfigurationExclusion.NAME)
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 class ErpApiApplicationTests {
 
+    @Autowired
+    private MockMvc mockMvc;
+
     @Test
     void contextLoads() {}
+
+    @Test
+    void shouldExposeCurrentDriverShipmentInOpenApi() throws Exception {
+        String path = "$['paths']['/api/v1/logistics/drivers/me/shipments/{id}']['get']";
+
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(path + "['operationId']").value("getCurrentDriverShipment"))
+                .andExpect(jsonPath(path + "['tags'][0]").value("driver mobile"))
+                .andExpect(jsonPath(path + "['responses']['200']").exists())
+                .andExpect(jsonPath(path + "['responses']['401']").exists())
+                .andExpect(jsonPath(path + "['responses']['403']").exists())
+                .andExpect(jsonPath(path + "['responses']['404']").exists())
+                .andExpect(jsonPath(path + "['responses']['200']['content']['application/json']['schema']['$ref']")
+                        .value("#/components/schemas/ShipmentResponse"));
+    }
 
     @TestConfiguration
     static class CompanyRepositoryTestConfiguration {

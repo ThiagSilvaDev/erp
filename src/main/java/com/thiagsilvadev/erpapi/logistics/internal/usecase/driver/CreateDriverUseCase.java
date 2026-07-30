@@ -1,46 +1,99 @@
 package com.thiagsilvadev.erpapi.logistics.internal.usecase.driver;
 
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverRequest;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
+import com.thiagsilvadev.erpapi.user.api.UserFacade;
+import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
+import com.thiagsilvadev.erpapi.user.api.UserMembershipStatus;
+import com.thiagsilvadev.erpapi.user.api.UserRole;
+import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
+import com.thiagsilvadev.erpapi.user.api.UserStatus;
 
 @Component
 public class CreateDriverUseCase {
 
     private final DriverRepository driverRepository;
     private final LogisticsMapper mapper;
+    private final UserFacade userFacade;
+    private final UserMembershipFacade userMembershipFacade;
 
-    public CreateDriverUseCase(DriverRepository driverRepository, LogisticsMapper mapper) {
+    public CreateDriverUseCase(
+            DriverRepository driverRepository,
+            LogisticsMapper mapper,
+            UserFacade userFacade,
+            UserMembershipFacade userMembershipFacade) {
         this.driverRepository = driverRepository;
         this.mapper = mapper;
+        this.userFacade = userFacade;
+        this.userMembershipFacade = userMembershipFacade;
     }
 
     @Transactional
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).WRITE)")
     public DriverResponse execute(CreateDriverRequest request) {
         var companyId = TenantContext.requireTenantId();
-        String licenseNumber = Driver.normalizeLicenseNumber(request.licenseNumber());
+        var licenseNumber = Driver.normalizeLicenseNumber(request.licenseNumber());
+
+        var user = userFacade
+                .findById(request.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", request.userId()));
+
+        validateActiveDriverMembership(user, companyId);
+        validateDriverDoesNotExist(companyId, request.userId(), licenseNumber);
+
+        return persistDriver(companyId, request.userId(), licenseNumber);
+    }
+
+    private void validateActiveDriverMembership(UserSnapshot user, UUID companyId) {
+        if (user.status() != UserStatus.ACTIVE) {
+            throw new ConflictException("User must be active.", Map.of("userId", user.id()));
+        }
+
+        boolean isDriver = userMembershipFacade
+                .findMembership(user.id(), companyId)
+                .filter(m -> m.status() == UserMembershipStatus.ACTIVE)
+                .filter(m -> m.role() == UserRole.DRIVER)
+                .isPresent();
+
+        if (!isDriver) {
+            throw new ConflictException(
+                    "User must have an active DRIVER membership in the current company.", Map.of("userId", user.id()));
+        }
+    }
+
+    private void validateDriverDoesNotExist(UUID companyId, UUID userId, String licenseNumber) {
+        if (driverRepository.existsByCompanyIdAndUserId(companyId, userId)) {
+            throw new ConflictException("Driver profile already exists for this user.", Map.of("userId", userId));
+        }
+
         if (driverRepository.existsByCompanyIdAndLicenseNumber(companyId, licenseNumber)) {
             throw new ConflictException(
-                    "Driver with this license number already exists.",
-                    java.util.Map.of("licenseNumber", licenseNumber));
+                    "Driver with this license number already exists.", Map.of("licenseNumber", licenseNumber));
         }
+    }
+
+    private DriverResponse persistDriver(UUID companyId, UUID userId, String licenseNumber) {
         try {
-            return mapper.toResponse(driverRepository.saveAndFlush(
-                    Driver.create(companyId, request.name(), licenseNumber, request.phone())));
+            var driver = driverRepository.saveAndFlush(Driver.create(companyId, userId, licenseNumber));
+            return mapper.toResponse(driver);
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(
-                    "Driver with this license number already exists.",
-                    java.util.Map.of("licenseNumber", licenseNumber));
+                    "Driver profile already exists for this user or license number.",
+                    Map.of("userId", userId, "licenseNumber", licenseNumber));
         }
     }
 }

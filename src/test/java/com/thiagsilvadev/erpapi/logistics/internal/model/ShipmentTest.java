@@ -15,7 +15,7 @@ class ShipmentTest {
     @Test
     void shouldFollowShipmentWorkflow() {
         Shipment shipment = shipment();
-        Driver driver = Driver.create(COMPANY_ID, "Driver", "CNH-1", "11999999999");
+        Driver driver = Driver.create(COMPANY_ID, UUID.randomUUID(), "CNH-1");
         Vehicle vehicle = Vehicle.create(COMPANY_ID, "ABC1D23", "Truck", 1000);
 
         shipment.assignDispatch(driver, vehicle, "Downtown", UUID.randomUUID(), "Customer dock");
@@ -38,7 +38,7 @@ class ShipmentTest {
     void shouldRejectCancellationAfterLoading() {
         Shipment shipment = shipment();
         shipment.assignDispatch(
-                Driver.create(COMPANY_ID, "Driver", "CNH-1", "11999999999"),
+                Driver.create(COMPANY_ID, UUID.randomUUID(), "CNH-1"),
                 Vehicle.create(COMPANY_ID, "ABC1D23", "Truck", 1000),
                 "Downtown",
                 UUID.randomUUID(),

@@ -24,6 +24,8 @@ import com.thiagsilvadev.erpapi.logistics.internal.model.Vehicle;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
+import com.thiagsilvadev.erpapi.user.api.UserFacade;
+import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
 
 class LogisticsDevSeederTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
@@ -35,8 +37,8 @@ class LogisticsDevSeederTest {
         VehicleRepository vehicleRepository = mock(VehicleRepository.class);
         ShipmentRepository shipmentRepository = mock(ShipmentRepository.class);
         BusinessNumberService businessNumberService = mock(BusinessNumberService.class);
-        Driver driver =
-                Driver.create(COMPANY_ID, "Alex Driver", LogisticsDevSeeder.DRIVER_LICENSE_NUMBER, "11999999999");
+        UUID driverUserId = UUID.randomUUID();
+        Driver driver = Driver.create(COMPANY_ID, driverUserId, LogisticsDevSeeder.DRIVER_LICENSE_NUMBER);
         Vehicle vehicle = Vehicle.create(COMPANY_ID, LogisticsDevSeeder.VEHICLE_PLATE, "Box truck", 1000);
         when(driverRepository.findByCompanyIdAndLicenseNumber(any(), any())).thenReturn(Optional.empty());
         when(vehicleRepository.findByCompanyIdAndPlate(any(), any())).thenReturn(Optional.empty());
@@ -55,6 +57,7 @@ class LogisticsDevSeederTest {
                         shipmentRepository,
                         companyFacade(),
                         businessNumberService,
+                        userFacade(driverUserId),
                         CLOCK)
                 .run(null);
 
@@ -79,8 +82,8 @@ class LogisticsDevSeederTest {
         DriverRepository driverRepository = mock(DriverRepository.class);
         VehicleRepository vehicleRepository = mock(VehicleRepository.class);
         ShipmentRepository shipmentRepository = mock(ShipmentRepository.class);
-        Driver driver =
-                Driver.create(COMPANY_ID, "Alex Driver", LogisticsDevSeeder.DRIVER_LICENSE_NUMBER, "11999999999");
+        UUID driverUserId = UUID.randomUUID();
+        Driver driver = Driver.create(COMPANY_ID, driverUserId, LogisticsDevSeeder.DRIVER_LICENSE_NUMBER);
         Vehicle vehicle = Vehicle.create(COMPANY_ID, LogisticsDevSeeder.VEHICLE_PLATE, "Box truck", 1000);
         when(driverRepository.findByCompanyIdAndLicenseNumber(any(), any())).thenReturn(Optional.of(driver));
         when(vehicleRepository.findByCompanyIdAndPlate(any(), any())).thenReturn(Optional.of(vehicle));
@@ -93,6 +96,7 @@ class LogisticsDevSeederTest {
                         shipmentRepository,
                         companyFacade(),
                         mock(BusinessNumberService.class),
+                        userFacade(driverUserId),
                         CLOCK)
                 .run(null);
 
@@ -107,5 +111,22 @@ class LogisticsDevSeederTest {
 
     private static CompanySnapshot company() {
         return new CompanySnapshot(COMPANY_ID, null, null, null, null, null, null, null, null, null);
+    }
+
+    private static UserFacade userFacade(UUID userId) {
+        UserFacade userFacade = mock(UserFacade.class);
+        when(userFacade.findByEmail(LogisticsDevSeeder.DRIVER_EMAIL))
+                .thenReturn(Optional.of(new UserSnapshot(
+                        userId,
+                        "Alex Driver",
+                        "Alex",
+                        "Driver",
+                        LogisticsDevSeeder.DRIVER_EMAIL,
+                        "11999999999",
+                        null,
+                        null,
+                        null,
+                        COMPANY_ID)));
+        return userFacade;
     }
 }

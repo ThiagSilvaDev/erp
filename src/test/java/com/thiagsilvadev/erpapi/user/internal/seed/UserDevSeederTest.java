@@ -158,9 +158,9 @@ class UserDevSeederTest {
                         userMembershipRepository)
                 .run(null);
 
-        verify(userRepository, times(4)).saveAndFlush(any());
-        verify(credentialProvisioningFacade, times(4)).provision(any());
-        verify(eventPublisher, times(4)).userCreated(any());
+        verify(userRepository, times(5)).saveAndFlush(any());
+        verify(credentialProvisioningFacade, times(5)).provision(any());
+        verify(eventPublisher, times(5)).userCreated(any());
 
         ArgumentCaptor<UserMembership> membershipCaptor = ArgumentCaptor.forClass(UserMembership.class);
         verify(userMembershipRepository).save(membershipCaptor.capture());

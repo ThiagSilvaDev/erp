@@ -1,34 +1,34 @@
 package com.thiagsilvadev.erpapi.logistics.internal.model;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
-import com.thiagsilvadev.erpapi.common.domain.model.Phone;
 
 @Entity
 @Table(
         name = "logistics_drivers",
-        uniqueConstraints =
-                @UniqueConstraint(
-                        name = "uk_logistics_driver_company_license_number",
-                        columnNames = {"company_id", "license_number"}))
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_logistics_driver_company_license_number",
+                    columnNames = {"company_id", "license_number"}),
+            @UniqueConstraint(
+                    name = "uk_logistics_driver_company_user",
+                    columnNames = {"company_id", "user_id"})
+        })
 public class Driver extends AbstractBaseEntity {
 
     @Column(name = "company_id", nullable = false, updatable = false)
     private UUID companyId;
 
-    @Column(nullable = false, length = 120)
-    private String name;
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private UUID userId;
 
     @Column(name = "license_number", nullable = false, length = 60)
     private String licenseNumber;
-
-    @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "phone", nullable = false, length = 11))
-    private Phone phone;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -36,31 +36,26 @@ public class Driver extends AbstractBaseEntity {
 
     protected Driver() {}
 
-    private Driver(UUID companyId, String name, String licenseNumber, String phone) {
-        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
-        this.name = required(name, "Driver name cannot be blank");
+    private Driver(UUID companyId, UUID userId, String licenseNumber) {
+        this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
+        this.userId = Objects.requireNonNull(userId, "User ID is required");
         this.licenseNumber = normalize(licenseNumber, "Driver license number cannot be blank");
-        this.phone = Phone.of(phone);
     }
 
-    public static Driver create(UUID companyId, String name, String licenseNumber, String phone) {
-        return new Driver(companyId, name, licenseNumber, phone);
-    }
-
-    public String getName() {
-        return name;
+    public static Driver create(UUID companyId, UUID userId, String licenseNumber) {
+        return new Driver(companyId, userId, licenseNumber);
     }
 
     public UUID getCompanyId() {
         return companyId;
     }
 
-    public String getLicenseNumber() {
-        return licenseNumber;
+    public UUID getUserId() {
+        return userId;
     }
 
-    public String getPhone() {
-        return phone.getValue();
+    public String getLicenseNumber() {
+        return licenseNumber;
     }
 
     public LogisticsResourceStatus getStatus() {

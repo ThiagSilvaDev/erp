@@ -41,6 +41,7 @@ public class RolePermissionResolver {
                         InventoryPermissions.READ,
                         LogisticsPermissions.READ,
                         LogisticsPermissions.TRACK);
+            case "DRIVER" -> Set.of(LogisticsPermissions.DRIVER_WORKFLOW);
             default -> Set.of();
         };
     }

@@ -7,29 +7,29 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
-
 class DriverTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
+    private static final UUID USER_ID = UUID.randomUUID();
 
     @Test
-    void shouldNormalizePhone() {
-        Driver driver = Driver.create(COMPANY_ID, "Driver", "CNH-1", " (11) 99999-9999 ");
+    void shouldLinkUserAndNormalizeLicenseNumber() {
+        Driver driver = Driver.create(COMPANY_ID, USER_ID, " cnh-1 ");
 
-        assertThat(driver.getPhone()).isEqualTo("11999999999");
+        assertThat(driver.getUserId()).isEqualTo(USER_ID);
+        assertThat(driver.getLicenseNumber()).isEqualTo("CNH-1");
     }
 
     @Test
-    void shouldRejectBlankPhone() {
-        assertThatThrownBy(() -> Driver.create(COMPANY_ID, "Driver", "CNH-1", " "))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessage("Phone cannot be blank");
+    void shouldRejectMissingUser() {
+        assertThatThrownBy(() -> Driver.create(COMPANY_ID, null, "CNH-1"))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("User ID is required");
     }
 
     @Test
-    void shouldRejectInvalidPhoneLength() {
-        assertThatThrownBy(() -> Driver.create(COMPANY_ID, "Driver", "CNH-1", "123456789"))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessage("Phone with area code must contain 10 or 11 digits");
+    void shouldRejectBlankLicenseNumber() {
+        assertThatThrownBy(() -> Driver.create(COMPANY_ID, USER_ID, " "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Driver license number cannot be blank");
     }
 }

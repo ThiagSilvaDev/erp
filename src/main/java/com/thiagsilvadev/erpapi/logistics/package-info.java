@@ -8,7 +8,8 @@
             "common::web",
             "company::api",
             "inventory::api",
-            "sales::api"
+            "sales::api",
+            "user::api"
         })
 package com.thiagsilvadev.erpapi.logistics;
 

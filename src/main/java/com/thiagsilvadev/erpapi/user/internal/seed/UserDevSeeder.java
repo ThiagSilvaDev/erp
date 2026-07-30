@@ -29,6 +29,7 @@ class UserDevSeeder implements ApplicationRunner {
 
     static final String ADMIN_EMAIL = "admin@acme.example";
     static final String ADMIN_PASSWORD = "ChangeMe123!";
+    static final String DRIVER_EMAIL = "alex.driver@acme.example";
     private static final String ACME_CNPJ = "97.986.234/0001-91";
     private static final String PARTNER_CNPJ = "17.018.282/0001-57";
     private static final String SEED_PASSWORD = "ChangeMe123!";
@@ -83,6 +84,7 @@ class UserDevSeeder implements ApplicationRunner {
                 acme);
         seedUser(
                 "Bruno", "Costa", "bruno@partner.example", LocalDate.of(1993, 3, 10), UserRole.OPERATOR, partner, acme);
+        seedUser("Alex", "Driver", DRIVER_EMAIL, LocalDate.of(1991, 6, 12), UserRole.DRIVER, acme);
     }
 
     private void seedUser(

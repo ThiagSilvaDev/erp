@@ -13,7 +13,7 @@ import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentTrackingEventRepository;
 
 @Component
-class ShipmentReader {
+public class ShipmentReader {
 
     private final ShipmentRepository shipmentRepository;
     private final ShipmentTrackingEventRepository trackingEventRepository;
@@ -35,7 +35,7 @@ class ShipmentReader {
                 .orElseThrow(() -> new ResourceNotFoundException(Shipment.class, id));
     }
 
-    ShipmentResponse toResponse(Shipment shipment) {
+    public ShipmentResponse toResponse(Shipment shipment) {
         return mapper.toResponse(
                 shipment, trackingEventRepository.findByShipmentIdOrderByOccurredAtAsc(shipment.getId()));
     }
