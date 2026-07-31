@@ -82,14 +82,8 @@ class LogisticsDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        UUID companyId = companyFacade
-                .findByCnpj(ACME_CNPJ)
-                .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding logistics"))
-                .id();
-        UUID driverUserId = userFacade
-                .findByEmail(DRIVER_EMAIL)
-                .orElseThrow(() -> new IllegalStateException("Seed driver user must exist before seeding logistics"))
-                .id();
+        UUID companyId = companyFacade.resolveCompany(ACME_CNPJ).id();
+        UUID driverUserId = userFacade.resolveUser(DRIVER_EMAIL).id();
         Driver driver = driverRepository
                 .findByCompanyIdAndLicenseNumber(companyId, DRIVER_LICENSE_NUMBER)
                 .orElseGet(() -> driverRepository.save(Driver.create(companyId, driverUserId, DRIVER_LICENSE_NUMBER)));

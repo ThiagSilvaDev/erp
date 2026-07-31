@@ -13,13 +13,13 @@ import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepo
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 
 @Service
-class FinancialKpiService implements FinancialKpiFacade {
+class FinancialKpiFacadeImpl implements FinancialKpiFacade {
 
     private final InvoiceRepository invoiceRepository;
     private final FinancialEntryRepository entryRepository;
     private final FinancialKpiCalculator calculator;
 
-    FinancialKpiService(
+    FinancialKpiFacadeImpl(
             InvoiceRepository invoiceRepository,
             FinancialEntryRepository entryRepository,
             FinancialKpiCalculator calculator) {

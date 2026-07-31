@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
@@ -96,8 +95,8 @@ class CreateSalesOrderUseCaseTest {
         CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
         TenantContext.setTenantId(sellerCompanyId);
         givenCompany(sellerCompanyId, CompanyType.CORRESPONDENT);
-        when(customerFacade.findCustomerById(customerId))
-                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", sellerCompanyId)));
+        when(customerFacade.getCustomer(sellerCompanyId, customerId))
+                .thenReturn(new CustomerSnapshot(customerId, "Customer", "123", sellerCompanyId));
         givenProduct(request.items().getFirst().productId());
         when(businessNumberService.next(BusinessNumberType.SALES_ORDER)).thenReturn(101L);
         when(orderRepository.save(org.mockito.ArgumentMatchers.any(SalesOrder.class)))
@@ -131,8 +130,8 @@ class CreateSalesOrderUseCaseTest {
         CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
         TenantContext.setTenantId(sellerCompanyId);
         givenCompany(sellerCompanyId, CompanyType.FACTORY);
-        when(customerFacade.findCustomerById(customerId))
-                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID())));
+        when(customerFacade.getCustomer(sellerCompanyId, customerId))
+                .thenReturn(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID()));
 
         assertThatThrownBy(() -> useCase().execute(request)).isInstanceOf(IllegalArgumentException.class);
     }
@@ -144,11 +143,13 @@ class CreateSalesOrderUseCaseTest {
         CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
         TenantContext.setTenantId(sellerCompanyId);
         givenCompany(sellerCompanyId, CompanyType.FACTORY);
-        when(customerFacade.findCustomerById(customerId))
-                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", sellerCompanyId)));
-        when(catalogFacade.findAllProductsByIdIn(
-                        java.util.Set.of(request.items().getFirst().productId()), sellerCompanyId))
-                .thenReturn(List.of());
+        when(customerFacade.getCustomer(sellerCompanyId, customerId))
+                .thenReturn(new CustomerSnapshot(customerId, "Customer", "123", sellerCompanyId));
+        when(catalogFacade.getProducts(
+                        sellerCompanyId,
+                        java.util.Set.of(request.items().getFirst().productId())))
+                .thenThrow(new ResourceNotFoundException(
+                        "Product", request.items().getFirst().productId()));
 
         assertThatThrownBy(() -> useCase().execute(request))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -163,7 +164,8 @@ class CreateSalesOrderUseCaseTest {
         CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
         TenantContext.setTenantId(sellerCompanyId);
         givenCompany(sellerCompanyId, CompanyType.FACTORY);
-        when(customerFacade.findCustomerById(customerId)).thenReturn(Optional.empty());
+        when(customerFacade.getCustomer(sellerCompanyId, customerId))
+                .thenThrow(new ResourceNotFoundException("Customer", customerId));
 
         assertThatThrownBy(() -> useCase().execute(request))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -178,8 +180,8 @@ class CreateSalesOrderUseCaseTest {
         CreateSalesOrderRequest request = request(SaleType.B2C, null, customerId);
         TenantContext.setTenantId(tenantId);
         givenCompany(tenantId, CompanyType.CORRESPONDENT);
-        when(customerFacade.findCustomerById(customerId))
-                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", tenantId)));
+        when(customerFacade.getCustomer(tenantId, customerId))
+                .thenReturn(new CustomerSnapshot(customerId, "Customer", "123", tenantId));
         givenProduct(request.items().getFirst().productId());
         when(businessNumberService.next(BusinessNumberType.SALES_ORDER)).thenReturn(102L);
         when(orderRepository.save(org.mockito.ArgumentMatchers.any(SalesOrder.class)))
@@ -203,13 +205,13 @@ class CreateSalesOrderUseCaseTest {
     }
 
     private void givenCompany(UUID id, CompanyType type) {
-        when(companyFacade.findById(id))
-                .thenReturn(Optional.of(new CompanySnapshot(
-                        id, 1L, "Company", "Company", null, CompanyStatus.ACTIVE, type, null, null, null)));
+        when(companyFacade.getCompany(id))
+                .thenReturn(new CompanySnapshot(
+                        id, 1L, "Company", "Company", null, CompanyStatus.ACTIVE, type, null, null, null));
     }
 
     private void givenProduct(UUID productId) {
-        when(catalogFacade.findAllProductsByIdIn(java.util.Set.of(productId), TenantContext.requireTenantId()))
+        when(catalogFacade.getProducts(TenantContext.requireTenantId(), java.util.Set.of(productId)))
                 .thenReturn(List.of(new ProductSnapshot(
                         productId,
                         "SKU-001",

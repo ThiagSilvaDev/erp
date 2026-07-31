@@ -2,7 +2,6 @@ package com.thiagsilvadev.erpapi.sales.internal.usecase;
 
 import org.springframework.stereotype.Component;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
@@ -52,18 +51,14 @@ class SalesOrderResponseAssembler {
     }
 
     private SalesOrderSellerSummaryResponse sellerSummary(SalesOrder order) {
-        CompanySnapshot company = companyFacade
-                .findById(order.getSellerCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", order.getSellerCompanyId()));
+        CompanySnapshot company = companyFacade.getCompany(order.getSellerCompanyId());
 
         return new SalesOrderSellerSummaryResponse(companyName(company));
     }
 
     private SalesOrderBuyerSummaryResponse buyerSummary(SalesOrder order) {
         if (order.getSaleType() == SaleType.B2B) {
-            CompanySnapshot company = companyFacade
-                    .findById(order.getBuyerCompanyId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Company", order.getBuyerCompanyId()));
+            CompanySnapshot company = companyFacade.getCompany(order.getBuyerCompanyId());
 
             String buyerName = company.primaryContact() == null
                     ? null
@@ -71,9 +66,7 @@ class SalesOrderResponseAssembler {
             return new SalesOrderBuyerSummaryResponse(buyerName, companyName(company));
         }
 
-        CustomerSnapshot customer = customerFacade
-                .findCustomerById(order.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer", order.getCustomerId()));
+        CustomerSnapshot customer = customerFacade.getCustomer(order.getSellerCompanyId(), order.getCustomerId());
         return new SalesOrderBuyerSummaryResponse(customer.name(), null);
     }
 

@@ -11,12 +11,12 @@ import com.thiagsilvadev.erpapi.logistics.api.LogisticsKpiSnapshot;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository;
 
 @Service
-class LogisticsKpiService implements LogisticsKpiFacade {
+class LogisticsKpiFacadeImpl implements LogisticsKpiFacade {
 
     private final ShipmentRepository shipmentRepository;
     private final LogisticsKpiCalculator calculator;
 
-    LogisticsKpiService(ShipmentRepository shipmentRepository, LogisticsKpiCalculator calculator) {
+    LogisticsKpiFacadeImpl(ShipmentRepository shipmentRepository, LogisticsKpiCalculator calculator) {
         this.shipmentRepository = shipmentRepository;
         this.calculator = calculator;
     }

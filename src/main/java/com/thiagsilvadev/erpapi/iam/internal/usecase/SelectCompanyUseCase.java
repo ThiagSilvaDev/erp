@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyResponse;
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
@@ -14,7 +15,6 @@ import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService.IssuedToken;
 import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
 import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipStatus;
 
 @Component
 public class SelectCompanyUseCase {
@@ -34,10 +34,12 @@ public class SelectCompanyUseCase {
         }
 
         UUID userId = UUID.fromString(jwt.getSubject());
-        UserMembershipSnapshot membership = userMembershipFacade
-                .findMembership(userId, request.companyId())
-                .filter(candidate -> candidate.status() == UserMembershipStatus.ACTIVE)
-                .orElseThrow(() -> new AccessDeniedException("User does not have access to the requested company."));
+        UserMembershipSnapshot membership;
+        try {
+            membership = userMembershipFacade.getActiveMembership(userId, request.companyId());
+        } catch (ResourceNotFoundException exception) {
+            throw new AccessDeniedException("User does not have access to the requested company.");
+        }
 
         IamUserDetails principal = new IamUserDetails(
                 userId, jwt.getClaimAsString("email"), "", membership.role().name(), true);

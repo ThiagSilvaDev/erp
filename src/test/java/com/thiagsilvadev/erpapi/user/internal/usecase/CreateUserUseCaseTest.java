@@ -76,7 +76,7 @@ class CreateUserUseCaseTest {
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
         doThrow(new ResourceNotFoundException("Company", request.companyId()))
                 .when(companyFacade)
-                .requireCompanyExistsById(request.companyId());
+                .getCompany(request.companyId());
 
         assertThatThrownBy(() -> useCase.execute(request))
                 .isInstanceOf(ResourceNotFoundException.class)

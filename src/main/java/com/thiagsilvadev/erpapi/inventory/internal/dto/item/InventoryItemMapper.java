@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 import com.thiagsilvadev.erpapi.catalog.api.CategorySnapshot;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
-import com.thiagsilvadev.erpapi.inventory.api.InventoryItemSnapshot;
 import com.thiagsilvadev.erpapi.inventory.internal.model.InventoryItem;
 
 @Mapper(componentModel = "spring")
@@ -21,14 +20,11 @@ public abstract class InventoryItemMapper {
     }
 
     @Mapping(target = "availableQuantity", expression = "java(item.availableQuantity())")
-    @Mapping(target = "product", expression = "java(mapInventoryItemProduct(item.getProductId()))")
+    @Mapping(target = "product", expression = "java(mapInventoryItemProduct(item.getCompanyId(), item.getProductId()))")
     public abstract InventoryItemResponse toResponse(InventoryItem item);
 
-    protected InventoryItemProductResponse mapInventoryItemProduct(java.util.UUID productId) {
-        return catalogFacade
-                .findProductById(productId)
-                .map(this::toInventoryItemProductResponse)
-                .orElse(null);
+    protected InventoryItemProductResponse mapInventoryItemProduct(java.util.UUID companyId, java.util.UUID productId) {
+        return toInventoryItemProductResponse(catalogFacade.getProduct(companyId, productId));
     }
 
     protected InventoryItemProductResponse toInventoryItemProductResponse(ProductSnapshot product) {
@@ -42,7 +38,4 @@ public abstract class InventoryItemMapper {
         }
         return new InventoryItemCategoryResponse(category.id(), category.code(), category.name());
     }
-
-    @Mapping(target = "warehouseId", source = "warehouse.id")
-    public abstract InventoryItemSnapshot toSnapshot(InventoryItem item);
 }

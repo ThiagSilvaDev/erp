@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -44,8 +43,8 @@ class ListUserCompaniesUseCaseTest {
         UUID userId = UUID.randomUUID();
         UUID companyId = UUID.randomUUID();
         var membership = new UserMembershipSnapshot(userId, companyId, UserRole.MANAGER, UserMembershipStatus.ACTIVE);
-        when(userMembershipFacade.findActiveMemberships(userId)).thenReturn(List.of(membership));
-        when(companyFacade.findById(companyId)).thenReturn(Optional.of(company(companyId)));
+        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of(membership));
+        when(companyFacade.getCompany(companyId)).thenReturn(company(companyId));
 
         var response = useCase().execute(jwt(userId, "global"));
 
@@ -62,7 +61,7 @@ class ListUserCompaniesUseCaseTest {
                 .execute(null));
 
         assertThat(exception).isNotNull();
-        verify(userMembershipFacade, never()).findActiveMemberships(org.mockito.ArgumentMatchers.any());
+        verify(userMembershipFacade, never()).getActiveMemberships(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -73,7 +72,7 @@ class ListUserCompaniesUseCaseTest {
                 AccessDeniedException.class, () -> useCase().execute(jwt));
 
         assertThat(exception).isNotNull();
-        verify(userMembershipFacade, never()).findActiveMemberships(org.mockito.ArgumentMatchers.any());
+        verify(userMembershipFacade, never()).getActiveMemberships(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -82,8 +81,8 @@ class ListUserCompaniesUseCaseTest {
         UUID companyId = UUID.randomUUID();
         var membership = new UserMembershipSnapshot(userId, companyId, UserRole.MANAGER, UserMembershipStatus.ACTIVE);
         Jwt jwt = jwt(userId, "global");
-        when(userMembershipFacade.findActiveMemberships(userId)).thenReturn(List.of(membership));
-        when(companyFacade.findById(companyId)).thenReturn(Optional.empty());
+        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of(membership));
+        when(companyFacade.getCompany(companyId)).thenThrow(new ResourceNotFoundException("Company", companyId));
 
         var exception = catchThrowableOfType(
                 ResourceNotFoundException.class, () -> useCase().execute(jwt));

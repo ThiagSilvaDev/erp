@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -19,6 +18,8 @@ import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
@@ -35,24 +36,26 @@ class SalesDevSeederTest {
     void shouldSeedOrdersAcrossStatusesAndDates() {
         SalesOrderRepository repository = mock(SalesOrderRepository.class);
         CustomerFacade customerFacade = mock(CustomerFacade.class);
+        CompanyFacade companyFacade = mock(CompanyFacade.class);
         CatalogFacade catalogFacade = mock(CatalogFacade.class);
         InventoryFacade inventoryFacade = mock(InventoryFacade.class);
         BusinessNumberService businessNumberService = mock(BusinessNumberService.class);
-        when(customerFacade.findCustomerByDocument("12345678901"))
-                .thenReturn(
-                        Optional.of(new CustomerSnapshot(UUID.randomUUID(), "Customer", "12345678901", COMPANY_ID)));
-        when(inventoryFacade.findWarehouseByCode(COMPANY_ID, "MAIN"))
-                .thenReturn(Optional.of(new WarehouseSnapshot(UUID.randomUUID(), "MAIN", "Main")));
-        when(catalogFacade.findProductBySku(any(), any())).thenAnswer(invocation -> {
-            String sku = invocation.getArgument(0);
-            return Optional.of(new ProductSnapshot(
+        when(companyFacade.resolveCompany("97.986.234/0001-91"))
+                .thenReturn(new CompanySnapshot(COMPANY_ID, null, null, null, null, null, null, null, null, null));
+        when(customerFacade.resolveCustomer(COMPANY_ID, "12345678901"))
+                .thenReturn(new CustomerSnapshot(UUID.randomUUID(), "Customer", "12345678901", COMPANY_ID));
+        when(inventoryFacade.resolveWarehouse(COMPANY_ID, "MAIN"))
+                .thenReturn(new WarehouseSnapshot(UUID.randomUUID(), "MAIN", "Main"));
+        when(catalogFacade.resolveProduct(any(), any())).thenAnswer(invocation -> {
+            String sku = invocation.getArgument(1);
+            return new ProductSnapshot(
                     UUID.randomUUID(),
                     sku,
                     "Product " + sku,
                     null,
                     Money.of(new BigDecimal("10.00"), "BRL"),
                     null,
-                    null));
+                    null);
         });
         when(businessNumberService.next(any())).thenReturn(1L);
         when(repository.saveAndFlush(any())).thenAnswer(invocation -> {
@@ -61,7 +64,14 @@ class SalesDevSeederTest {
             return order;
         });
 
-        new SalesDevSeeder(repository, customerFacade, catalogFacade, inventoryFacade, businessNumberService, CLOCK)
+        new SalesDevSeeder(
+                        repository,
+                        customerFacade,
+                        companyFacade,
+                        catalogFacade,
+                        inventoryFacade,
+                        businessNumberService,
+                        CLOCK)
                 .run(null);
 
         ArgumentCaptor<SalesOrder> captor = ArgumentCaptor.forClass(SalesOrder.class);

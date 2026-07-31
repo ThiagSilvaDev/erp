@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CreateSupplierRequest;
@@ -35,7 +34,7 @@ public class CreateSupplierUseCase {
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public SupplierResponse execute(CreateSupplierRequest request) {
         var companyId = TenantContext.requireTenantId();
-        companyFacade.findById(companyId).orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
+        companyFacade.getCompany(companyId);
 
         String document = Supplier.normalizeDocument(request.document());
         if (supplierRepository.existsByCompanyIdAndDocument(companyId, document)) {

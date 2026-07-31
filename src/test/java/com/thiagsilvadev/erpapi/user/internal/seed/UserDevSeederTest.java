@@ -57,8 +57,8 @@ class UserDevSeederTest {
         UUID acmeId = UUID.randomUUID();
         UUID partnerId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(acmeId)));
-        when(companyFacade.findByCnpj("17.018.282/0001-57")).thenReturn(Optional.of(company(partnerId)));
+        when(companyFacade.resolveCompany("97.986.234/0001-91")).thenReturn(company(acmeId));
+        when(companyFacade.resolveCompany("17.018.282/0001-57")).thenReturn(company(partnerId));
         when(userMembershipRepository.findByUserIdAndCompanyId(any(), any()))
                 .thenReturn(Optional.of(UserMembership.create(UUID.randomUUID(), UUID.randomUUID(), UserRole.ADMIN)));
 
@@ -126,8 +126,8 @@ class UserDevSeederTest {
         UUID acmeId = UUID.randomUUID();
         UUID partnerId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company(acmeId)));
-        when(companyFacade.findByCnpj("17.018.282/0001-57")).thenReturn(Optional.of(company(partnerId)));
+        when(companyFacade.resolveCompany("97.986.234/0001-91")).thenReturn(company(acmeId));
+        when(companyFacade.resolveCompany("17.018.282/0001-57")).thenReturn(company(partnerId));
 
         when(userRepository.existsByContactEmailValue(any())).thenReturn(false);
         when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));

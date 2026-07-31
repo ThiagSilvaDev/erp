@@ -7,7 +7,6 @@ import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
-import com.thiagsilvadev.erpapi.customer.api.SupplierSnapshot;
 import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;
 import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
 import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;
@@ -22,8 +21,6 @@ public interface CustomerMapper {
     ContactPersonResponse toResponse(ContactPerson contactPerson);
 
     CustomerSnapshot toSnapshot(Customer customer);
-
-    SupplierSnapshot toSnapshot(Supplier supplier);
 
     default Contact toContact(ContactRequest request) {
         return request == null ? null : Contact.create(request.email(), request.phone());

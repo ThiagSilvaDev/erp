@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CreateCustomerRequest;
@@ -35,9 +34,7 @@ public class CreateCustomerUseCase {
     @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
     public CustomerResponse execute(CreateCustomerRequest request) {
         var ownerCompanyId = TenantContext.requireTenantId();
-        companyFacade
-                .findById(ownerCompanyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company", ownerCompanyId));
+        companyFacade.getCompany(ownerCompanyId);
 
         String document = Customer.normalizeDocument(request.document());
         if (customerRepository.existsByOwnerCompanyIdAndDocument(ownerCompanyId, document)) {

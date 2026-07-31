@@ -8,7 +8,6 @@ import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
-import com.thiagsilvadev.erpapi.company.api.CompanyAddressSnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyContactSnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.internal.dto.AddressRequest;
@@ -79,18 +78,6 @@ public interface CompanyMapper {
                 company.getId(),
                 companyName(company),
                 toAddressResponse(company.getAddress()),
-                formatDeliveryRouteDestination(company.getAddress()));
-    }
-
-    default CompanyAddressSnapshot toAddressSnapshot(Company company) {
-        if (company == null) {
-            return null;
-        }
-
-        return new CompanyAddressSnapshot(
-                company.getId(),
-                companyName(company),
-                company.getAddress(),
                 formatDeliveryRouteDestination(company.getAddress()));
     }
 

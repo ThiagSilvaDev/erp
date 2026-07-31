@@ -18,6 +18,7 @@ import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
@@ -51,6 +52,7 @@ class SalesDevSeeder implements ApplicationRunner {
 
     private final SalesOrderRepository orderRepository;
     private final CustomerFacade customerFacade;
+    private final CompanyFacade companyFacade;
     private final CatalogFacade catalogFacade;
     private final InventoryFacade inventoryFacade;
     private final BusinessNumberService businessNumberService;
@@ -59,12 +61,14 @@ class SalesDevSeeder implements ApplicationRunner {
     SalesDevSeeder(
             SalesOrderRepository orderRepository,
             CustomerFacade customerFacade,
+            CompanyFacade companyFacade,
             CatalogFacade catalogFacade,
             InventoryFacade inventoryFacade,
             BusinessNumberService businessNumberService,
             Clock clock) {
         this.orderRepository = orderRepository;
         this.customerFacade = customerFacade;
+        this.companyFacade = companyFacade;
         this.catalogFacade = catalogFacade;
         this.inventoryFacade = inventoryFacade;
         this.businessNumberService = businessNumberService;
@@ -74,22 +78,16 @@ class SalesDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        var customer = customerFacade
-                .findCustomerByDocument(CUSTOMER_DOCUMENT)
-                .orElseThrow(() -> new IllegalStateException("Seed customer must exist before seeding sales"));
-        UUID companyId = customer.ownerCompanyId();
+        UUID companyId = companyFacade.resolveCompany("97.986.234/0001-91").id();
+        var customer = customerFacade.resolveCustomer(companyId, CUSTOMER_DOCUMENT);
         if (orderRepository.countBySellerCompanyId(companyId) >= ORDERS.size()) {
             return;
         }
-        var warehouse = inventoryFacade
-                .findWarehouseByCode(companyId, WAREHOUSE_CODE)
-                .orElseThrow(() -> new IllegalStateException("Seed warehouse must exist before seeding sales"));
+        var warehouse = inventoryFacade.resolveWarehouse(companyId, WAREHOUSE_CODE);
         LocalDate today = LocalDate.now(clock);
 
         for (OrderSeed seed : ORDERS) {
-            ProductSnapshot product = catalogFacade
-                    .findProductBySku(seed.sku(), companyId)
-                    .orElseThrow(() -> new IllegalStateException("Seed product must exist before seeding sales"));
+            ProductSnapshot product = catalogFacade.resolveProduct(companyId, seed.sku());
             SalesOrder order = SalesOrder.createB2C(
                     businessNumberService.next(BusinessNumberType.SALES_ORDER),
                     FulfillmentType.PICKUP,

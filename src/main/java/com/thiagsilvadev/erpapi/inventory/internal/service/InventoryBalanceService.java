@@ -31,7 +31,6 @@ public class InventoryBalanceService {
 
     @Transactional
     public InventoryItem applyMovement(UUID productId, UUID warehouseId, int quantity, StockMovementType type) {
-        catalogFacade.requireProductExistsById(productId);
         Warehouse warehouse = warehouseRepository
                 .findById(warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, warehouseId));
@@ -41,7 +40,7 @@ public class InventoryBalanceService {
     @Transactional
     public InventoryItem applyMovement(
             UUID companyId, UUID productId, UUID warehouseId, int quantity, StockMovementType type) {
-        catalogFacade.requireProductExistsById(productId, companyId);
+        catalogFacade.getProduct(companyId, productId);
         Warehouse warehouse = warehouseRepository
                 .findByIdAndCompanyId(warehouseId, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, warehouseId));

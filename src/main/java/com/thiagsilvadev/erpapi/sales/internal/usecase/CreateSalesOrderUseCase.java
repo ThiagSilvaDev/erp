@@ -63,9 +63,8 @@ public class CreateSalesOrderUseCase {
                 .map(CreateSalesOrderItemRequest::productId)
                 .collect(Collectors.toSet());
 
-        Map<UUID, ProductSnapshot> productMap =
-                catalogFacade.findAllProductsByIdIn(productIds, sellerCompanyId).stream()
-                        .collect(Collectors.toMap(ProductSnapshot::id, p -> p));
+        Map<UUID, ProductSnapshot> productMap = catalogFacade.getProducts(sellerCompanyId, productIds).stream()
+                .collect(Collectors.toMap(ProductSnapshot::id, p -> p));
 
         var items = request.items().stream()
                 .map(item -> {
@@ -100,9 +99,7 @@ public class CreateSalesOrderUseCase {
 
     private SalesBuyer resolveBuyer(CreateSalesOrderRequest request, UUID sellerCompanyId) {
         SalesBuyer buyer = SalesBuyer.of(request.saleType(), request.buyerCompanyId(), request.customerId());
-        CompanySnapshot seller = companyFacade
-                .findById(sellerCompanyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company", sellerCompanyId));
+        CompanySnapshot seller = companyFacade.getCompany(sellerCompanyId);
 
         if (buyer.getSaleType() == SaleType.B2B) {
             validateB2b(sellerCompanyId, buyer, seller);
@@ -121,9 +118,7 @@ public class CreateSalesOrderUseCase {
             throw new IllegalArgumentException("B2B buyer company cannot be the seller company");
         }
 
-        CompanySnapshot buyerCompany = companyFacade
-                .findById(buyer.getBuyerCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", buyer.getBuyerCompanyId()));
+        CompanySnapshot buyerCompany = companyFacade.getCompany(buyer.getBuyerCompanyId());
         if (buyerCompany.type() != CompanyType.CORRESPONDENT) {
             throw new IllegalArgumentException("B2B buyer company must be a correspondent");
         }
@@ -134,9 +129,7 @@ public class CreateSalesOrderUseCase {
             throw new IllegalArgumentException("B2C seller must be a factory or correspondent");
         }
 
-        CustomerSnapshot customer = customerFacade
-                .findCustomerById(buyer.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer", buyer.getCustomerId()));
+        CustomerSnapshot customer = customerFacade.getCustomer(sellerCompanyId, buyer.getCustomerId());
         if (!sellerCompanyId.equals(customer.ownerCompanyId())) {
             throw new IllegalArgumentException("B2C customer must belong to the seller company");
         }

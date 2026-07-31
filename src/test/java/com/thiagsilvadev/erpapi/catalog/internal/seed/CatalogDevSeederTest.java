@@ -43,7 +43,7 @@ class CatalogDevSeederTest {
                 Category.create(COMPANY_ID, CatalogDevSeeder.INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", null);
         Category officeCategory =
                 Category.create(COMPANY_ID, CatalogDevSeeder.OFFICE_CATEGORY_CODE, "Office Supplies", null);
-        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company()));
+        when(companyFacade.resolveCompany("97.986.234/0001-91")).thenReturn(company());
         when(categoryRepository.findByCompanyIdAndCode(COMPANY_ID, "INDUSTRIAL"))
                 .thenReturn(Optional.empty());
         when(categoryRepository.findByCompanyIdAndCode(COMPANY_ID, "OFFICE")).thenReturn(Optional.empty());
@@ -84,7 +84,7 @@ class CatalogDevSeederTest {
                 Category.create(COMPANY_ID, CatalogDevSeeder.INDUSTRIAL_CATEGORY_CODE, "Industrial Supplies", null);
         Category officeCategory =
                 Category.create(COMPANY_ID, CatalogDevSeeder.OFFICE_CATEGORY_CODE, "Office Supplies", null);
-        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company()));
+        when(companyFacade.resolveCompany("97.986.234/0001-91")).thenReturn(company());
         when(categoryRepository.findByCompanyIdAndCode(COMPANY_ID, "INDUSTRIAL"))
                 .thenReturn(Optional.of(industrialCategory));
         when(categoryRepository.findByCompanyIdAndCode(COMPANY_ID, "OFFICE")).thenReturn(Optional.of(officeCategory));

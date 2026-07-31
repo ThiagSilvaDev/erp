@@ -47,9 +47,7 @@ class CustomerDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(@NonNull ApplicationArguments args) {
-        var company = companyFacade
-                .findByCnpj(ACME_CNPJ)
-                .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding customers"));
+        var company = companyFacade.resolveCompany(ACME_CNPJ);
 
         Customer customer = customerRepository
                 .findByDocument(CUSTOMER_DOCUMENT)

@@ -105,7 +105,7 @@ class LogisticsDevSeederTest {
 
     private static CompanyFacade companyFacade() {
         CompanyFacade companyFacade = mock(CompanyFacade.class);
-        when(companyFacade.findByCnpj("97.986.234/0001-91")).thenReturn(Optional.of(company()));
+        when(companyFacade.resolveCompany("97.986.234/0001-91")).thenReturn(company());
         return companyFacade;
     }
 
@@ -115,8 +115,8 @@ class LogisticsDevSeederTest {
 
     private static UserFacade userFacade(UUID userId) {
         UserFacade userFacade = mock(UserFacade.class);
-        when(userFacade.findByEmail(LogisticsDevSeeder.DRIVER_EMAIL))
-                .thenReturn(Optional.of(new UserSnapshot(
+        when(userFacade.resolveUser(LogisticsDevSeeder.DRIVER_EMAIL))
+                .thenReturn(new UserSnapshot(
                         userId,
                         "Alex Driver",
                         "Alex",
@@ -126,7 +126,7 @@ class LogisticsDevSeederTest {
                         null,
                         null,
                         null,
-                        COMPANY_ID)));
+                        COMPANY_ID));
         return userFacade;
     }
 }

@@ -1,15 +1,10 @@
 package com.thiagsilvadev.erpapi.company.api;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public interface CompanyFacade {
 
-    Optional<CompanySnapshot> findById(UUID id);
+    CompanySnapshot getCompany(UUID companyId);
 
-    void requireCompanyExistsById(UUID id);
-
-    Optional<CompanySnapshot> findByCnpj(String cnpj);
-
-    Optional<CompanyAddressSnapshot> findAddressByCompanyId(UUID id);
+    CompanySnapshot resolveCompany(String cnpj);
 }

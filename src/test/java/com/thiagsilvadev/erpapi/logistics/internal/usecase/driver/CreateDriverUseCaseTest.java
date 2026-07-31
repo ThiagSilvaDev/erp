@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
@@ -55,9 +54,9 @@ class CreateDriverUseCaseTest {
 
     @Test
     void shouldCreateProfileForActiveDriverMembership() {
-        when(userFacade.findById(USER_ID)).thenReturn(Optional.of(user(UserStatus.ACTIVE)));
-        when(membershipFacade.findMembership(USER_ID, COMPANY_ID))
-                .thenReturn(Optional.of(membership(UserRole.DRIVER, UserMembershipStatus.ACTIVE)));
+        when(userFacade.getUser(USER_ID)).thenReturn(user(UserStatus.ACTIVE));
+        when(membershipFacade.getActiveMembership(USER_ID, COMPANY_ID))
+                .thenReturn(membership(UserRole.DRIVER, UserMembershipStatus.ACTIVE));
         when(driverRepository.saveAndFlush(any(Driver.class))).thenAnswer(invocation -> invocation.getArgument(0));
         DriverResponse response = new DriverResponse(UUID.randomUUID(), USER_ID, "CNH-1", null);
         when(mapper.toResponse(any(Driver.class))).thenReturn(response);
@@ -75,9 +74,9 @@ class CreateDriverUseCaseTest {
 
     @Test
     void shouldRejectUserWithoutDriverMembership() {
-        when(userFacade.findById(USER_ID)).thenReturn(Optional.of(user(UserStatus.ACTIVE)));
-        when(membershipFacade.findMembership(USER_ID, COMPANY_ID))
-                .thenReturn(Optional.of(membership(UserRole.OPERATOR, UserMembershipStatus.ACTIVE)));
+        when(userFacade.getUser(USER_ID)).thenReturn(user(UserStatus.ACTIVE));
+        when(membershipFacade.getActiveMembership(USER_ID, COMPANY_ID))
+                .thenReturn(membership(UserRole.OPERATOR, UserMembershipStatus.ACTIVE));
 
         assertThatThrownBy(() -> useCase.execute(new CreateDriverRequest(USER_ID, "CNH-1")))
                 .isInstanceOf(ConflictException.class)
@@ -88,9 +87,9 @@ class CreateDriverUseCaseTest {
 
     @Test
     void shouldRejectDuplicateUserLink() {
-        when(userFacade.findById(USER_ID)).thenReturn(Optional.of(user(UserStatus.ACTIVE)));
-        when(membershipFacade.findMembership(USER_ID, COMPANY_ID))
-                .thenReturn(Optional.of(membership(UserRole.DRIVER, UserMembershipStatus.ACTIVE)));
+        when(userFacade.getUser(USER_ID)).thenReturn(user(UserStatus.ACTIVE));
+        when(membershipFacade.getActiveMembership(USER_ID, COMPANY_ID))
+                .thenReturn(membership(UserRole.DRIVER, UserMembershipStatus.ACTIVE));
         when(driverRepository.existsByCompanyIdAndUserId(COMPANY_ID, USER_ID)).thenReturn(true);
 
         assertThatThrownBy(() -> useCase.execute(new CreateDriverRequest(USER_ID, "CNH-1")))

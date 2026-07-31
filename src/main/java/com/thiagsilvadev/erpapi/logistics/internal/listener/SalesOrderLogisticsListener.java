@@ -7,7 +7,6 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.logistics.internal.model.*;
@@ -46,9 +45,7 @@ public class SalesOrderLogisticsListener {
             return;
         }
 
-        SalesOrderSnapshot order = salesFacade
-                .findOrderById(event.salesOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", event.salesOrderId()));
+        SalesOrderSnapshot order = salesFacade.getOrder(event.sellerCompanyId(), event.salesOrderId());
 
         Shipment shipment = Shipment.create(
                 businessNumberService.next(BusinessNumberType.SHIPMENT),

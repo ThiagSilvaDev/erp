@@ -56,12 +56,8 @@ class UserDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(@NonNull ApplicationArguments args) {
-        CompanySnapshot acme = companyFacade
-                .findByCnpj(ACME_CNPJ)
-                .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding users"));
-        CompanySnapshot partner = companyFacade
-                .findByCnpj(PARTNER_CNPJ)
-                .orElseThrow(() -> new IllegalStateException("Seed partner company must exist before seeding users"));
+        CompanySnapshot acme = companyFacade.resolveCompany(ACME_CNPJ);
+        CompanySnapshot partner = companyFacade.resolveCompany(PARTNER_CNPJ);
 
         seedUser("Admin", "Acme", ADMIN_EMAIL, LocalDate.of(1990, 1, 1), UserRole.ADMIN, acme, partner);
         seedUser(

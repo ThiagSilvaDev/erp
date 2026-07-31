@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -72,8 +71,8 @@ class CreateInvoiceUseCaseTest {
         UUID customerId = UUID.randomUUID();
         TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.CUSTOMER, customerId, null);
-        when(customerFacade.findCustomerById(customerId))
-                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID())));
+        when(customerFacade.getCustomer(TENANT_ID, customerId))
+                .thenReturn(new CustomerSnapshot(customerId, "Customer", "123", TENANT_ID));
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(200L);
         when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -92,9 +91,9 @@ class CreateInvoiceUseCaseTest {
         UUID buyerCompanyId = UUID.randomUUID();
         TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.COMPANY, buyerCompanyId, salesOrderId);
-        when(companyFacade.findById(buyerCompanyId)).thenReturn(Optional.of(company(buyerCompanyId)));
-        when(salesFacade.findOrderById(salesOrderId))
-                .thenReturn(Optional.of(new SalesOrderSnapshot(
+        when(companyFacade.getCompany(buyerCompanyId)).thenReturn(company(buyerCompanyId));
+        when(salesFacade.getOrder(TENANT_ID, salesOrderId))
+                .thenReturn(new SalesOrderSnapshot(
                         salesOrderId,
                         100L,
                         SaleType.B2B,
@@ -107,7 +106,7 @@ class CreateInvoiceUseCaseTest {
                         OrderStatus.CONFIRMED,
                         new BigDecimal("20.00"),
                         "BRL",
-                        Set.of())));
+                        Set.of()));
         when(invoiceRepository.existsByCompanyIdAndSalesOrderId(TENANT_ID, salesOrderId))
                 .thenReturn(false);
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(201L);
@@ -128,10 +127,9 @@ class CreateInvoiceUseCaseTest {
         UUID customerId = UUID.randomUUID();
         TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.COMPANY, UUID.randomUUID(), salesOrderId);
-        when(companyFacade.findById(request.billingPartyId()))
-                .thenReturn(Optional.of(company(request.billingPartyId())));
-        when(salesFacade.findOrderById(salesOrderId))
-                .thenReturn(Optional.of(new SalesOrderSnapshot(
+        when(companyFacade.getCompany(request.billingPartyId())).thenReturn(company(request.billingPartyId()));
+        when(salesFacade.getOrder(TENANT_ID, salesOrderId))
+                .thenReturn(new SalesOrderSnapshot(
                         salesOrderId,
                         100L,
                         SaleType.B2C,
@@ -144,7 +142,7 @@ class CreateInvoiceUseCaseTest {
                         OrderStatus.CONFIRMED,
                         new BigDecimal("20.00"),
                         "BRL",
-                        Set.of())));
+                        Set.of()));
         CreateInvoiceUseCase useCase = useCase();
 
         assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ConflictException.class);
@@ -156,9 +154,10 @@ class CreateInvoiceUseCaseTest {
         UUID salesOrderId = UUID.randomUUID();
         TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.CUSTOMER, customerId, salesOrderId);
-        when(customerFacade.findCustomerById(customerId))
-                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID())));
-        when(salesFacade.findOrderById(salesOrderId)).thenReturn(Optional.empty());
+        when(customerFacade.getCustomer(TENANT_ID, customerId))
+                .thenReturn(new CustomerSnapshot(customerId, "Customer", "123", TENANT_ID));
+        when(salesFacade.getOrder(TENANT_ID, salesOrderId))
+                .thenThrow(new ResourceNotFoundException("SalesOrder", salesOrderId));
         CreateInvoiceUseCase useCase = useCase();
 
         assertThatThrownBy(() -> useCase.execute(request))
@@ -172,7 +171,7 @@ class CreateInvoiceUseCaseTest {
         UUID companyId = UUID.randomUUID();
         TenantContext.setTenantId(TENANT_ID);
         CreateInvoiceRequest request = request(BillingPartyType.COMPANY, companyId, null);
-        when(companyFacade.findById(companyId)).thenReturn(Optional.empty());
+        when(companyFacade.getCompany(companyId)).thenThrow(new ResourceNotFoundException("Company", companyId));
         var useCase = useCase();
         var exception = catchThrowableOfType(ResourceNotFoundException.class, () -> useCase.execute(request));
         assertThat(exception).isNotNull();

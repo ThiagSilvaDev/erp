@@ -32,23 +32,27 @@ public abstract class ReservationMapper {
         this.salesOrderReferenceProvider = salesOrderReferenceProvider;
     }
 
-    @Mapping(target = "product", expression = "java(mapProduct(reservation.getProductId()))")
+    @Mapping(
+            target = "product",
+            expression = "java(mapProduct(reservation.getCompanyId(), reservation.getProductId()))")
     @Mapping(target = "warehouse", expression = "java(mapWarehouse(reservation.getWarehouseId()))")
-    @Mapping(target = "salesOrder", expression = "java(mapSalesOrder(reservation.getSalesOrderId()))")
+    @Mapping(
+            target = "salesOrder",
+            expression = "java(mapSalesOrder(reservation.getCompanyId(), reservation.getSalesOrderId()))")
     public abstract ReservationResponse toResponse(InventoryReservation reservation);
 
-    @Mapping(target = "product", expression = "java(mapProduct(reservation.productId()))")
+    @Mapping(target = "product", expression = "java(mapProduct(reservation.companyId(), reservation.productId()))")
     @Mapping(target = "warehouse", expression = "java(mapWarehouse(reservation.warehouseId()))")
-    @Mapping(target = "salesOrder", expression = "java(mapSalesOrder(reservation.salesOrderId()))")
+    @Mapping(
+            target = "salesOrder",
+            expression = "java(mapSalesOrder(reservation.companyId(), reservation.salesOrderId()))")
     public abstract ReservationResponse toResponse(InventoryReservationSnapshot reservation);
 
     public abstract InventoryReservationSnapshot toSnapshot(InventoryReservation reservation);
 
-    protected ReservationProductDto mapProduct(java.util.UUID productId) {
-        return catalogFacade
-                .findProductById(productId)
-                .map(p -> new ReservationProductDto(p.id(), p.sku(), p.name(), p.basePrice()))
-                .orElse(null);
+    protected ReservationProductDto mapProduct(java.util.UUID companyId, java.util.UUID productId) {
+        var product = catalogFacade.getProduct(companyId, productId);
+        return new ReservationProductDto(product.id(), product.sku(), product.name(), product.basePrice());
     }
 
     protected ReservationWarehouseSummaryResponse mapWarehouse(java.util.UUID warehouseId) {
@@ -61,13 +65,12 @@ public abstract class ReservationMapper {
                 .orElse(new ReservationWarehouseSummaryResponse(warehouseId, null));
     }
 
-    protected ReservationSalesOrderSummaryResponse mapSalesOrder(java.util.UUID salesOrderId) {
+    protected ReservationSalesOrderSummaryResponse mapSalesOrder(
+            java.util.UUID companyId, java.util.UUID salesOrderId) {
         if (salesOrderId == null) {
             return null;
         }
-        return salesOrderReferenceProvider
-                .findSalesOrderReferenceById(salesOrderId)
-                .map(salesOrder -> new ReservationSalesOrderSummaryResponse(salesOrder.id(), salesOrder.orderNumber()))
-                .orElse(new ReservationSalesOrderSummaryResponse(salesOrderId, null));
+        var salesOrder = salesOrderReferenceProvider.getSalesOrderReference(companyId, salesOrderId);
+        return new ReservationSalesOrderSummaryResponse(salesOrder.id(), salesOrder.orderNumber());
     }
 }

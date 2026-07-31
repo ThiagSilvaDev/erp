@@ -80,17 +80,12 @@ class FinancialDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        UUID companyId = companyFacade
-                .findByCnpj(ACME_CNPJ)
-                .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding finance"))
-                .id();
+        UUID companyId = companyFacade.resolveCompany(ACME_CNPJ).id();
         FinancialAccount destinationAccount = ensureAccounts(companyId);
         if (invoiceRepository.countByCompanyId(companyId) >= INVOICES.size()) {
             return;
         }
-        var customer = customerFacade
-                .findCustomerByDocument(CUSTOMER_DOCUMENT)
-                .orElseThrow(() -> new IllegalStateException("Seed customer must exist before seeding finance"));
+        var customer = customerFacade.resolveCustomer(companyId, CUSTOMER_DOCUMENT);
         LocalDate today = LocalDate.now(clock);
 
         for (InvoiceSeed seed : INVOICES) {

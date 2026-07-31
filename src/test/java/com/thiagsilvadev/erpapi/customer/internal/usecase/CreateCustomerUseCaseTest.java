@@ -6,7 +6,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
@@ -51,7 +50,7 @@ class CreateCustomerUseCaseTest {
     void shouldRejectMissingCompany() {
         CreateCustomerRequest request = customerRequest();
         TenantContext.setTenantId(TENANT_ID);
-        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.empty());
+        when(companyFacade.getCompany(TENANT_ID)).thenThrow(new ResourceNotFoundException("Company", TENANT_ID));
 
         CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
 
@@ -67,7 +66,7 @@ class CreateCustomerUseCaseTest {
     void shouldRejectDuplicatedDocument() {
         CreateCustomerRequest request = customerRequest();
         TenantContext.setTenantId(TENANT_ID);
-        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(companyFacade.getCompany(TENANT_ID)).thenReturn(org.mockito.Mockito.mock());
         when(customerRepository.existsByOwnerCompanyIdAndDocument(TENANT_ID, "12345678900"))
                 .thenReturn(true);
 
@@ -84,7 +83,7 @@ class CreateCustomerUseCaseTest {
         Contact contact = Contact.create("customer@example.com", "11912345678");
         Address address = address();
         TenantContext.setTenantId(TENANT_ID);
-        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(companyFacade.getCompany(TENANT_ID)).thenReturn(org.mockito.Mockito.mock());
         when(customerRepository.existsByOwnerCompanyIdAndDocument(TENANT_ID, "12345678900"))
                 .thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(contact);
@@ -105,7 +104,7 @@ class CreateCustomerUseCaseTest {
     void shouldTranslateDuplicateDocumentRace() {
         CreateCustomerRequest request = customerRequest();
         TenantContext.setTenantId(TENANT_ID);
-        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(companyFacade.getCompany(TENANT_ID)).thenReturn(org.mockito.Mockito.mock());
         when(customerRepository.existsByOwnerCompanyIdAndDocument(TENANT_ID, "12345678900"))
                 .thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(Contact.create("customer@example.com", "11912345678"));

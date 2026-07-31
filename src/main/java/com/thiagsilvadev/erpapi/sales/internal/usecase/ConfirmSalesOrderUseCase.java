@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
+import com.thiagsilvadev.erpapi.inventory.api.ReserveStockCommand;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.event.SalesOrderEventPublisher;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
@@ -43,8 +44,8 @@ public class ConfirmSalesOrderUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
         order.confirm();
         for (SalesOrderItem item : order.getItems()) {
-            inventoryFacade.reserve(
-                    sellerCompanyId, item.getProductId(), item.getWarehouseId(), item.getQuantity(), order.getId());
+            inventoryFacade.reserveStock(new ReserveStockCommand(
+                    sellerCompanyId, item.getProductId(), item.getWarehouseId(), item.getQuantity(), order.getId()));
         }
         eventPublisher.salesOrderConfirmed(order);
 

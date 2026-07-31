@@ -4,7 +4,6 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
@@ -49,9 +48,7 @@ public class SalesOrderFinancialListener {
             return;
         }
 
-        SalesOrderSnapshot order = salesFacade
-                .findOrderById(event.salesOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", event.salesOrderId()));
+        SalesOrderSnapshot order = salesFacade.getOrder(event.sellerCompanyId(), event.salesOrderId());
 
         Invoice invoice = invoiceRepository.save(Invoice.create(
                 businessNumberService.next(BusinessNumberType.INVOICE),

@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
@@ -60,12 +59,7 @@ public class CreateInvoiceUseCase {
         validateBillingParty(request.billingPartyType(), request.billingPartyId());
 
         if (request.salesOrderId() != null) {
-            SalesOrderSnapshot order = salesFacade
-                    .findOrderById(request.salesOrderId())
-                    .orElseThrow(() -> new ResourceNotFoundException("SalesOrder", request.salesOrderId()));
-            if (!companyId.equals(order.sellerCompanyId())) {
-                throw new ResourceNotFoundException("SalesOrder", request.salesOrderId());
-            }
+            SalesOrderSnapshot order = salesFacade.getOrder(companyId, request.salesOrderId());
             validateSalesOrderInvoice(request, order);
         }
 
@@ -111,14 +105,10 @@ public class CreateInvoiceUseCase {
 
     private void validateBillingParty(BillingPartyType billingPartyType, UUID billingPartyId) {
         if (billingPartyType == BillingPartyType.CUSTOMER) {
-            customerFacade
-                    .findCustomerById(billingPartyId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Customer", billingPartyId));
+            customerFacade.getCustomer(TenantContext.requireTenantId(), billingPartyId);
             return;
         }
 
-        companyFacade
-                .findById(billingPartyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company", billingPartyId));
+        companyFacade.getCompany(billingPartyId);
     }
 }

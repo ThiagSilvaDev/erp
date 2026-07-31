@@ -42,20 +42,19 @@ class InventoryDevSeederTest {
         BusinessNumberService businessNumberService = mock(BusinessNumberService.class);
         Warehouse warehouse = Warehouse.create(COMPANY_ID, "MAIN", "Main");
         ReflectionTestUtils.setField(warehouse, "id", UUID.randomUUID());
-        when(companyFacade.findByCnpj("97.986.234/0001-91"))
-                .thenReturn(Optional.of(
-                        new CompanySnapshot(COMPANY_ID, null, null, null, null, null, null, null, null, null)));
+        when(companyFacade.resolveCompany("97.986.234/0001-91"))
+                .thenReturn(new CompanySnapshot(COMPANY_ID, null, null, null, null, null, null, null, null, null));
         when(warehouseRepository.findByCompanyIdAndCode(COMPANY_ID, "MAIN")).thenReturn(Optional.of(warehouse));
-        when(catalogFacade.findProductBySku(any(), any())).thenAnswer(invocation -> {
-            String sku = invocation.getArgument(0);
-            return Optional.of(new ProductSnapshot(
+        when(catalogFacade.resolveProduct(any(), any())).thenAnswer(invocation -> {
+            String sku = invocation.getArgument(1);
+            return new ProductSnapshot(
                     UUID.randomUUID(),
                     sku,
                     "Product " + sku,
                     null,
                     Money.of(new BigDecimal("10.00"), "BRL"),
                     null,
-                    null));
+                    null);
         });
         when(businessNumberService.next(any())).thenReturn(1L);
         when(movementRepository.saveAndFlush(any())).thenAnswer(invocation -> {

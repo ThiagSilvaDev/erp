@@ -54,7 +54,7 @@ public class CreateUserUseCase {
             throw new EmailAlreadyExistsException(contact.getEmail());
         }
 
-        companyFacade.requireCompanyExistsById(request.companyId());
+        companyFacade.getCompany(request.companyId());
 
         User user = User.create(
                 request.firstName(),

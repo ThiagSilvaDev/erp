@@ -45,7 +45,8 @@ class SalesOrderLogisticsListenerTest {
     void shouldCreateShipmentWhenSalesOrderDeliveryIsRequested() {
         SalesOrderDeliveryRequestedEvent event = event();
         when(shipmentRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(false);
-        when(salesFacade.findOrderById(event.salesOrderId())).thenReturn(Optional.of(order(event.salesOrderId())));
+        when(salesFacade.getOrder(event.sellerCompanyId(), event.salesOrderId()))
+                .thenReturn(order(event.salesOrderId(), event.sellerCompanyId()));
         when(businessNumberService.next(BusinessNumberType.SHIPMENT)).thenReturn(500L);
         when(shipmentRepository.save(any(Shipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -96,10 +97,10 @@ class SalesOrderLogisticsListenerTest {
     }
 
     private SalesOrderDeliveryRequestedEvent event() {
-        return new SalesOrderDeliveryRequestedEvent(UUID.randomUUID());
+        return new SalesOrderDeliveryRequestedEvent(UUID.randomUUID(), UUID.randomUUID());
     }
 
-    private static SalesOrderSnapshot order(UUID id) {
+    private static SalesOrderSnapshot order(UUID id, UUID sellerCompanyId) {
         return new SalesOrderSnapshot(
                 id,
                 100L,
@@ -107,7 +108,7 @@ class SalesOrderLogisticsListenerTest {
                 FulfillmentType.DELIVERY,
                 PaymentMethod.PIX,
                 new SalesOrderDeliveryRouteSnapshot("Route A", UUID.randomUUID(), "Customer HQ"),
-                UUID.randomUUID(),
+                sellerCompanyId,
                 null,
                 UUID.randomUUID(),
                 OrderStatus.CONFIRMED,

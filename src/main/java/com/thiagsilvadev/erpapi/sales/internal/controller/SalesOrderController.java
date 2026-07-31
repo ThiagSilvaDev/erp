@@ -7,23 +7,17 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
-import com.thiagsilvadev.erpapi.sales.api.*;
 import com.thiagsilvadev.erpapi.sales.internal.dto.*;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
-import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 import com.thiagsilvadev.erpapi.sales.internal.usecase.*;
 
 @RestController
-class SalesOrderController implements SalesOrderApi, SalesFacade {
+class SalesOrderController implements SalesOrderApi {
 
-    private final SalesOrderRepository orderRepository;
-    private final SalesMapper mapper;
     private final CreateSalesOrderUseCase createSalesOrderUseCase;
     private final GetSalesOrderByIdUseCase getSalesOrderByIdUseCase;
     private final ListSalesOrdersUseCase listSalesOrdersUseCase;
@@ -31,15 +25,11 @@ class SalesOrderController implements SalesOrderApi, SalesFacade {
     private final CancelSalesOrderUseCase cancelSalesOrderUseCase;
 
     SalesOrderController(
-            SalesOrderRepository orderRepository,
-            SalesMapper mapper,
             CreateSalesOrderUseCase createSalesOrderUseCase,
             GetSalesOrderByIdUseCase getSalesOrderByIdUseCase,
             ListSalesOrdersUseCase listSalesOrdersUseCase,
             ConfirmSalesOrderUseCase confirmSalesOrderUseCase,
             CancelSalesOrderUseCase cancelSalesOrderUseCase) {
-        this.orderRepository = orderRepository;
-        this.mapper = mapper;
         this.createSalesOrderUseCase = createSalesOrderUseCase;
         this.getSalesOrderByIdUseCase = getSalesOrderByIdUseCase;
         this.listSalesOrdersUseCase = listSalesOrdersUseCase;
@@ -71,11 +61,5 @@ class SalesOrderController implements SalesOrderApi, SalesFacade {
     @Override
     public SalesOrderResponse cancelOrder(@PathVariable UUID id) {
         return cancelSalesOrderUseCase.execute(id);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public java.util.Optional<SalesOrderSnapshot> findOrderById(UUID id) {
-        return orderRepository.findById(id).map(mapper::toSnapshot);
     }
 }

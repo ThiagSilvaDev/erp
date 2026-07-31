@@ -11,7 +11,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthCompanyResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthMapper;
@@ -57,7 +56,7 @@ public class LoginUseCase {
         if (!(authentication.getPrincipal() instanceof IamUserDetails principal)) {
             throw new InvalidCredentialsException();
         }
-        List<UserMembershipSnapshot> memberships = userMembershipFacade.findActiveMemberships(principal.getUserId());
+        List<UserMembershipSnapshot> memberships = userMembershipFacade.getActiveMemberships(principal.getUserId());
         if (memberships.isEmpty()) {
             log.warn("Login failed: no active memberships. userId={}", principal.getUserId());
             throw new NoActiveMembershipException();
@@ -75,9 +74,7 @@ public class LoginUseCase {
     }
 
     private AuthCompanyResponse toAuthCompanyResponse(UserMembershipSnapshot membership) {
-        var company = companyFacade
-                .findById(membership.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", membership.companyId()));
+        var company = companyFacade.getCompany(membership.companyId());
 
         return new AuthCompanyResponse(
                 membership.companyId(),

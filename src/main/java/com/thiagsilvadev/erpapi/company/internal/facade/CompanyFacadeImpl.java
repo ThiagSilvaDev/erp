@@ -1,6 +1,5 @@
-package com.thiagsilvadev.erpapi.company.internal.service;
+package com.thiagsilvadev.erpapi.company.internal.facade;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -8,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
-import com.thiagsilvadev.erpapi.company.api.CompanyAddressSnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
@@ -17,13 +15,13 @@ import com.thiagsilvadev.erpapi.company.internal.repository.CompanyContactReposi
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 
 @Service
-public class CompanyService implements CompanyFacade {
+public class CompanyFacadeImpl implements CompanyFacade {
 
     private final CompanyRepository companyRepository;
     private final CompanyContactRepository companyContactRepository;
     private final CompanyMapper companyMapper;
 
-    public CompanyService(
+    public CompanyFacadeImpl(
             CompanyRepository companyRepository,
             CompanyContactRepository companyContactRepository,
             CompanyMapper companyMapper) {
@@ -34,39 +32,27 @@ public class CompanyService implements CompanyFacade {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<CompanySnapshot> findById(UUID id) {
+    public CompanySnapshot getCompany(UUID companyId) {
         return companyRepository
-                .findById(id)
+                .findById(companyId)
                 .map(company -> companyMapper.toSnapshot(
                         company,
                         companyContactRepository
-                                .findByCompanyIdAndPrimaryContactTrue(id)
-                                .orElse(null)));
+                                .findByCompanyIdAndPrimaryContactTrue(companyId)
+                                .orElse(null)))
+                .orElseThrow(() -> new ResourceNotFoundException(Company.class, companyId));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public void requireCompanyExistsById(UUID id) {
-        if (!companyRepository.existsById(id)) {
-            throw new ResourceNotFoundException(Company.class, id);
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<CompanySnapshot> findByCnpj(String cnpj) {
+    public CompanySnapshot resolveCompany(String cnpj) {
         return companyRepository
                 .findByCnpj(Cnpj.create(cnpj))
                 .map(company -> companyMapper.toSnapshot(
                         company,
                         companyContactRepository
                                 .findByCompanyIdAndPrimaryContactTrue(company.getId())
-                                .orElse(null)));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<CompanyAddressSnapshot> findAddressByCompanyId(UUID id) {
-        return companyRepository.findById(id).map(companyMapper::toAddressSnapshot);
+                                .orElse(null)))
+                .orElseThrow(() -> new ResourceNotFoundException(Company.class, cnpj));
     }
 }

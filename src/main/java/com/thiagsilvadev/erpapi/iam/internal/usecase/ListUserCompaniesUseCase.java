@@ -9,7 +9,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.iam.internal.dto.UserCompanyResponse;
 import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
@@ -36,15 +35,13 @@ public class ListUserCompaniesUseCase {
         }
 
         UUID userId = UUID.fromString(jwt.getSubject());
-        List<UserMembershipSnapshot> memberships = userMembershipFacade.findActiveMemberships(userId);
+        List<UserMembershipSnapshot> memberships = userMembershipFacade.getActiveMemberships(userId);
 
         return memberships.stream().map(this::toUserCompanyResponse).toList();
     }
 
     private UserCompanyResponse toUserCompanyResponse(UserMembershipSnapshot membership) {
-        var company = companyFacade
-                .findById(membership.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", membership.companyId()));
+        var company = companyFacade.getCompany(membership.companyId());
 
         return new UserCompanyResponse(
                 membership.companyId(),

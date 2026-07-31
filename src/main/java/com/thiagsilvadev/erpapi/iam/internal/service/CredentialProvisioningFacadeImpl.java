@@ -15,12 +15,12 @@ import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 
 @Service
-public class CredentialProvisioningService implements CredentialProvisioningFacade {
+public class CredentialProvisioningFacadeImpl implements CredentialProvisioningFacade {
 
     private final IamCredentialRepository credentialRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public CredentialProvisioningService(
+    public CredentialProvisioningFacadeImpl(
             IamCredentialRepository credentialRepository, PasswordEncoder passwordEncoder) {
         this.credentialRepository = credentialRepository;
         this.passwordEncoder = passwordEncoder;

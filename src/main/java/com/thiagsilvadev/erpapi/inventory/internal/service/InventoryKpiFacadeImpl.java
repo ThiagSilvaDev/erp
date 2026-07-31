@@ -12,13 +12,13 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepos
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
 
 @Service
-class InventoryKpiService implements InventoryKpiFacade {
+class InventoryKpiFacadeImpl implements InventoryKpiFacade {
 
     private final InventoryItemRepository itemRepository;
     private final StockMovementRepository movementRepository;
     private final InventoryKpiCalculator calculator;
 
-    InventoryKpiService(
+    InventoryKpiFacadeImpl(
             InventoryItemRepository itemRepository,
             StockMovementRepository movementRepository,
             InventoryKpiCalculator calculator) {

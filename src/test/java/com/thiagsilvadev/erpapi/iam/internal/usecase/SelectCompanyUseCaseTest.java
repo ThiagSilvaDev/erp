@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyRequest;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService.IssuedToken;
@@ -43,7 +43,7 @@ class SelectCompanyUseCaseTest {
         UUID companyId = UUID.randomUUID();
         Jwt jwt = jwt(userId, "global");
         var membership = new UserMembershipSnapshot(userId, companyId, UserRole.MANAGER, UserMembershipStatus.ACTIVE);
-        when(userMembershipFacade.findMembership(userId, companyId)).thenReturn(Optional.of(membership));
+        when(userMembershipFacade.getActiveMembership(userId, companyId)).thenReturn(membership);
         when(jwtTokenService.issueScoped(any(), eq(membership))).thenReturn(new IssuedToken("scoped-token", 3600));
 
         var response = useCase().execute(new SelectCompanyRequest(companyId), jwt);
@@ -68,8 +68,8 @@ class SelectCompanyUseCaseTest {
     void shouldRejectInactiveMembership() {
         UUID userId = UUID.randomUUID();
         UUID companyId = UUID.randomUUID();
-        var membership = new UserMembershipSnapshot(userId, companyId, UserRole.MANAGER, UserMembershipStatus.INACTIVE);
-        when(userMembershipFacade.findMembership(userId, companyId)).thenReturn(Optional.of(membership));
+        when(userMembershipFacade.getActiveMembership(userId, companyId))
+                .thenThrow(new ResourceNotFoundException("UserMembership", userId + "/" + companyId));
 
         assertThatThrownBy(() -> useCase().execute(new SelectCompanyRequest(companyId), jwt(userId, "global")))
                 .isInstanceOf(AccessDeniedException.class);

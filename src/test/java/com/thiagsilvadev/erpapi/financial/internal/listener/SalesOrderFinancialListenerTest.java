@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -46,11 +45,12 @@ class SalesOrderFinancialListenerTest {
     @Test
     void shouldCreateB2bInvoiceForBuyerCompany() {
         UUID salesOrderId = UUID.randomUUID();
+        UUID sellerCompanyId = UUID.randomUUID();
         UUID buyerCompanyId = UUID.randomUUID();
-        SalesOrderConfirmedEvent event = new SalesOrderConfirmedEvent(salesOrderId, LocalDate.now());
+        SalesOrderConfirmedEvent event = new SalesOrderConfirmedEvent(salesOrderId, sellerCompanyId, LocalDate.now());
         when(invoiceRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(false);
-        when(salesFacade.findOrderById(salesOrderId))
-                .thenReturn(Optional.of(order(salesOrderId, SaleType.B2B, buyerCompanyId, null)));
+        when(salesFacade.getOrder(sellerCompanyId, salesOrderId))
+                .thenReturn(order(salesOrderId, sellerCompanyId, SaleType.B2B, buyerCompanyId, null));
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(300L);
         when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -66,11 +66,12 @@ class SalesOrderFinancialListenerTest {
     @Test
     void shouldCreateB2cInvoiceForCustomer() {
         UUID salesOrderId = UUID.randomUUID();
+        UUID sellerCompanyId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
-        SalesOrderConfirmedEvent event = new SalesOrderConfirmedEvent(salesOrderId, LocalDate.now());
+        SalesOrderConfirmedEvent event = new SalesOrderConfirmedEvent(salesOrderId, sellerCompanyId, LocalDate.now());
         when(invoiceRepository.existsBySalesOrderId(event.salesOrderId())).thenReturn(false);
-        when(salesFacade.findOrderById(salesOrderId))
-                .thenReturn(Optional.of(order(salesOrderId, SaleType.B2C, null, customerId)));
+        when(salesFacade.getOrder(sellerCompanyId, salesOrderId))
+                .thenReturn(order(salesOrderId, sellerCompanyId, SaleType.B2C, null, customerId));
         when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(301L);
         when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -88,7 +89,8 @@ class SalesOrderFinancialListenerTest {
                 invoiceRepository, ledgerEntryRepository, paymentRepository, businessNumberService, salesFacade);
     }
 
-    private static SalesOrderSnapshot order(UUID id, SaleType saleType, UUID buyerCompanyId, UUID customerId) {
+    private static SalesOrderSnapshot order(
+            UUID id, UUID sellerCompanyId, SaleType saleType, UUID buyerCompanyId, UUID customerId) {
         return new SalesOrderSnapshot(
                 id,
                 100L,
@@ -96,7 +98,7 @@ class SalesOrderFinancialListenerTest {
                 FulfillmentType.PICKUP,
                 PaymentMethod.PIX,
                 null,
-                UUID.randomUUID(),
+                sellerCompanyId,
                 buyerCompanyId,
                 customerId,
                 OrderStatus.CONFIRMED,

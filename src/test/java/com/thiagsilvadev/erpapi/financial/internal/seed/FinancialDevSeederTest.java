@@ -8,7 +8,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -51,12 +50,10 @@ class FinancialDevSeederTest {
                 FinancialAccount.create(COMPANY_ID, "Cash", FinancialAccountType.CASH_REGISTER, null);
         ReflectionTestUtils.setField(account, "id", UUID.randomUUID());
 
-        when(companyFacade.findByCnpj("97.986.234/0001-91"))
-                .thenReturn(Optional.of(
-                        new CompanySnapshot(COMPANY_ID, null, null, null, null, null, null, null, null, null)));
-        when(customerFacade.findCustomerByDocument("12345678901"))
-                .thenReturn(
-                        Optional.of(new CustomerSnapshot(UUID.randomUUID(), "Customer", "12345678901", COMPANY_ID)));
+        when(companyFacade.resolveCompany("97.986.234/0001-91"))
+                .thenReturn(new CompanySnapshot(COMPANY_ID, null, null, null, null, null, null, null, null, null));
+        when(customerFacade.resolveCustomer(COMPANY_ID, "12345678901"))
+                .thenReturn(new CustomerSnapshot(UUID.randomUUID(), "Customer", "12345678901", COMPANY_ID));
         when(accountRepository.findAllByCompanyId(any(), any())).thenReturn(new PageImpl<>(List.of(account)));
         when(businessNumberService.next(any())).thenReturn(1L);
         when(invoiceRepository.saveAndFlush(any())).thenAnswer(invocation -> withId(invocation.getArgument(0)));

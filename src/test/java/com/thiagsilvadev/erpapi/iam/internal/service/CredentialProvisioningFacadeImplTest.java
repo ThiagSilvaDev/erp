@@ -24,7 +24,7 @@ import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 
 @ExtendWith(MockitoExtension.class)
-class CredentialProvisioningServiceTest {
+class CredentialProvisioningFacadeImplTest {
 
     @Mock
     private IamCredentialRepository credentialRepository;
@@ -33,7 +33,7 @@ class CredentialProvisioningServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private CredentialProvisioningService service;
+    private CredentialProvisioningFacadeImpl service;
 
     @Test
     void shouldCreateCredentialWithHashedPassword() {

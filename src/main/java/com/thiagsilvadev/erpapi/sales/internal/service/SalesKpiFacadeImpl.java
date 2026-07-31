@@ -11,12 +11,12 @@ import com.thiagsilvadev.erpapi.sales.api.SalesKpiSnapshot;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 
 @Service
-class SalesKpiService implements SalesKpiFacade {
+class SalesKpiFacadeImpl implements SalesKpiFacade {
 
     private final SalesOrderRepository orderRepository;
     private final SalesKpiCalculator calculator;
 
-    SalesKpiService(SalesOrderRepository orderRepository, SalesKpiCalculator calculator) {
+    SalesKpiFacadeImpl(SalesOrderRepository orderRepository, SalesKpiCalculator calculator) {
         this.orderRepository = orderRepository;
         this.calculator = calculator;
     }

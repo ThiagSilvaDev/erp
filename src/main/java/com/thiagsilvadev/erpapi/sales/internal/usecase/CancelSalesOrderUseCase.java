@@ -45,7 +45,7 @@ public class CancelSalesOrderUseCase {
             eventPublisher.salesOrderCancelled(order);
         }
         order.cancel();
-        inventoryFacade.releaseBySalesOrderId(sellerCompanyId, order.getId());
+        inventoryFacade.releaseReservationsForSalesOrder(sellerCompanyId, order.getId());
         return responseAssembler.toResponse(order);
     }
 }

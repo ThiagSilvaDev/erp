@@ -47,7 +47,7 @@ class InventoryBalanceServiceTest {
         UUID unknownProductId = UUID.randomUUID();
         doThrow(new ResourceNotFoundException("Product", unknownProductId))
                 .when(catalogFacade)
-                .requireProductExistsById(unknownProductId);
+                .getProduct(companyId, unknownProductId);
 
         assertThatThrownBy(() -> service.applyMovement(unknownProductId, warehouseId, 5, StockMovementType.IN))
                 .isInstanceOf(ResourceNotFoundException.class);

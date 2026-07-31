@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,11 +41,10 @@ class SalesOrderResponseAssemblerTest {
         UUID customerId = UUID.randomUUID();
         SalesOrder order = SalesOrder.createB2C(
                 100L, FulfillmentType.PICKUP, PaymentMethod.PIX, null, sellerCompanyId, customerId, Set.of(item()));
-        when(companyFacade.findById(sellerCompanyId))
-                .thenReturn(Optional.of(
-                        company(sellerCompanyId, CompanyType.CORRESPONDENT, "Seller Legal", "Seller Trade")));
-        when(customerFacade.findCustomerById(customerId))
-                .thenReturn(Optional.of(new CustomerSnapshot(customerId, "Customer Name", "123", UUID.randomUUID())));
+        when(companyFacade.getCompany(sellerCompanyId))
+                .thenReturn(company(sellerCompanyId, CompanyType.CORRESPONDENT, "Seller Legal", "Seller Trade"));
+        when(customerFacade.getCustomer(sellerCompanyId, customerId))
+                .thenReturn(new CustomerSnapshot(customerId, "Customer Name", "123", sellerCompanyId));
 
         var response = assembler().toResponse(order);
 
@@ -64,10 +62,10 @@ class SalesOrderResponseAssemblerTest {
                 100L, FulfillmentType.PICKUP, PaymentMethod.PIX, null, sellerCompanyId, buyerCompanyId, Set.of(item()));
         var primaryContact = new CompanyContactSnapshot(
                 UUID.randomUUID(), buyerCompanyId, "Buyer Contact", "Purchasing", null, true);
-        when(companyFacade.findById(sellerCompanyId))
-                .thenReturn(Optional.of(company(sellerCompanyId, CompanyType.FACTORY, "Seller Legal", "Seller Trade")));
-        when(companyFacade.findById(buyerCompanyId))
-                .thenReturn(Optional.of(new CompanySnapshot(
+        when(companyFacade.getCompany(sellerCompanyId))
+                .thenReturn(company(sellerCompanyId, CompanyType.FACTORY, "Seller Legal", "Seller Trade"));
+        when(companyFacade.getCompany(buyerCompanyId))
+                .thenReturn(new CompanySnapshot(
                         buyerCompanyId,
                         1L,
                         "Legal Company",
@@ -77,7 +75,7 @@ class SalesOrderResponseAssemblerTest {
                         CompanyType.CORRESPONDENT,
                         null,
                         null,
-                        primaryContact)));
+                        primaryContact));
 
         var response = assembler().toResponse(order);
 

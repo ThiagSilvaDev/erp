@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -77,8 +76,8 @@ class LoginUseCaseTest {
                         new UsernamePasswordAuthenticationToken("User@Example.com", "secret123")))
                 .thenReturn(authentication);
         var membership = new UserMembershipSnapshot(userId, companyId, UserRole.ADMIN, UserMembershipStatus.ACTIVE);
-        when(userMembershipFacade.findActiveMemberships(userId)).thenReturn(List.of(membership));
-        when(companyFacade.findById(companyId)).thenReturn(Optional.of(company(companyId, "Acme")));
+        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of(membership));
+        when(companyFacade.getCompany(companyId)).thenReturn(company(companyId, "Acme"));
         when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global-token", 3600));
         when(jwtTokenService.issueScoped(principal, membership)).thenReturn(new IssuedToken("scoped-token", 3600));
         when(authMapper.toAuthUserResponse(principal))
@@ -111,11 +110,11 @@ class LoginUseCaseTest {
                 new UserMembershipSnapshot(userId, UUID.randomUUID(), UserRole.ADMIN, UserMembershipStatus.ACTIVE);
         var secondMembership =
                 new UserMembershipSnapshot(userId, UUID.randomUUID(), UserRole.MANAGER, UserMembershipStatus.ACTIVE);
-        when(userMembershipFacade.findActiveMemberships(userId)).thenReturn(List.of(firstMembership, secondMembership));
-        when(companyFacade.findById(firstMembership.companyId()))
-                .thenReturn(Optional.of(company(firstMembership.companyId(), "Acme")));
-        when(companyFacade.findById(secondMembership.companyId()))
-                .thenReturn(Optional.of(company(secondMembership.companyId(), "Beta")));
+        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of(firstMembership, secondMembership));
+        when(companyFacade.getCompany(firstMembership.companyId()))
+                .thenReturn(company(firstMembership.companyId(), "Acme"));
+        when(companyFacade.getCompany(secondMembership.companyId()))
+                .thenReturn(company(secondMembership.companyId(), "Beta"));
         when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global-token", 3600));
         when(authMapper.toAuthUserResponse(principal))
                 .thenReturn(new AuthUserResponse(userId, "user@example.com", "ADMIN"));
@@ -136,7 +135,7 @@ class LoginUseCaseTest {
         when(authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
                 .thenReturn(authentication);
-        when(userMembershipFacade.findActiveMemberships(userId)).thenReturn(List.of());
+        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of());
 
         assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "secret123")))
                 .isInstanceOf(NoActiveMembershipException.class);

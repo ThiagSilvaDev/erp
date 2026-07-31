@@ -75,10 +75,7 @@ class CatalogDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        var companyId = companyFacade
-                .findByCnpj(ACME_CNPJ)
-                .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding catalog"))
-                .id();
+        var companyId = companyFacade.resolveCompany(ACME_CNPJ).id();
         Map<String, Category> categories = CATEGORIES.stream()
                 .map(category -> seedCategory(companyId, category))
                 .collect(Collectors.toMap(Category::getCode, Function.identity()));

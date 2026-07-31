@@ -82,10 +82,7 @@ class InventoryDevSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        var companyId = companyFacade
-                .findByCnpj(ACME_CNPJ)
-                .orElseThrow(() -> new IllegalStateException("Seed company must exist before seeding inventory"))
-                .id();
+        var companyId = companyFacade.resolveCompany(ACME_CNPJ).id();
         Warehouse warehouse = warehouseRepository
                 .findByCompanyIdAndCode(companyId, Warehouse.normalizeCode(MAIN_WAREHOUSE_CODE))
                 .orElseGet(() ->
@@ -96,9 +93,7 @@ class InventoryDevSeeder implements ApplicationRunner {
         LocalDate today = LocalDate.now(clock);
 
         for (MovementSeed seed : MOVEMENTS) {
-            var product = catalogFacade
-                    .findProductBySku(seed.sku(), companyId)
-                    .orElseThrow(() -> new IllegalStateException("Seed product must exist before seeding inventory"));
+            var product = catalogFacade.resolveProduct(companyId, seed.sku());
             inventoryBalanceService.applyMovement(
                     companyId, product.id(), warehouse.getId(), seed.quantity(), seed.type());
             StockMovement movement = movementRepository.saveAndFlush(StockMovement.create(

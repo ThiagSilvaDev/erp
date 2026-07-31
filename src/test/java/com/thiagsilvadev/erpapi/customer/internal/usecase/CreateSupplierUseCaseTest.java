@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
@@ -50,7 +49,7 @@ class CreateSupplierUseCaseTest {
     void shouldCreateSupplier() {
         CreateSupplierRequest request = supplierRequest();
         TenantContext.setTenantId(TENANT_ID);
-        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(companyFacade.getCompany(TENANT_ID)).thenReturn(org.mockito.Mockito.mock());
         when(supplierRepository.existsByCompanyIdAndDocument(TENANT_ID, "12345678900"))
                 .thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(Contact.create("supplier@example.com", "11912345678"));
@@ -72,7 +71,7 @@ class CreateSupplierUseCaseTest {
     void shouldTranslateDuplicateDocumentRace() {
         CreateSupplierRequest request = supplierRequest();
         TenantContext.setTenantId(TENANT_ID);
-        when(companyFacade.findById(TENANT_ID)).thenReturn(Optional.of(org.mockito.Mockito.mock()));
+        when(companyFacade.getCompany(TENANT_ID)).thenReturn(org.mockito.Mockito.mock());
         when(supplierRepository.existsByCompanyIdAndDocument(TENANT_ID, "12345678900"))
                 .thenReturn(false);
         when(mapper.toContact(request.contact())).thenReturn(Contact.create("supplier@example.com", "11912345678"));

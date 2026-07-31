@@ -18,7 +18,6 @@ import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
 import com.thiagsilvadev.erpapi.user.api.UserFacade;
 import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipStatus;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
@@ -48,9 +47,7 @@ public class CreateDriverUseCase {
         var companyId = TenantContext.requireTenantId();
         var licenseNumber = Driver.normalizeLicenseNumber(request.licenseNumber());
 
-        var user = userFacade
-                .findById(request.userId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", request.userId()));
+        var user = userFacade.getUser(request.userId());
 
         validateActiveDriverMembership(user, companyId);
         validateDriverDoesNotExist(companyId, request.userId(), licenseNumber);
@@ -63,11 +60,15 @@ public class CreateDriverUseCase {
             throw new ConflictException("User must be active.", Map.of("userId", user.id()));
         }
 
-        boolean isDriver = userMembershipFacade
-                .findMembership(user.id(), companyId)
-                .filter(m -> m.status() == UserMembershipStatus.ACTIVE)
-                .filter(m -> m.role() == UserRole.DRIVER)
-                .isPresent();
+        boolean isDriver;
+        try {
+            isDriver = userMembershipFacade
+                            .getActiveMembership(user.id(), companyId)
+                            .role()
+                    == UserRole.DRIVER;
+        } catch (ResourceNotFoundException exception) {
+            isDriver = false;
+        }
 
         if (!isDriver) {
             throw new ConflictException(

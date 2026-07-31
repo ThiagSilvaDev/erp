@@ -33,7 +33,7 @@ public class GetCurrentDriverUseCase {
         Driver driver = driverRepository
                 .findByCompanyIdAndUserId(companyId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Driver profile", userId));
-        var user = userFacade.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", userId));
+        var user = userFacade.getUser(userId);
         return new CurrentDriverResponse(
                 driver.getId(),
                 user.id(),
