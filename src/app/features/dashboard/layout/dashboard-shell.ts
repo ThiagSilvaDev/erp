@@ -6,6 +6,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 
+import { appPaths } from '@core/routing/app-paths';
 import { DashboardShellStateService } from './dashboard-shell-state.service';
 
 interface MenuItem {
@@ -100,7 +101,22 @@ export class DashboardShell {
             items: [
               { label: 'Invoices', path: '/invoices', icon: 'wallet' },
               { label: 'Payments', path: '/payments', icon: 'dollar' },
-              { label: 'Financial entries', path: '/financial-entries', icon: 'file-text' },
+              { label: 'Ledger entries', path: '/financial-entries', icon: 'file-text' },
+              {
+                label: 'Chart of accounts',
+                path: appPaths.accountingAccounts,
+                icon: 'database',
+              },
+              {
+                label: 'Accounting entries',
+                path: appPaths.accountingEntries,
+                icon: 'file-text',
+              },
+              {
+                label: 'Account balances',
+                path: appPaths.accountingBalances,
+                icon: 'dollar',
+              },
             ],
           },
           {

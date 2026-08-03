@@ -10,6 +10,8 @@ import { provideCompanyContactsEntityConfig } from './company-contacts/company-c
 import { provideContactPersonsEntityConfig } from './contact-persons/contact-persons.entity-config';
 import { provideCustomersEntityConfig } from './customers/customers.entity-config';
 import {
+  provideAccountingAccountsEntityConfig,
+  provideAccountingEntriesEntityConfig,
   provideFinancialEntriesEntityConfig,
   provideInvoicesEntityConfig,
   providePaymentsEntityConfig,
@@ -101,4 +103,13 @@ export const ERP_ROUTES: Routes = [
   entityRoute('invoices', provideInvoicesEntityConfig()),
   entityRoute('payments', providePaymentsEntityConfig()),
   entityRoute('financial-entries', provideFinancialEntriesEntityConfig()),
+  entityRoute('accounting-accounts', provideAccountingAccountsEntityConfig()),
+  entityRoute('accounting-entries', provideAccountingEntriesEntityConfig()),
+  {
+    path: 'accounting-balances',
+    loadComponent: () =>
+      import('./financial/pages/account-balances-page/account-balances-page').then(
+        (m) => m.AccountBalancesPage,
+      ),
+  },
 ];

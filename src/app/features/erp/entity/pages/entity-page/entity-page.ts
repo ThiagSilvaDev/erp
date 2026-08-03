@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -297,7 +291,7 @@ export class EntityPage {
   private buildForm(fields: EntityField[]): EntityForm {
     const controls: Record<string, FormControl<EntityFormValue>> = {};
     for (const field of fields) {
-      controls[field.key] = new FormControl<EntityFormValue>('', {
+      controls[field.key] = new FormControl<EntityFormValue>(field.defaultValue ?? '', {
         nonNullable: true,
         validators: field.required ? [Validators.required] : [],
       });
@@ -317,9 +311,7 @@ export class EntityPage {
   }
 
   private optionKeysFor(fields: EntityField[]): EntityOptionsKey[] {
-    return [
-      ...new Set(fields.flatMap((field) => (field.optionsKey ? [field.optionsKey] : []))),
-    ];
+    return [...new Set(fields.flatMap((field) => (field.optionsKey ? [field.optionsKey] : [])))];
   }
 
   private entityKeyFromRouteData(data: Record<string, unknown>): EntityKey {

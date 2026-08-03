@@ -3,6 +3,8 @@ import { Observable } from 'rxjs';
 import { Type } from '@angular/core';
 
 export type EntityKey =
+  | 'accounting-accounts'
+  | 'accounting-entries'
   | 'categories'
   | 'companies'
   | 'company-contacts'
@@ -28,10 +30,7 @@ export interface EntitySalesOrderItemFormValue {
   warehouseId: string;
   quantity: number;
 }
-export type EntityCreateValue = Record<
-  string,
-  EntityFormValue | EntitySalesOrderItemFormValue[]
->;
+export type EntityCreateValue = Record<string, EntityFormValue | EntitySalesOrderItemFormValue[]>;
 export type EntityForm = FormGroup<Record<string, FormControl<EntityFormValue>>>;
 
 export interface EntityPageData {
@@ -52,11 +51,13 @@ export interface EntityFieldOption {
 export interface EntityField {
   key: string;
   label: string;
+  defaultValue?: EntityFormValue;
   required?: boolean;
   section?: string;
   type?: 'date' | 'email' | 'number' | 'password' | 'radio' | 'select' | 'textarea';
   options?: EntityFieldOption[];
   optionsKey?:
+    | 'accountingAccounts'
     | 'categories'
     | 'companies'
     | 'customers'
@@ -102,9 +103,7 @@ export interface EntityAction {
   successMessage?: string | null;
 }
 
-export type EntitySelectOptions = Partial<
-  Record<EntityOptionsKey, EntitySelectOption[]>
->;
+export type EntitySelectOptions = Partial<Record<EntityOptionsKey, EntitySelectOption[]>>;
 
 export interface EntityOptionLoader {
   key: EntityOptionsKey;

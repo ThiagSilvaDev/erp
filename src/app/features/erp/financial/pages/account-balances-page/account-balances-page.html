@@ -1,0 +1,88 @@
+<section class="mx-auto grid w-full max-w-7xl gap-4">
+  <header class="border-b border-slate-200 pb-3">
+    <h1 class="m-0 text-xl font-semibold text-slate-950">Account balances</h1>
+    <p class="m-0 mt-1 text-sm text-slate-500">
+      Account totals for a competence period and currency.
+    </p>
+  </header>
+
+  <nz-card class="border-slate-200 shadow-none">
+    <form class="filter-grid" (submit)="applyFilters($event)">
+      <label class="filter-field">
+        <span>From</span>
+        <input type="date" [formField]="filterForm.from" />
+      </label>
+      <label class="filter-field">
+        <span>To</span>
+        <input type="date" [formField]="filterForm.to" />
+      </label>
+      <label class="filter-field">
+        <span>Currency</span>
+        <input autocomplete="off" [formField]="filterForm.currencyCode" />
+      </label>
+      <div class="filter-actions">
+        <button nz-button nzType="primary" type="submit" [disabled]="filterForm().invalid()">
+          Load
+        </button>
+      </div>
+    </form>
+    @if (filterError(); as message) {
+      <p class="m-0 mt-2 text-xs font-medium text-rose-700" role="alert">{{ message }}</p>
+    }
+  </nz-card>
+
+  @if (error(); as loadError) {
+    <nz-alert
+      nzShowIcon
+      [nzType]="loadError.kind === 'forbidden' ? 'warning' : 'error'"
+      [nzMessage]="errorTitle()"
+      [nzDescription]="loadError.message"
+    />
+    @if (loadError.kind !== 'forbidden' && loadError.kind !== 'validation') {
+      <div>
+        <button nz-button nzType="primary" type="button" (click)="retry()">Try again</button>
+      </div>
+    }
+  }
+
+  @if (!hasSubmitted()) {
+    <div class="rounded border border-slate-200 bg-white py-8">
+      <nz-empty nzNotFoundContent="Choose a period and load balances." />
+    </div>
+  } @else if (!error()) {
+    <div class="overflow-hidden rounded border border-slate-200 bg-white">
+      <nz-table
+        nzSize="small"
+        [nzData]="rows()"
+        [nzLoading]="isLoading()"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '640px' }"
+      >
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th class="text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.accountId) {
+            <tr>
+              <td>{{ row.accountCode ?? '—' }}</td>
+              <td>{{ row.accountName ?? '—' }}</td>
+              <td>
+                @if (row.accountType) {
+                  <nz-tag>{{ row.accountType }}</nz-tag>
+                } @else {
+                  —
+                }
+              </td>
+              <td class="whitespace-nowrap text-right font-medium">{{ formattedAmount(row) }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </div>
+  }
+</section>

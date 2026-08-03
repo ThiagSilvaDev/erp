@@ -4,6 +4,9 @@ const DASHBOARD_SEGMENT = 'dashboard';
 const DRIVER_SEGMENT = 'driver';
 const DRIVER_SHIPMENTS_SEGMENT = 'shipments';
 
+const ACCOUNTING_ACCOUNTS_SEGMENT = 'accounting-accounts';
+const ACCOUNTING_ENTRIES_SEGMENT = 'accounting-entries';
+const ACCOUNTING_BALANCES_SEGMENT = 'accounting-balances';
 const CATEGORIES_SEGMENT = 'categories';
 const COMPANIES_SEGMENT = 'companies';
 const CONTACT_PERSONS_SEGMENT = 'contact-persons';
@@ -26,6 +29,9 @@ export const appRoutePaths = {
   dashboard: DASHBOARD_SEGMENT,
   driver: DRIVER_SEGMENT,
   driverShipments: `${DRIVER_SEGMENT}/${DRIVER_SHIPMENTS_SEGMENT}`,
+  accountingAccounts: ACCOUNTING_ACCOUNTS_SEGMENT,
+  accountingEntries: ACCOUNTING_ENTRIES_SEGMENT,
+  accountingBalances: ACCOUNTING_BALANCES_SEGMENT,
   categories: CATEGORIES_SEGMENT,
   companies: COMPANIES_SEGMENT,
   contactPersons: CONTACT_PERSONS_SEGMENT,
@@ -50,6 +56,9 @@ export const appPaths = {
   dashboard: `/${DASHBOARD_SEGMENT}`,
   driver: `/${DRIVER_SEGMENT}`,
   driverShipments: `/${DRIVER_SEGMENT}/${DRIVER_SHIPMENTS_SEGMENT}`,
+  accountingAccounts: `/${ACCOUNTING_ACCOUNTS_SEGMENT}`,
+  accountingEntries: `/${ACCOUNTING_ENTRIES_SEGMENT}`,
+  accountingBalances: `/${ACCOUNTING_BALANCES_SEGMENT}`,
   categories: `/${CATEGORIES_SEGMENT}`,
   companies: `/${COMPANIES_SEGMENT}`,
   contactPersons: `/${CONTACT_PERSONS_SEGMENT}`,

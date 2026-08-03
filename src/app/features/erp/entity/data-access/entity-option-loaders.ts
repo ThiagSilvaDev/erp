@@ -52,7 +52,8 @@ export class CategoriesOptionLoader implements EntityOptionLoader {
       map((page) =>
         (page.content ?? []).map((item) => ({
           value: valueOf(item, 'id'),
-          label: valueOf(item, 'name') || valueOf(item, 'code') || valueOf(item, 'id') || 'Category',
+          label:
+            valueOf(item, 'name') || valueOf(item, 'code') || valueOf(item, 'id') || 'Category',
         })),
       ),
     );
@@ -70,10 +71,7 @@ export class CustomersOptionLoader implements EntityOptionLoader {
         (page.content ?? []).map((item) => ({
           value: valueOf(item, 'id'),
           label:
-            valueOf(item, 'name') ||
-            valueOf(item, 'document') ||
-            valueOf(item, 'id') ||
-            'Customer',
+            valueOf(item, 'name') || valueOf(item, 'document') || valueOf(item, 'id') || 'Customer',
         })),
       ),
     );
@@ -129,6 +127,28 @@ export class InvoicesOptionLoader implements EntityOptionLoader {
             ? `${valueOf(item, 'id')} - ${valueOf(item, 'status') || 'Invoice'}`
             : 'Invoice',
         })),
+      ),
+    );
+  }
+}
+
+@Injectable()
+export class AccountingAccountsOptionLoader implements EntityOptionLoader {
+  private readonly financial = inject(FinancialService);
+  readonly key = 'accountingAccounts' as const;
+
+  load() {
+    return this.financial.listAccountingAccounts(pageParams).pipe(
+      map((page) =>
+        (page.content ?? []).map((item) => {
+          const code = valueOf(item, 'code');
+          const name = valueOf(item, 'name');
+          return {
+            value: valueOf(item, 'id'),
+            label:
+              code && name ? `${code} — ${name}` : code || name || valueOf(item, 'id') || 'Account',
+          };
+        }),
       ),
     );
   }

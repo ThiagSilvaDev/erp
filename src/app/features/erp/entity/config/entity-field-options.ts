@@ -41,3 +41,38 @@ export const paymentStatusOptions = [
   { label: 'Cancelled', value: 'CANCELLED' },
   { label: 'Refunded', value: 'REFUNDED' },
 ];
+
+export const accountingAccountTypeOptions = [
+  { label: 'Asset', value: CreateAccountingAccountRequestType.ASSET },
+  { label: 'Liability', value: CreateAccountingAccountRequestType.LIABILITY },
+  { label: 'Equity', value: CreateAccountingAccountRequestType.EQUITY },
+  { label: 'Revenue', value: CreateAccountingAccountRequestType.REVENUE },
+  { label: 'Expense', value: CreateAccountingAccountRequestType.EXPENSE },
+];
+
+export const accountingSystemRoleOptions = [
+  { label: 'Sales revenue', value: CreateAccountingAccountRequestSystemRole.REVENUE_SALES },
+  { label: 'Cost of goods sold', value: CreateAccountingAccountRequestSystemRole.COGS },
+  {
+    label: 'Administrative expense',
+    value: CreateAccountingAccountRequestSystemRole.ADMIN_EXPENSE,
+  },
+  { label: 'Sales expense', value: CreateAccountingAccountRequestSystemRole.SALES_EXPENSE },
+  { label: 'Financial revenue', value: CreateAccountingAccountRequestSystemRole.FINANCIAL_REVENUE },
+  { label: 'Financial expense', value: CreateAccountingAccountRequestSystemRole.FINANCIAL_EXPENSE },
+];
+
+export const accountingEntryDirectionOptions = [
+  { label: 'Debit', value: CreateAccountingEntryRequestDirection.DEBIT },
+  { label: 'Credit', value: CreateAccountingEntryRequestDirection.CREDIT },
+];
+
+export const booleanOptions = [
+  { label: 'Yes', value: 'true' },
+  { label: 'No', value: 'false' },
+];
+import {
+  CreateAccountingAccountRequestSystemRole,
+  CreateAccountingAccountRequestType,
+  CreateAccountingEntryRequestDirection,
+} from '@generated-api/modules/financial/dtos';

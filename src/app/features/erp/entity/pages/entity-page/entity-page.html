@@ -1,5 +1,7 @@
 <section class="mx-auto grid w-full max-w-7xl gap-4">
-  <div class="flex flex-col gap-3 border-b border-slate-200 pb-3 sm:flex-row sm:items-start sm:justify-between">
+  <div
+    class="flex flex-col gap-3 border-b border-slate-200 pb-3 sm:flex-row sm:items-start sm:justify-between"
+  >
     <div class="min-w-0">
       <h1 class="m-0 truncate text-xl font-semibold text-slate-950">{{ config().title }}</h1>
       <p class="m-0 mt-1 text-sm text-slate-500">{{ config().description }}</p>
@@ -43,6 +45,7 @@
               <input
                 nz-input
                 [id]="'search-' + field.key"
+                [type]="field.type ?? 'text'"
                 [formControlName]="field.key"
                 class="w-full"
               />
@@ -174,7 +177,9 @@
       }
 
       <div class="create-resource-actions">
-        <button nz-button type="button" [disabled]="isSaving()" (click)="closeCreate()">Cancel</button>
+        <button nz-button type="button" [disabled]="isSaving()" (click)="closeCreate()">
+          Cancel
+        </button>
         <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving()">Create</button>
       </div>
     </form>

@@ -58,7 +58,13 @@ export default defineConfig({
   logistics: moduleConfig(['logistics', 'driver mobile'], 'logistics', 'Logistics', 'Logistics'),
 
   financial: moduleConfig(
-    ['ledger entries', 'financial invoices', 'financial payments'],
+    [
+      'ledger entries',
+      'financial invoices',
+      'financial payments',
+      'financial accounting accounts',
+      'financial accounting entries',
+    ],
     'financial',
     'Financial',
     'Financial',

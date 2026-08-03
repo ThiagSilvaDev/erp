@@ -63,7 +63,7 @@ export class EntityDataTable {
   }
 
   isTagColumn(key: string): boolean {
-    return key === 'status' || key === 'role' || key === 'type';
+    return key === 'direction' || key === 'status' || key === 'role' || key === 'type';
   }
 
   tagColor(value: string): string {
@@ -71,8 +71,11 @@ export class EntityDataTable {
       case 'ACTIVE':
       case 'CONFIRMED':
       case 'PAID':
+      case 'POSTED':
       case 'SETTLED':
       case 'RECEIVABLE':
+      case 'CREDIT':
+      case 'REVENUE':
         return 'green';
       case 'DRAFT':
       case 'OPEN':
@@ -81,10 +84,16 @@ export class EntityDataTable {
       case 'ADMIN':
       case 'FACTORY':
       case 'CORRESPONDENT':
+      case 'ASSET':
+      case 'EQUITY':
         return 'purple';
       case 'CANCELLED':
       case 'INACTIVE':
       case 'PAYABLE':
+      case 'REVERSED':
+      case 'DEBIT':
+      case 'EXPENSE':
+      case 'LIABILITY':
         return 'red';
       default:
         return 'default';
