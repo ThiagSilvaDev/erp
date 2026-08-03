@@ -1,0 +1,281 @@
+:host {
+  display: block;
+}
+
+.sales-order-page {
+  display: grid;
+  gap: 18px;
+  color: #172033;
+}
+
+.order-heading,
+.panel-heading,
+.items-total {
+  display: flex;
+  align-items: center;
+}
+
+.page-header {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.header-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+
+.header-summary > div {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.header-summary span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.header-summary strong {
+  color: #1e293b;
+  font-size: 13px;
+}
+
+.order-loader {
+  min-height: 220px;
+}
+
+.order-detail {
+  display: block;
+}
+
+:host ::ng-deep .order-detail > .ant-card-body {
+  padding: 0;
+}
+
+.order-header {
+  display: none;
+}
+
+.order-heading {
+  min-width: 0;
+}
+
+.eyebrow,
+.section-label {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.order-heading h2 {
+  margin: 1px 0 0;
+  color: #0f172a;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.order-heading p {
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.order-status {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.order-status > span {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metric-strip {
+  display: grid;
+  grid-template-columns: 1.25fr repeat(3, 1fr);
+  padding: 24px;
+}
+
+.metric {
+  min-width: 0;
+  padding: 0 24px;
+  border-right: 1px solid #f0f0f0;
+}
+
+.metric:first-child {
+  padding-left: 0;
+}
+
+.metric:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+
+:host ::ng-deep .metric .ant-statistic-content {
+  overflow-wrap: anywhere;
+  font-size: 16px;
+}
+
+:host ::ng-deep .metric-total .ant-statistic-content {
+  font-size: 20px;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  padding: 0 24px 24px;
+}
+
+.panel {
+  min-width: 0;
+}
+
+.panel-heading {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.panel-heading h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.panel-heading p {
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.panel-heading > nz-icon {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+:host ::ng-deep .information-lines .ant-descriptions-item-label {
+  width: 240px;
+}
+
+:host ::ng-deep .information-lines .ant-descriptions-row:not(:last-child) {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+:host ::ng-deep .information-lines .ant-descriptions-item-container {
+  padding-block: 8px;
+}
+
+.section-divider {
+  margin: 24px 0;
+}
+
+.order-items {
+  width: 100%;
+}
+
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.product-cell > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.product-cell strong {
+  overflow-wrap: anywhere;
+  color: #1e293b;
+}
+
+.product-cell > div > span {
+  color: #64748b;
+  font-size: 10px;
+}
+
+.number-cell {
+  width: 125px;
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.line-total {
+  color: #0f172a !important;
+  font-weight: 700;
+}
+
+.code-value {
+  overflow-wrap: anywhere;
+  color: #475569;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+}
+
+.items-total {
+  justify-content: flex-end;
+  gap: 28px;
+  padding: 16px 2px 0;
+}
+
+.items-total span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.items-total strong {
+  color: #0f172a;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.print-footer {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-summary {
+    display: grid;
+    gap: 6px;
+  }
+
+  .metric-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .metric {
+    padding: 12px 0;
+    border-right: 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .metric:last-child {
+    border-bottom: 0;
+  }
+
+  .content-grid {
+    padding: 14px;
+  }
+
+  :host ::ng-deep .information-lines .ant-descriptions-item-label {
+    width: 42%;
+  }
+}

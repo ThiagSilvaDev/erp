@@ -1,6 +1,7 @@
 import {
   ApartmentOutline,
   AppstoreOutline,
+  ArrowLeftOutline,
   BarcodeOutline,
   CheckCircleOutline,
   ContactsOutline,
@@ -19,6 +20,7 @@ import {
   MenuFoldOutline,
   MenuUnfoldOutline,
   PlusOutline,
+  PrinterOutline,
   ShopOutline,
   ShoppingCartOutline,
   StopOutline,
@@ -31,6 +33,7 @@ import {
 export const icons = [
   ApartmentOutline,
   AppstoreOutline,
+  ArrowLeftOutline,
   BarcodeOutline,
   CheckCircleOutline,
   ContactsOutline,
@@ -49,6 +52,7 @@ export const icons = [
   MenuFoldOutline,
   MenuUnfoldOutline,
   PlusOutline,
+  PrinterOutline,
   ShopOutline,
   ShoppingCartOutline,
   StopOutline,
