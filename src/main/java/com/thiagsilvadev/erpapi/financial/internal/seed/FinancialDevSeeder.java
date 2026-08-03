@@ -22,6 +22,8 @@ import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.financial.internal.model.*;
 import com.thiagsilvadev.erpapi.financial.internal.repository.*;
+import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
+import com.thiagsilvadev.erpapi.financial.internal.service.ChartOfAccountsService;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 
 @Component
@@ -51,9 +53,12 @@ class FinancialDevSeeder implements ApplicationRunner {
     private final FinancialAccountRepository accountRepository;
     private final PaymentRepository paymentRepository;
     private final FinancialEntryRepository entryRepository;
+    private final AccountingEntryRepository accountingEntryRepository;
     private final CompanyFacade companyFacade;
     private final CustomerFacade customerFacade;
     private final BusinessNumberService businessNumberService;
+    private final ChartOfAccountsService chartOfAccountsService;
+    private final AccountingPostingService accountingPostingService;
     private final Clock clock;
 
     FinancialDevSeeder(
@@ -62,18 +67,24 @@ class FinancialDevSeeder implements ApplicationRunner {
             FinancialAccountRepository accountRepository,
             PaymentRepository paymentRepository,
             FinancialEntryRepository entryRepository,
+            AccountingEntryRepository accountingEntryRepository,
             CompanyFacade companyFacade,
             CustomerFacade customerFacade,
             BusinessNumberService businessNumberService,
+            ChartOfAccountsService chartOfAccountsService,
+            AccountingPostingService accountingPostingService,
             Clock clock) {
         this.invoiceRepository = invoiceRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.accountRepository = accountRepository;
         this.paymentRepository = paymentRepository;
         this.entryRepository = entryRepository;
+        this.accountingEntryRepository = accountingEntryRepository;
         this.companyFacade = companyFacade;
         this.customerFacade = customerFacade;
         this.businessNumberService = businessNumberService;
+        this.chartOfAccountsService = chartOfAccountsService;
+        this.accountingPostingService = accountingPostingService;
         this.clock = clock;
     }
 
@@ -81,12 +92,14 @@ class FinancialDevSeeder implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         UUID companyId = companyFacade.resolveCompany(ACME_CNPJ).id();
+        chartOfAccountsService.ensureDefaultAccounts(companyId);
+        LocalDate today = LocalDate.now(clock);
+        seedManualAccountingEntries(companyId, today);
         FinancialAccount destinationAccount = ensureAccounts(companyId);
         if (invoiceRepository.countByCompanyId(companyId) >= INVOICES.size()) {
             return;
         }
         var customer = customerFacade.resolveCustomer(companyId, CUSTOMER_DOCUMENT);
-        LocalDate today = LocalDate.now(clock);
 
         for (InvoiceSeed seed : INVOICES) {
             UUID salesOrderReference = seedReference(seed);
@@ -107,13 +120,16 @@ class FinancialDevSeeder implements ApplicationRunner {
 
             switch (seed.status()) {
                 case OPEN -> {
-                    // Open invoices require no lifecycle transition.
+                    accountingPostingService.postInvoiceRevenue(invoice);
+                    backdateInvoiceAccountingEntry(invoice, today.minusDays(seed.daysAgo()));
                 }
                 case CANCELLED -> {
                     invoice.cancel();
                     ledger.cancel();
                 }
-                case PAID, PARTIALLY_PAID ->
+                case PAID, PARTIALLY_PAID -> {
+                    accountingPostingService.postInvoiceRevenue(invoice);
+                    backdateInvoiceAccountingEntry(invoice, today.minusDays(seed.daysAgo()));
                     seedPayment(
                             companyId,
                             customer.id(),
@@ -123,8 +139,51 @@ class FinancialDevSeeder implements ApplicationRunner {
                             salesOrderReference,
                             seed,
                             today);
+                }
             }
         }
+    }
+
+    private void backdateInvoiceAccountingEntry(Invoice invoice, LocalDate competenceDate) {
+        accountingEntryRepository
+                .findByCompanyIdAndSourceTypeAndSourceIdAndStatus(
+                        invoice.getCompanyId(),
+                        AccountingEntrySourceType.INVOICE,
+                        invoice.getId(),
+                        AccountingEntryStatus.POSTED)
+                .forEach(entry ->
+                        accountingEntryRepository.updateCompetenceDateForDevSeed(entry.getId(), competenceDate));
+    }
+
+    private void seedManualAccountingEntries(UUID companyId, LocalDate today) {
+        if (accountingEntryRepository.countByCompanyIdAndSourceType(companyId, AccountingEntrySourceType.MANUAL) > 0) {
+            return;
+        }
+        AccountingAccount adminExpense =
+                chartOfAccountsService.requireBySystemRole(companyId, AccountingSystemRole.ADMIN_EXPENSE);
+        AccountingAccount cogs = chartOfAccountsService.requireBySystemRole(companyId, AccountingSystemRole.COGS);
+        AccountingEntry expense = accountingEntryRepository.saveAndFlush(AccountingEntry.create(
+                companyId,
+                adminExpense.getId(),
+                today.minusDays(20),
+                new BigDecimal("350.00"),
+                "BRL",
+                AccountingEntryDirection.DEBIT,
+                AccountingEntrySourceType.MANUAL,
+                null,
+                "Development seed admin expense"));
+        accountingEntryRepository.updateCompetenceDateForDevSeed(expense.getId(), today.minusDays(20));
+        AccountingEntry cogsEntry = accountingEntryRepository.saveAndFlush(AccountingEntry.create(
+                companyId,
+                cogs.getId(),
+                today.minusDays(15),
+                new BigDecimal("1200.00"),
+                "BRL",
+                AccountingEntryDirection.DEBIT,
+                AccountingEntrySourceType.MANUAL,
+                null,
+                "Development seed COGS"));
+        accountingEntryRepository.updateCompetenceDateForDevSeed(cogsEntry.getId(), today.minusDays(15));
     }
 
     private FinancialAccount ensureAccounts(UUID companyId) {

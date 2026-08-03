@@ -20,6 +20,7 @@ import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
 import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
 import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
@@ -34,6 +35,7 @@ public class CreateInvoiceUseCase {
     private final SalesFacade salesFacade;
     private final FinancialMapper mapper;
     private final BusinessNumberService businessNumberService;
+    private final AccountingPostingService accountingPostingService;
 
     public CreateInvoiceUseCase(
             InvoiceRepository invoiceRepository,
@@ -42,7 +44,8 @@ public class CreateInvoiceUseCase {
             CompanyFacade companyFacade,
             SalesFacade salesFacade,
             FinancialMapper mapper,
-            BusinessNumberService businessNumberService) {
+            BusinessNumberService businessNumberService,
+            AccountingPostingService accountingPostingService) {
         this.invoiceRepository = invoiceRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.customerFacade = customerFacade;
@@ -50,6 +53,7 @@ public class CreateInvoiceUseCase {
         this.salesFacade = salesFacade;
         this.mapper = mapper;
         this.businessNumberService = businessNumberService;
+        this.accountingPostingService = accountingPostingService;
     }
 
     @Transactional
@@ -75,6 +79,7 @@ public class CreateInvoiceUseCase {
 
         ledgerEntryRepository.save(LedgerEntry.receivable(
                 companyId, invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
+        accountingPostingService.postInvoiceRevenue(invoice);
 
         return mapper.toResponse(invoice);
     }

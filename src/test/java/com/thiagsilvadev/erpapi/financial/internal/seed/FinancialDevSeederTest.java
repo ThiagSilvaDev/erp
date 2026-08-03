@@ -20,17 +20,10 @@ import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccount;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccountType;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
-import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
-import com.thiagsilvadev.erpapi.financial.internal.model.InvoiceStatus;
-import com.thiagsilvadev.erpapi.financial.internal.model.Payment;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialAccountRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
+import com.thiagsilvadev.erpapi.financial.internal.model.*;
+import com.thiagsilvadev.erpapi.financial.internal.repository.*;
+import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
+import com.thiagsilvadev.erpapi.financial.internal.service.ChartOfAccountsService;
 
 class FinancialDevSeederTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
@@ -43,12 +36,28 @@ class FinancialDevSeederTest {
         FinancialAccountRepository accountRepository = mock(FinancialAccountRepository.class);
         PaymentRepository paymentRepository = mock(PaymentRepository.class);
         FinancialEntryRepository entryRepository = mock(FinancialEntryRepository.class);
+        AccountingEntryRepository accountingEntryRepository = mock(AccountingEntryRepository.class);
         CompanyFacade companyFacade = mock(CompanyFacade.class);
         CustomerFacade customerFacade = mock(CustomerFacade.class);
         BusinessNumberService businessNumberService = mock(BusinessNumberService.class);
+        ChartOfAccountsService chartOfAccountsService = mock(ChartOfAccountsService.class);
+        AccountingPostingService accountingPostingService = mock(AccountingPostingService.class);
         FinancialAccount account =
                 FinancialAccount.create(COMPANY_ID, "Cash", FinancialAccountType.CASH_REGISTER, null);
         ReflectionTestUtils.setField(account, "id", UUID.randomUUID());
+        AccountingAccount adminExpense = AccountingAccount.create(
+                COMPANY_ID,
+                "5.1",
+                "Despesas Administrativas",
+                null,
+                null,
+                AccountingAccountType.EXPENSE,
+                AccountingSystemRole.ADMIN_EXPENSE,
+                true);
+        ReflectionTestUtils.setField(adminExpense, "id", UUID.randomUUID());
+        AccountingAccount cogs = AccountingAccount.create(
+                COMPANY_ID, "4.1", "CMV", null, null, AccountingAccountType.EXPENSE, AccountingSystemRole.COGS, true);
+        ReflectionTestUtils.setField(cogs, "id", UUID.randomUUID());
 
         when(companyFacade.resolveCompany("97.986.234/0001-91"))
                 .thenReturn(new CompanySnapshot(COMPANY_ID, null, null, null, null, null, null, null, null, null));
@@ -60,6 +69,15 @@ class FinancialDevSeederTest {
         when(ledgerRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(paymentRepository.saveAndFlush(any())).thenAnswer(invocation -> withId(invocation.getArgument(0)));
         when(entryRepository.saveAndFlush(any())).thenAnswer(invocation -> withId(invocation.getArgument(0)));
+        when(accountingEntryRepository.countByCompanyIdAndSourceType(COMPANY_ID, AccountingEntrySourceType.MANUAL))
+                .thenReturn(0L);
+        when(chartOfAccountsService.requireBySystemRole(COMPANY_ID, AccountingSystemRole.ADMIN_EXPENSE))
+                .thenReturn(adminExpense);
+        when(chartOfAccountsService.requireBySystemRole(COMPANY_ID, AccountingSystemRole.COGS))
+                .thenReturn(cogs);
+        when(accountingEntryRepository.saveAndFlush(any())).thenAnswer(invocation -> withId(invocation.getArgument(0)));
+        when(accountingEntryRepository.findByCompanyIdAndSourceTypeAndSourceIdAndStatus(any(), any(), any(), any()))
+                .thenReturn(List.of());
 
         new FinancialDevSeeder(
                         invoiceRepository,
@@ -67,18 +85,24 @@ class FinancialDevSeederTest {
                         accountRepository,
                         paymentRepository,
                         entryRepository,
+                        accountingEntryRepository,
                         companyFacade,
                         customerFacade,
                         businessNumberService,
+                        chartOfAccountsService,
+                        accountingPostingService,
                         CLOCK)
                 .run(null);
 
         ArgumentCaptor<Invoice> captor = ArgumentCaptor.forClass(Invoice.class);
+        verify(chartOfAccountsService).ensureDefaultAccounts(COMPANY_ID);
         verify(invoiceRepository, times(FinancialDevSeeder.seedInvoiceCount())).saveAndFlush(captor.capture());
         verify(invoiceRepository, times(FinancialDevSeeder.seedInvoiceCount())).updateCreatedAtForDevSeed(any(), any());
         verify(paymentRepository, times(6)).saveAndFlush(any(Payment.class));
         verify(entryRepository, times(6)).saveAndFlush(any(FinancialEntry.class));
         verify(entryRepository, times(6)).updateOccurredAtForDevSeed(any(), any());
+        verify(accountingPostingService, times(10)).postInvoiceRevenue(any(Invoice.class));
+        verify(accountingEntryRepository, times(2)).saveAndFlush(any(AccountingEntry.class));
         assertThat(captor.getAllValues())
                 .extracting(Invoice::getStatus)
                 .contains(InvoiceStatus.OPEN, InvoiceStatus.PAID, InvoiceStatus.CANCELLED);

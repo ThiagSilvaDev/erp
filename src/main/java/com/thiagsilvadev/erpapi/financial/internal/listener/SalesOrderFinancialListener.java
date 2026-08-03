@@ -12,6 +12,7 @@ import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
+import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderCancelledEvent;
@@ -28,18 +29,21 @@ public class SalesOrderFinancialListener {
     private final PaymentRepository paymentRepository;
     private final BusinessNumberService businessNumberService;
     private final SalesFacade salesFacade;
+    private final AccountingPostingService accountingPostingService;
 
     public SalesOrderFinancialListener(
             InvoiceRepository invoiceRepository,
             LedgerEntryRepository ledgerEntryRepository,
             PaymentRepository paymentRepository,
             BusinessNumberService businessNumberService,
-            SalesFacade salesFacade) {
+            SalesFacade salesFacade,
+            AccountingPostingService accountingPostingService) {
         this.invoiceRepository = invoiceRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.paymentRepository = paymentRepository;
         this.businessNumberService = businessNumberService;
         this.salesFacade = salesFacade;
+        this.accountingPostingService = accountingPostingService;
     }
 
     @ApplicationModuleListener
@@ -66,6 +70,7 @@ public class SalesOrderFinancialListener {
                 invoice.getAmount(),
                 invoice.getCurrencyCode(),
                 invoice.getDueDate()));
+        accountingPostingService.postInvoiceRevenue(invoice);
     }
 
     @ApplicationModuleListener
@@ -76,6 +81,7 @@ public class SalesOrderFinancialListener {
             }
             invoice.cancel();
             ledgerEntryRepository.findByInvoiceId(invoice.getId()).ifPresent(LedgerEntry::cancel);
+            accountingPostingService.reverseInvoiceRevenue(invoice);
         });
     }
 }

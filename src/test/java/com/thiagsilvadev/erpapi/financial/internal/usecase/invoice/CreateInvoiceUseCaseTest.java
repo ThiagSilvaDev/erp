@@ -61,6 +61,9 @@ class CreateInvoiceUseCaseTest {
     @Mock
     private BusinessNumberService businessNumberService;
 
+    @Mock
+    private com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService accountingPostingService;
+
     @AfterEach
     void tearDown() {
         TenantContext.clear();
@@ -186,7 +189,8 @@ class CreateInvoiceUseCaseTest {
                 companyFacade,
                 salesFacade,
                 mapper,
-                businessNumberService);
+                businessNumberService,
+                accountingPostingService);
     }
 
     private static CreateInvoiceRequest request(

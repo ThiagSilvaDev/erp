@@ -3,6 +3,8 @@ package com.thiagsilvadev.erpapi.financial.internal.dto;
 import org.mapstruct.Mapper;
 
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.accountingaccount.AccountingAccountResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.accountingentry.AccountingEntryResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.entry.FinancialEntryResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.ledgerentry.LedgerEntryResponse;
@@ -21,4 +23,8 @@ public interface FinancialMapper {
     FinancialAccountResponse toResponse(FinancialAccount account);
 
     FinancialEntryResponse toResponse(FinancialEntry entry);
+
+    AccountingAccountResponse toResponse(AccountingAccount account);
+
+    AccountingEntryResponse toResponse(AccountingEntry entry);
 }

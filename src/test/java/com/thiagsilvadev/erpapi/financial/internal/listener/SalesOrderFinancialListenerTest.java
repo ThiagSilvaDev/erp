@@ -42,6 +42,9 @@ class SalesOrderFinancialListenerTest {
     @Mock
     private SalesFacade salesFacade;
 
+    @Mock
+    private com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService accountingPostingService;
+
     @Test
     void shouldCreateB2bInvoiceForBuyerCompany() {
         UUID salesOrderId = UUID.randomUUID();
@@ -86,7 +89,12 @@ class SalesOrderFinancialListenerTest {
 
     private SalesOrderFinancialListener listener() {
         return new SalesOrderFinancialListener(
-                invoiceRepository, ledgerEntryRepository, paymentRepository, businessNumberService, salesFacade);
+                invoiceRepository,
+                ledgerEntryRepository,
+                paymentRepository,
+                businessNumberService,
+                salesFacade,
+                accountingPostingService);
     }
 
     private static SalesOrderSnapshot order(
