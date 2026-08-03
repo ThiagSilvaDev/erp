@@ -14,7 +14,7 @@ describe('ShipmentDetailPage', () => {
         id: 'shipment-1',
         shipmentNumber: 1001,
         status: ShipmentResponseStatus.IN_TRANSIT,
-        driver: { id: 'driver-1', name: 'Ana' },
+        driver: { id: 'driver-1', licenseNumber: 'CNH-1' },
         vehicle: { id: 'vehicle-1', plate: 'ABC-1234' },
         items: [{ productId: 'product-1', productSku: 'SKU-1', quantity: 2 }],
         trackingEvents: [{ id: 'event-1', status: ShipmentResponseStatus.IN_TRANSIT }],
@@ -49,7 +49,7 @@ describe('ShipmentDetailPage', () => {
 
     expect(logistics.getShipmentById).toHaveBeenCalledWith('shipment-1');
     expect(component.shipment()?.shipmentNumber).toBe(1001);
-    expect(component.driverLabel(component.shipment()?.driver)).toBe('Ana');
+    expect(component.driverLabel(component.shipment()?.driver)).toBe('CNH-1');
     expect(component.vehicleLabel(component.shipment()?.vehicle)).toBe('ABC-1234');
   });
 

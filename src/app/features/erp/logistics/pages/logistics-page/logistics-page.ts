@@ -8,8 +8,19 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormField, email, form, minLength, required, submit } from '@angular/forms/signals';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Observable, catchError, finalize, forkJoin, of } from 'rxjs';
+import {
+  EMPTY,
+  Observable,
+  catchError,
+  expand,
+  finalize,
+  firstValueFrom,
+  forkJoin,
+  of,
+  reduce,
+} from 'rxjs';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -23,6 +34,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 
+import { AuthService } from '@core/auth/auth.service';
 import { LogisticsService } from '@generated-api/modules/logistics/Logistics.service';
 import type {
   AssignDispatchRequest,
@@ -32,6 +44,9 @@ import type {
   ShipmentSearchCriteriaStatus,
   VehicleResponse,
 } from '@generated-api/modules/logistics/dtos';
+import { UsersService } from '@generated-api/modules/users/Users.service';
+import type { PagedModelUserResponse, UserResponse } from '@generated-api/modules/users/dtos';
+import { CreateUserRequestRole, ListUsersRole } from '@generated-api/modules/users/dtos';
 import {
   ShipmentResponseStatus as ShipmentState,
   ShipmentSearchCriteriaStatus as ShipmentStatus,
@@ -44,12 +59,6 @@ type VehicleForm = FormGroup<{
   plate: FormControl<string>;
   description: FormControl<string>;
   capacity: FormControl<number | null>;
-}>;
-
-type DriverForm = FormGroup<{
-  name: FormControl<string>;
-  licenseNumber: FormControl<string>;
-  phone: FormControl<string>;
 }>;
 
 type ShipmentFilterForm = FormGroup<{
@@ -78,11 +87,22 @@ interface DetailField {
 type ShipmentEventAction = 'tracking' | 'load' | 'dispatch' | 'deliver' | 'cancel';
 
 const PAGE_SIZE = 10;
+const DRIVER_USER_PAGE_SIZE = 100;
+const EMPTY_DRIVER_FORM = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  birthDate: '',
+  password: '',
+  licenseNumber: '',
+};
 
 @Component({
   selector: 'app-logistics-page',
   imports: [
     ReactiveFormsModule,
+    FormField,
     RouterLink,
     NzAlertModule,
     NzButtonModule,
@@ -101,11 +121,13 @@ const PAGE_SIZE = 10;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogisticsPage {
+  private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly logistics = inject(LogisticsService);
   private readonly messages = inject(NzMessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly usersApi = inject(UsersService);
 
   readonly activeTab = signal<LogisticsTab>('vehicles');
 
@@ -122,6 +144,7 @@ export class LogisticsPage {
   readonly driversPageIndex = signal(1);
   readonly driversTotal = signal(0);
   readonly driversLoaded = signal(false);
+  readonly driverUsersById = signal(new Map<string, UserResponse>());
 
   readonly shipments = signal<ShipmentResponse[]>([]);
   readonly shipmentsLoading = signal(false);
@@ -135,10 +158,16 @@ export class LogisticsPage {
     description: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     capacity: new FormControl<number | null>(null),
   });
-  readonly driverForm: DriverForm = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    licenseNumber: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    phone: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+  readonly pendingDriverUserId = signal<string | null>(null);
+  readonly driverModel = signal({ ...EMPTY_DRIVER_FORM });
+  readonly driverForm = form(this.driverModel, (path) => {
+    required(path.firstName, { message: 'First name is required.' });
+    required(path.lastName, { message: 'Last name is required.' });
+    required(path.email, { message: 'Email is required.' });
+    email(path.email, { message: 'Enter a valid email.' });
+    required(path.password, { message: 'Password is required.' });
+    minLength(path.password, 8, { message: 'Password must have at least 8 characters.' });
+    required(path.licenseNumber, { message: 'License number is required.' });
   });
   readonly shipmentFilterForm: ShipmentFilterForm = new FormGroup({
     status: new FormControl<ShipmentSearchCriteriaStatus | null>(null),
@@ -261,7 +290,8 @@ export class LogisticsPage {
   }
 
   openDriverCreate(): void {
-    this.driverForm.reset();
+    this.driverModel.set({ ...EMPTY_DRIVER_FORM });
+    this.pendingDriverUserId.set(null);
     this.isDriverCreateOpen.set(true);
   }
 
@@ -270,27 +300,67 @@ export class LogisticsPage {
   }
 
   submitDriver(): void {
-    if (this.driverForm.invalid) {
-      this.driverForm.markAllAsTouched();
-      return;
-    }
+    void submit(this.driverForm, async () => {
+      const companyId = this.auth.session()?.activeCompany?.id;
+      if (!companyId) {
+        this.messages.error('An active company is required to create a driver.');
+        return;
+      }
 
-    this.isDriverSaving.set(true);
-    this.logistics
-      .createDriver(this.driverForm.getRawValue())
-      .pipe(
-        finalize(() => this.isDriverSaving.set(false)),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe({
-        next: () => {
-          this.messages.success('Driver created.');
-          this.isDriverCreateOpen.set(false);
-          this.driversPageIndex.set(1);
-          this.loadDrivers();
-        },
-        error: () => this.messages.error('Unable to create driver.'),
-      });
+      this.isDriverSaving.set(true);
+      try {
+        const value = this.driverModel();
+        let userId = this.pendingDriverUserId();
+
+        if (!userId) {
+          const user = await firstValueFrom(
+            this.usersApi
+              .createUser({
+                firstName: value.firstName.trim(),
+                lastName: value.lastName.trim(),
+                email: value.email.trim(),
+                phone: value.phone.trim() || undefined,
+                birthDate: value.birthDate || undefined,
+                password: value.password,
+                companyId,
+                role: CreateUserRequestRole.DRIVER,
+              })
+              .pipe(takeUntilDestroyed(this.destroyRef)),
+          );
+
+          if (!user.id) {
+            throw new Error('Created user response did not include an ID.');
+          }
+
+          userId = user.id;
+          this.pendingDriverUserId.set(userId);
+        }
+
+        await firstValueFrom(
+          this.logistics
+            .createDriver({
+              userId,
+              licenseNumber: value.licenseNumber.trim(),
+            })
+            .pipe(takeUntilDestroyed(this.destroyRef)),
+        );
+
+        this.messages.success('Driver created.');
+        this.isDriverCreateOpen.set(false);
+        this.pendingDriverUserId.set(null);
+        this.driverModel.set({ ...EMPTY_DRIVER_FORM });
+        this.driversPageIndex.set(1);
+        this.loadDrivers();
+      } catch {
+        if (this.pendingDriverUserId()) {
+          this.messages.error('User created, but the driver profile failed. Retry to finish.');
+        } else {
+          this.messages.error('Unable to create driver.');
+        }
+      } finally {
+        this.isDriverSaving.set(false);
+      }
+    });
   }
 
   openVehicleDetail(vehicle: VehicleResponse): void {
@@ -409,8 +479,12 @@ export class LogisticsPage {
       )
       .subscribe({
         next: (shipment) =>
-          this.handleShipmentActionSuccess(shipment, this.eventSuccessMessage(this.shipmentEventAction())),
-        error: () => this.messages.error(`Unable to ${this.eventActionLabel().toLowerCase()} shipment.`),
+          this.handleShipmentActionSuccess(
+            shipment,
+            this.eventSuccessMessage(this.shipmentEventAction()),
+          ),
+        error: () =>
+          this.messages.error(`Unable to ${this.eventActionLabel().toLowerCase()} shipment.`),
       });
   }
 
@@ -461,7 +535,24 @@ export class LogisticsPage {
     if (!driver) {
       return '-';
     }
-    return driver.name || driver.licenseNumber || driver.id || '-';
+    return this.driverName(driver) || driver.licenseNumber || driver.id || '-';
+  }
+
+  driverName(driver: DriverResponse): string {
+    const user = this.driverUser(driver);
+    if (!user) {
+      return '';
+    }
+
+    return user.displayName || [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  }
+
+  driverPhone(driver: DriverResponse): string {
+    return this.driverUser(driver)?.phone || '-';
+  }
+
+  driverEmail(driver: DriverResponse): string {
+    return this.driverUser(driver)?.email || '-';
   }
 
   canAssignDispatch(shipment: ShipmentResponse): boolean {
@@ -481,7 +572,28 @@ export class LogisticsPage {
   }
 
   canCancelShipment(shipment: ShipmentResponse): boolean {
-    return shipment.status !== ShipmentState.DELIVERED && shipment.status !== ShipmentState.CANCELLED;
+    return (
+      shipment.status !== ShipmentState.DELIVERED && shipment.status !== ShipmentState.CANCELLED
+    );
+  }
+
+  shipmentStatusColor(status: ShipmentResponse['status'] | undefined | null): string {
+    switch (status) {
+      case ShipmentState.CREATED:
+        return 'default';
+      case ShipmentState.DISPATCH_ASSIGNED:
+        return 'processing';
+      case ShipmentState.LOADED:
+        return 'warning';
+      case ShipmentState.IN_TRANSIT:
+        return 'blue';
+      case ShipmentState.DELIVERED:
+        return 'success';
+      case ShipmentState.CANCELLED:
+        return 'error';
+      default:
+        return 'default';
+    }
   }
 
   eventActionLabel(): string {
@@ -527,16 +639,28 @@ export class LogisticsPage {
     this.driversLoading.set(true);
     this.driversError.set(null);
 
-    this.logistics
-      .listDrivers({ page: this.driversPageIndex() - 1, size: PAGE_SIZE })
+    forkJoin({
+      drivers: this.logistics.listDrivers({
+        page: this.driversPageIndex() - 1,
+        size: PAGE_SIZE,
+      }),
+      users: this.listAllDriverUsers().pipe(catchError(() => of([]))),
+    })
       .pipe(
         finalize(() => this.driversLoading.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (page) => {
-          this.drivers.set(page.content ?? []);
-          this.driversTotal.set(page.page?.totalElements ?? 0);
+        next: ({ drivers, users }) => {
+          this.drivers.set(drivers.content ?? []);
+          this.driversTotal.set(drivers.page?.totalElements ?? 0);
+          this.driverUsersById.set(
+            new Map(
+              users.flatMap((user) =>
+                user.id ? ([[user.id, user]] as [string, UserResponse][]) : [],
+              ),
+            ),
+          );
           this.driversLoaded.set(true);
         },
         error: () => {
@@ -545,6 +669,38 @@ export class LogisticsPage {
           this.driversError.set('Unable to load drivers.');
         },
       });
+  }
+
+  private listAllDriverUsers(): Observable<UserResponse[]> {
+    return this.usersApi
+      .listUsers({
+        role: ListUsersRole.DRIVER,
+        page: 0,
+        size: DRIVER_USER_PAGE_SIZE,
+      })
+      .pipe(
+        expand((page) => {
+          const pageNumber = page.page?.number ?? 0;
+          const totalPages = page.page?.totalPages ?? 1;
+          if (pageNumber + 1 >= totalPages) {
+            return EMPTY;
+          }
+
+          return this.usersApi.listUsers({
+            role: ListUsersRole.DRIVER,
+            page: pageNumber + 1,
+            size: DRIVER_USER_PAGE_SIZE,
+          });
+        }),
+        reduce(
+          (users, page: PagedModelUserResponse) => [...users, ...(page.content ?? [])],
+          [] as UserResponse[],
+        ),
+      );
+  }
+
+  private driverUser(driver: DriverResponse): UserResponse | undefined {
+    return driver.userId ? this.driverUsersById().get(driver.userId) : undefined;
   }
 
   private loadShipments(): void {
@@ -612,13 +768,19 @@ export class LogisticsPage {
       .subscribe({
         next: (lookups) => {
           if ('vehicles' in lookups) {
-            const vehiclesPage = lookups.vehicles as { content?: VehicleResponse[]; page?: { totalElements?: number } };
+            const vehiclesPage = lookups.vehicles as {
+              content?: VehicleResponse[];
+              page?: { totalElements?: number };
+            };
             this.vehicles.set(vehiclesPage.content ?? []);
             this.vehiclesTotal.set(vehiclesPage.page?.totalElements ?? 0);
             this.vehiclesLoaded.set(true);
           }
           if ('drivers' in lookups) {
-            const driversPage = lookups.drivers as { content?: DriverResponse[]; page?: { totalElements?: number } };
+            const driversPage = lookups.drivers as {
+              content?: DriverResponse[];
+              page?: { totalElements?: number };
+            };
             this.drivers.set(driversPage.content ?? []);
             this.driversTotal.set(driversPage.page?.totalElements ?? 0);
             this.driversLoaded.set(true);
@@ -671,7 +833,9 @@ export class LogisticsPage {
     this.messages.success(message);
     this.isDispatchAssignmentOpen.set(false);
     this.isShipmentEventOpen.set(false);
-    this.selectedShipment.update((selected) => (selected?.id === shipment.id ? shipment : selected));
+    this.selectedShipment.update((selected) =>
+      selected?.id === shipment.id ? shipment : selected,
+    );
     this.shipments.update((shipments) =>
       shipments.map((item) => (item.id === shipment.id ? shipment : item)),
     );

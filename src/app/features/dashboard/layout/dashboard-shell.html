@@ -15,7 +15,7 @@
     </div>
 
     <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="state.isCollapsed()">
-      @for (item of primaryItems; track item.path) {
+      @for (item of primaryItems(); track item.path) {
         <li nz-menu-item nzMatchRouter>
           <a [routerLink]="item.path">
             <nz-icon [nzType]="item.icon" />
@@ -24,7 +24,7 @@
         </li>
       }
 
-      @for (group of submenuGroups; track group.title) {
+      @for (group of submenuGroups(); track group.title) {
         <li nz-submenu nzOpen [nzTitle]="group.title" [nzIcon]="group.icon">
           <ul>
             @for (item of group.items; track item.path) {
@@ -35,7 +35,6 @@
           </ul>
         </li>
       }
-
     </ul>
   </nz-sider>
 

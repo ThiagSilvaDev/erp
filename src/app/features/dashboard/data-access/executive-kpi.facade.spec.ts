@@ -35,7 +35,7 @@ describe('normalizeExecutiveKpis', () => {
 
   it('builds one monetary chart per currency and fills absent bucket values with zero', () => {
     const fixture = response();
-    fixture.sales?.cards?.confirmedRevenue?.push({
+    fixture.sales?.metrics?.confirmedRevenue?.push({
       currencyCode: 'USD',
       current: 300,
       previous: 0,
@@ -83,7 +83,7 @@ function response(): ExecutiveKpiResponse {
       timezone: 'UTC',
     },
     sales: {
-      cards: {
+      metrics: {
         orders: { current: 35, previous: 28, percentageChange: 25 },
         confirmedOrders: { current: 30, previous: 24, percentageChange: 25 },
         cancelledOrders: { current: 5, previous: 4, percentageChange: 25 },
@@ -119,7 +119,7 @@ function response(): ExecutiveKpiResponse {
       ],
     },
     financial: {
-      cards: {
+      metrics: {
         invoices: { current: 30, previous: 24, percentageChange: 25 },
         invoiced: [
           { currencyCode: 'BRL', current: 12_500, previous: 10_000, percentageChange: 25 },
@@ -148,7 +148,7 @@ function response(): ExecutiveKpiResponse {
         availableQuantity: 1_300,
         outOfStockItems: 8,
       },
-      movements: {
+      metrics: {
         inbound: { current: 300, previous: 250, percentageChange: 20 },
         outbound: { current: 220, previous: 200, percentageChange: 10 },
         reserved: { current: 180, previous: 150, percentageChange: 20 },
@@ -169,7 +169,7 @@ function response(): ExecutiveKpiResponse {
     },
     logistics: {
       current: { created: 4, dispatchAssigned: 3, loaded: 2, inTransit: 6 },
-      cards: {
+      metrics: {
         created: { current: 20, previous: 16, percentageChange: 25 },
         delivered: { current: 15, previous: 12, percentageChange: 25 },
         cancelled: { current: 2, previous: 1, percentageChange: 100 },

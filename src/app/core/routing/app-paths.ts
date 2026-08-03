@@ -1,6 +1,8 @@
 const LOGIN_SEGMENT = 'login';
 const SELECT_COMPANY_SEGMENT = 'select-company';
 const DASHBOARD_SEGMENT = 'dashboard';
+const DRIVER_SEGMENT = 'driver';
+const DRIVER_SHIPMENTS_SEGMENT = 'shipments';
 
 const CATEGORIES_SEGMENT = 'categories';
 const COMPANIES_SEGMENT = 'companies';
@@ -22,6 +24,8 @@ export const appRoutePaths = {
   login: LOGIN_SEGMENT,
   selectCompany: SELECT_COMPANY_SEGMENT,
   dashboard: DASHBOARD_SEGMENT,
+  driver: DRIVER_SEGMENT,
+  driverShipments: `${DRIVER_SEGMENT}/${DRIVER_SHIPMENTS_SEGMENT}`,
   categories: CATEGORIES_SEGMENT,
   companies: COMPANIES_SEGMENT,
   contactPersons: CONTACT_PERSONS_SEGMENT,
@@ -44,6 +48,8 @@ export const appPaths = {
   login: `/${LOGIN_SEGMENT}`,
   selectCompany: `/${SELECT_COMPANY_SEGMENT}`,
   dashboard: `/${DASHBOARD_SEGMENT}`,
+  driver: `/${DRIVER_SEGMENT}`,
+  driverShipments: `/${DRIVER_SEGMENT}/${DRIVER_SHIPMENTS_SEGMENT}`,
   categories: `/${CATEGORIES_SEGMENT}`,
   companies: `/${COMPANIES_SEGMENT}`,
   contactPersons: `/${CONTACT_PERSONS_SEGMENT}`,

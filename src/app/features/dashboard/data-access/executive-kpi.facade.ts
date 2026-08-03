@@ -72,7 +72,7 @@ export function normalizeExecutiveKpis(response: ExecutiveKpiResponse): Executiv
 
 function salesSection(response: ExecutiveKpiResponse): KpiSectionViewModel {
   const sales = response.sales;
-  const cards = sales?.cards;
+  const cards = sales?.metrics;
   const trend = sales?.trend ?? [];
   const revenueCurrencies = currencies(
     cards?.confirmedRevenue,
@@ -144,7 +144,7 @@ function salesSection(response: ExecutiveKpiResponse): KpiSectionViewModel {
 
 function financialSection(response: ExecutiveKpiResponse): KpiSectionViewModel {
   const financial = response.financial;
-  const cards = financial?.cards;
+  const cards = financial?.metrics;
   const trend = financial?.trend ?? [];
   const financialCurrencies = currencies(
     cards?.invoiced,
@@ -214,7 +214,7 @@ function financialSection(response: ExecutiveKpiResponse): KpiSectionViewModel {
 function inventorySection(response: ExecutiveKpiResponse): KpiSectionViewModel {
   const inventory = response.inventory;
   const current = inventory?.current;
-  const movements = inventory?.movements;
+  const movements = inventory?.metrics;
   const trend = inventory?.trend ?? [];
 
   return {
@@ -280,7 +280,7 @@ function inventorySection(response: ExecutiveKpiResponse): KpiSectionViewModel {
 function logisticsSection(response: ExecutiveKpiResponse): KpiSectionViewModel {
   const logistics = response.logistics;
   const current = logistics?.current;
-  const cards = logistics?.cards;
+  const cards = logistics?.metrics;
   const trend = logistics?.trend ?? [];
   const logisticsBuckets = buckets(trend);
 

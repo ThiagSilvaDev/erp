@@ -98,7 +98,7 @@ export class ShipmentDetailPage {
     if (!driver) {
       return '-';
     }
-    return driver.name || driver.licenseNumber || driver.id || '-';
+    return driver.licenseNumber || driver.id || '-';
   }
 
   vehicleLabel(vehicle: VehicleResponse | undefined): string {

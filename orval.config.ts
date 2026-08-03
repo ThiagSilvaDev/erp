@@ -55,7 +55,7 @@ export default defineConfig({
   kpis: moduleConfig('kpis', 'kpis', 'Kpis', 'Kpis'),
   sales: moduleConfig('sales', 'sales', 'Sales', 'Sales'),
   users: moduleConfig('users', 'users', 'Users', 'Users'),
-  logistics: moduleConfig('logistics', 'logistics', 'Logistics', 'Logistics'),
+  logistics: moduleConfig(['logistics', 'driver mobile'], 'logistics', 'Logistics', 'Logistics'),
 
   financial: moduleConfig(
     ['ledger entries', 'financial invoices', 'financial payments'],

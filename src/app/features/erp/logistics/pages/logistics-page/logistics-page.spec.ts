@@ -1,10 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
 
+import { AuthService } from '@core/auth/auth.service';
+import { icons } from '@core/ui/icons-provider';
 import { LogisticsService } from '@generated-api/modules/logistics/Logistics.service';
 import { ShipmentSearchCriteriaStatus } from '@generated-api/modules/logistics/dtos';
+import { UsersService } from '@generated-api/modules/users/Users.service';
 import { LogisticsPage } from './logistics-page';
 
 function page(content: object[] = []) {
@@ -24,17 +28,29 @@ describe('LogisticsPage', () => {
       }),
     ),
     cancelShipment: vi.fn(() =>
-      of({ id: 'shipment-1', shipmentNumber: 1001, status: ShipmentSearchCriteriaStatus.CANCELLED }),
+      of({
+        id: 'shipment-1',
+        shipmentNumber: 1001,
+        status: ShipmentSearchCriteriaStatus.CANCELLED,
+      }),
     ),
-    createDriver: vi.fn(() => of({ id: 'driver-2' })),
+    createDriver: vi.fn(() => of({ id: 'driver-2', userId: 'user-2' })),
     createVehicle: vi.fn(() => of({ id: 'vehicle-2' })),
     deliverShipment: vi.fn(() =>
-      of({ id: 'shipment-1', shipmentNumber: 1001, status: ShipmentSearchCriteriaStatus.DELIVERED }),
+      of({
+        id: 'shipment-1',
+        shipmentNumber: 1001,
+        status: ShipmentSearchCriteriaStatus.DELIVERED,
+      }),
     ),
     dispatchShipment: vi.fn(() =>
-      of({ id: 'shipment-1', shipmentNumber: 1001, status: ShipmentSearchCriteriaStatus.IN_TRANSIT }),
+      of({
+        id: 'shipment-1',
+        shipmentNumber: 1001,
+        status: ShipmentSearchCriteriaStatus.IN_TRANSIT,
+      }),
     ),
-    getDriverById: vi.fn((id: string) => of({ id, name: 'Fresh driver' })),
+    getDriverById: vi.fn((id: string) => of({ id, userId: 'user-1', licenseNumber: 'CNH-1' })),
     getShipmentById: vi.fn((id: string) =>
       of({ id, shipmentNumber: 1001, status: ShipmentSearchCriteriaStatus.CREATED }),
     ),
@@ -42,7 +58,7 @@ describe('LogisticsPage', () => {
     loadShipment: vi.fn(() =>
       of({ id: 'shipment-1', shipmentNumber: 1001, status: ShipmentSearchCriteriaStatus.LOADED }),
     ),
-    listDrivers: vi.fn(() => page([{ id: 'driver-1', name: 'Ana' }])),
+    listDrivers: vi.fn(() => page([{ id: 'driver-1', userId: 'user-1', licenseNumber: 'CNH-1' }])),
     listShipments: vi.fn(() =>
       page([
         {
@@ -54,15 +70,41 @@ describe('LogisticsPage', () => {
     ),
     listVehicles: vi.fn(() => page([{ id: 'vehicle-1', plate: 'ABC-1234' }])),
   };
+  const users = {
+    createUser: vi.fn(() =>
+      of({
+        id: 'user-2',
+        firstName: 'Bruno',
+        lastName: 'Silva',
+        email: 'bruno@example.com',
+      }),
+    ),
+    listUsers: vi.fn(() =>
+      page([
+        {
+          id: 'user-1',
+          displayName: 'Ana Driver',
+          phone: '555-0100',
+          email: 'ana@example.com',
+        },
+      ]),
+    ),
+  };
+  const auth = {
+    session: vi.fn(() => ({ activeCompany: { id: 'company-1', name: 'ACME' } })),
+  };
 
   function createComponent(): ComponentFixture<LogisticsPage> {
     TestBed.configureTestingModule({
       imports: [LogisticsPage],
       providers: [
         provideNoopAnimations(),
+        provideNzIcons(icons),
         provideRouter([]),
         { provide: ActivatedRoute, useValue: { data: of({}) } },
+        { provide: AuthService, useValue: auth },
         { provide: LogisticsService, useValue: logistics },
+        { provide: UsersService, useValue: users },
       ],
     });
 
@@ -118,24 +160,60 @@ describe('LogisticsPage', () => {
     expect(logistics.listVehicles).toHaveBeenCalledWith({ page: 0, size: 10 });
   });
 
-  it('creates drivers and reloads the driver tab', () => {
-    const component = createComponent().componentInstance;
+  it('creates a DRIVER user before creating and reloading the driver profile', async () => {
+    const fixture = createComponent();
+    const component = fixture.componentInstance;
     component.changeTab(1);
     logistics.listDrivers.mockClear();
 
-    component.driverForm.setValue({
-      name: 'Bruno',
-      licenseNumber: 'CNH-1',
+    component.driverModel.set({
+      firstName: 'Bruno',
+      lastName: 'Silva',
+      email: 'bruno@example.com',
       phone: '555-0100',
+      birthDate: '1990-01-01',
+      password: 'password123',
+      licenseNumber: 'CNH-1',
     });
     component.submitDriver();
+    await vi.waitFor(() => expect(logistics.createDriver).toHaveBeenCalled());
 
-    expect(logistics.createDriver).toHaveBeenCalledWith({
-      name: 'Bruno',
-      licenseNumber: 'CNH-1',
+    expect(users.createUser).toHaveBeenCalledWith({
+      firstName: 'Bruno',
+      lastName: 'Silva',
+      email: 'bruno@example.com',
       phone: '555-0100',
+      birthDate: '1990-01-01',
+      password: 'password123',
+      companyId: 'company-1',
+      role: 'DRIVER',
+    });
+    expect(logistics.createDriver).toHaveBeenCalledWith({
+      userId: 'user-2',
+      licenseNumber: 'CNH-1',
     });
     expect(logistics.listDrivers).toHaveBeenCalledWith({ page: 0, size: 10 });
+  });
+
+  it('retries only driver creation after the user was created', async () => {
+    const component = createComponent().componentInstance;
+    logistics.createDriver.mockReturnValueOnce(throwError(() => new Error('failed')));
+    component.driverModel.set({
+      firstName: 'Bruno',
+      lastName: 'Silva',
+      email: 'bruno@example.com',
+      phone: '',
+      birthDate: '',
+      password: 'password123',
+      licenseNumber: 'CNH-1',
+    });
+
+    component.submitDriver();
+    await vi.waitFor(() => expect(component.pendingDriverUserId()).toBe('user-2'));
+    component.submitDriver();
+    await vi.waitFor(() => expect(logistics.createDriver).toHaveBeenCalledTimes(2));
+
+    expect(users.createUser).toHaveBeenCalledTimes(1);
   });
 
   it('uses the generated shipment status type when filtering shipments', () => {
@@ -156,14 +234,24 @@ describe('LogisticsPage', () => {
 
   it('loads vehicle and driver details by id before opening detail modals', () => {
     const component = createComponent().componentInstance;
+    component.changeTab(1);
 
     component.openVehicleDetail({ id: 'vehicle-1', plate: 'OLD-1001' });
-    component.openDriverDetail({ id: 'driver-1', name: 'Stale driver' });
+    component.openDriverDetail({
+      id: 'driver-1',
+      userId: 'user-1',
+      licenseNumber: 'CNH-1',
+    });
 
     expect(logistics.getVehicleById).toHaveBeenCalledWith('vehicle-1');
     expect(component.selectedVehicle()).toEqual({ id: 'vehicle-1', plate: 'NEW-1001' });
     expect(logistics.getDriverById).toHaveBeenCalledWith('driver-1');
-    expect(component.selectedDriver()).toEqual({ id: 'driver-1', name: 'Fresh driver' });
+    expect(component.selectedDriver()).toEqual({
+      id: 'driver-1',
+      userId: 'user-1',
+      licenseNumber: 'CNH-1',
+    });
+    expect(component.driverLabel(component.selectedDriver() ?? undefined)).toBe('Ana Driver');
   });
 
   it('routes shipment view actions to the shipment detail page', () => {

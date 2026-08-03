@@ -1,6 +1,12 @@
 import { Routes } from '@angular/router';
 
-import { activeCompanyGuard, authGuard, guestGuard } from '@core/auth/auth.guard';
+import {
+  activeCompanyGuard,
+  authGuard,
+  driverGuard,
+  guestGuard,
+  officeGuard,
+} from '@core/auth/auth.guard';
 import { DashboardShell } from '@features/dashboard/layout/dashboard-shell';
 
 export const routes: Routes = [
@@ -20,17 +26,28 @@ export const routes: Routes = [
     component: DashboardShell,
     canActivate: [authGuard, activeCompanyGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
-        path: 'dashboard',
-        loadChildren: () =>
-          import('@features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
+        path: 'driver',
+        canActivate: [driverGuard],
+        loadChildren: () => import('@features/driver/driver.routes').then((m) => m.DRIVER_ROUTES),
       },
       {
         path: '',
-        loadChildren: () => import('@features/erp/erp.routes').then((m) => m.ERP_ROUTES),
+        canActivate: [officeGuard],
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+          {
+            path: 'dashboard',
+            loadChildren: () =>
+              import('@features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
+          },
+          {
+            path: '',
+            loadChildren: () => import('@features/erp/erp.routes').then((m) => m.ERP_ROUTES),
+          },
+        ],
       },
     ],
   },
-  { path: '**', redirectTo: 'dashboard' },
+  { path: '**', redirectTo: '' },
 ];

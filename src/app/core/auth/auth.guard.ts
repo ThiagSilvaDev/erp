@@ -42,5 +42,27 @@ export const guestGuard: CanActivateFn = () => {
     return router.createUrlTree([appPaths.selectCompany]);
   }
 
+  return router.createUrlTree([authService.landingPath()]);
+};
+
+export const driverGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isDriver()) {
+    return true;
+  }
+
   return router.createUrlTree([appPaths.dashboard]);
+};
+
+export const officeGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isDriver()) {
+    return true;
+  }
+
+  return router.createUrlTree([appPaths.driverShipments]);
 };

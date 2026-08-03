@@ -44,6 +44,6 @@ export class Login {
       return appPaths.selectCompany;
     }
 
-    return this.route.snapshot.queryParamMap.get('returnUrl') ?? appPaths.dashboard;
+    return this.route.snapshot.queryParamMap.get('returnUrl') ?? this.auth.landingPath();
   }
 }

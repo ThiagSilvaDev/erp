@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { vi } from 'vitest';
 
-import { activeCompanyGuard, authGuard, guestGuard } from './auth.guard';
+import { activeCompanyGuard, authGuard, driverGuard, guestGuard, officeGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { authInterceptor } from '../http/auth.interceptor';
 
@@ -95,7 +95,6 @@ describe('AuthService', () => {
         globalTokenType: 'Bearer',
         expiresIn: 3600,
         user: { id: '1', email: 'admin@example.com', role: 'ADMIN' },
-        role: 'ADMIN',
         availableCompanies: [
           { companyId: 'company-1', role: 'ADMIN' },
           { companyId: 'company-2', role: 'MANAGER' },
@@ -113,7 +112,6 @@ describe('AuthService', () => {
         globalTokenType: 'Bearer',
         expiresIn: 3600,
         user: { id: '1', email: 'admin@example.com', role: 'ADMIN' },
-        role: 'ADMIN',
         availableCompanies: [
           { companyId: 'company-1', role: 'ADMIN' },
           { companyId: 'company-2', role: 'MANAGER' },
@@ -121,6 +119,41 @@ describe('AuthService', () => {
       }),
     );
     expect(storedSession.expiresAt).toBeGreaterThanOrEqual(now + 3600 * 1000);
+  });
+
+  it('activates a scoped token, company, and role directly from login', () => {
+    const auth = TestBed.inject(AuthService);
+
+    auth.login({ email: 'driver@example.com', password: 'password123' }).subscribe();
+    const request = httpTesting.expectOne('/api/v1/auth/login');
+    request.flush({
+      accessToken: 'global-token',
+      tokenType: 'Bearer',
+      expiresIn: 3600,
+      user: { id: 'driver-user', email: 'driver@example.com', role: 'DRIVER' },
+      availableCompanies: [
+        {
+          companyId: 'company-1',
+          tradeName: 'ACME',
+          cnpj: '00.000.000/0001-00',
+          role: 'DRIVER',
+        },
+      ],
+      scopedToken: {
+        accessToken: 'driver-scoped-token',
+        tokenType: 'Bearer',
+        expiresIn: 1800,
+        activeCompanyId: 'company-1',
+        role: 'DRIVER',
+      },
+    });
+
+    expect(auth.authorizationHeader()).toBe('Bearer driver-scoped-token');
+    expect(auth.globalAuthorizationHeader()).toBe('Bearer global-token');
+    expect(auth.session()?.activeCompany).toEqual({ id: 'company-1', name: 'ACME' });
+    expect(auth.role()).toBe('DRIVER');
+    expect(auth.isDriver()).toBe(true);
+    expect(auth.landingPath()).toBe('/driver/shipments');
   });
 
   it('stores the selected company and scoped token', () => {
@@ -239,7 +272,9 @@ describe('AuthService', () => {
     const navigateByUrl = vi.spyOn(router, 'navigateByUrl');
     login(auth);
 
-    TestBed.inject(HttpClient).get('/api/v1/users').subscribe({ error: () => undefined });
+    TestBed.inject(HttpClient)
+      .get('/api/v1/users')
+      .subscribe({ error: () => undefined });
 
     const request = httpTesting.expectOne('/api/v1/users');
     request.flush({}, { status: 401, statusText: 'Unauthorized' });
@@ -283,5 +318,28 @@ describe('AuthService', () => {
     const scopedGuest = TestBed.runInInjectionContext(() => guestGuard({} as never, {} as never));
     expect(scoped).toBe(true);
     expect(scopedGuest.toString()).toBe(router.createUrlTree(['/dashboard']).toString());
+  });
+
+  it('separates driver and office routes by scoped role', () => {
+    const router = TestBed.inject(Router);
+    const auth = TestBed.inject(AuthService);
+
+    auth.login({ email: 'driver@example.com', password: 'password123' }).subscribe();
+    httpTesting.expectOne('/api/v1/auth/login').flush({
+      accessToken: 'global-token',
+      user: { id: 'driver-user', email: 'driver@example.com', role: 'DRIVER' },
+      availableCompanies: [{ companyId: 'company-1', tradeName: 'ACME', role: 'DRIVER' }],
+      scopedToken: {
+        accessToken: 'driver-scoped-token',
+        activeCompanyId: 'company-1',
+        role: 'DRIVER',
+      },
+    });
+
+    const driver = TestBed.runInInjectionContext(() => driverGuard({} as never, {} as never));
+    const office = TestBed.runInInjectionContext(() => officeGuard({} as never, {} as never));
+
+    expect(driver).toBe(true);
+    expect(office.toString()).toBe(router.createUrlTree(['/driver/shipments']).toString());
   });
 });

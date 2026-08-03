@@ -23,6 +23,7 @@ export class DashboardShellStateService {
   private readonly profileName = signal<string | null>(null);
 
   readonly isCollapsed = this.collapsed.asReadonly();
+  readonly isDriver = this.auth.isDriver;
   readonly userLabel = computed(
     () => this.profileName() ?? this.auth.session()?.user?.email ?? 'ERP user',
   );
@@ -34,7 +35,7 @@ export class DashboardShellStateService {
   constructor() {
     const userId = this.auth.session()?.user?.id;
 
-    if (userId) {
+    if (userId && !this.auth.isDriver()) {
       this.users
         .getUserById(userId)
         .pipe(takeUntilDestroyed(this.destroyRef))

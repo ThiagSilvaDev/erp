@@ -103,6 +103,6 @@ export class SelectCompany {
       return returnUrl;
     }
 
-    return appPaths.dashboard;
+    return this.auth.landingPath();
   }
 }
