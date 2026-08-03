@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(name = "logistics_shipment_tracking_events")
@@ -44,8 +45,8 @@ public class ShipmentTrackingEvent extends AbstractBaseEntity {
         this.shipment = Objects.requireNonNull(shipment, "Shipment is required");
         this.status = Objects.requireNonNull(status, "Tracking status is required");
         this.occurredAt = Objects.requireNonNull(occurredAt, "Occurred timestamp is required");
-        this.location = trimToNull(location);
-        this.notes = trimToNull(notes);
+        this.location = Strings.trimToNull(location);
+        this.notes = Strings.trimToNull(notes);
         this.performedByUserId = performedByUserId;
     }
 
@@ -92,12 +93,5 @@ public class ShipmentTrackingEvent extends AbstractBaseEntity {
 
     public UUID getPerformedByUserId() {
         return performedByUserId;
-    }
-
-    private static String trimToNull(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        return value.trim();
     }
 }

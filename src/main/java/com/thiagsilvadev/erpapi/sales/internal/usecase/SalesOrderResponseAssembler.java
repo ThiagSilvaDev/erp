@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.sales.internal.usecase;
 
 import org.springframework.stereotype.Component;
 
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
@@ -71,16 +72,7 @@ class SalesOrderResponseAssembler {
     }
 
     private String companyName(CompanySnapshot company) {
-        String tradeName = trimToNull(company.tradeName());
+        String tradeName = Strings.trimToNull(company.tradeName());
         return tradeName == null ? company.legalName() : tradeName;
-    }
-
-    private String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        String trimmedValue = value.trim();
-        return trimmedValue.isEmpty() ? null : trimmedValue;
     }
 }

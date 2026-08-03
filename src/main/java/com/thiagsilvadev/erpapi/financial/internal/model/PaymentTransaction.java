@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(name = "financial_payment_transactions")
@@ -41,7 +42,7 @@ public class PaymentTransaction extends AbstractBaseEntity {
         this.paymentId = Objects.requireNonNull(paymentId);
         this.type = Objects.requireNonNull(type);
         this.amount = Objects.requireNonNull(amount);
-        this.providerReference = providerReference == null ? null : providerReference.trim();
+        this.providerReference = Strings.trimToNull(providerReference);
         this.occurredAt = occurredAt == null ? Instant.now() : occurredAt;
     }
 

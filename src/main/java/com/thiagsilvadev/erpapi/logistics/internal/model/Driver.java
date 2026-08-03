@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(
@@ -66,14 +67,7 @@ public class Driver extends AbstractBaseEntity {
         return normalize(value, "Driver license number cannot be blank");
     }
 
-    static String required(String value, String message) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(message);
-        }
-        return value.trim();
-    }
-
     private static String normalize(String value, String message) {
-        return required(value, message).toUpperCase(Locale.ROOT);
+        return Strings.required(value, message).toUpperCase(Locale.ROOT);
     }
 }

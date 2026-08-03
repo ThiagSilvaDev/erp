@@ -52,8 +52,6 @@ class CreateCompanyContactUseCaseTest {
 
         when(companyRepository.findById(companyId)).thenReturn(Optional.of(company()));
         when(companyContactRepository.existsByCompanyId(companyId)).thenReturn(false);
-        when(companyMapper.trimToNull(request.name())).thenReturn(request.name());
-        when(companyMapper.trimToNull(request.role())).thenReturn(request.role());
         when(companyMapper.toContact(request.contact())).thenReturn(contact);
         when(companyContactRepository.save(any(CompanyContact.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -87,8 +85,6 @@ class CreateCompanyContactUseCaseTest {
         when(companyContactRepository.existsByCompanyId(companyId)).thenReturn(true);
         when(companyContactRepository.findByCompanyIdAndPrimaryContactTrue(companyId))
                 .thenReturn(Optional.of(previousPrimary));
-        when(companyMapper.trimToNull(request.name())).thenReturn(request.name());
-        when(companyMapper.trimToNull(request.role())).thenReturn(request.role());
         when(companyMapper.toContact(request.contact())).thenReturn(Contact.create("buyer@example.com", "11912345678"));
         when(companyContactRepository.save(any(CompanyContact.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));

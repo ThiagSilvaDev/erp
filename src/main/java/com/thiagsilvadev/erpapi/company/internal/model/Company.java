@@ -6,6 +6,7 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 
@@ -54,8 +55,8 @@ public class Company extends AbstractBaseEntity {
             Address address,
             Contact contact) {
         this.companyCode = companyCode;
-        this.legalName = legalName;
-        this.tradeName = tradeName;
+        this.legalName = Strings.required(legalName, "Legal name cannot be blank");
+        this.tradeName = Strings.trimToNull(tradeName);
         this.cnpj = cnpj;
         this.type = type;
         this.address = address;
@@ -74,11 +75,8 @@ public class Company extends AbstractBaseEntity {
     }
 
     public void updateNames(String legalName, String tradeName) {
-        if (legalName == null || legalName.isBlank()) {
-            throw new IllegalArgumentException("Legal name cannot be blank");
-        }
-        this.legalName = legalName;
-        this.tradeName = tradeName;
+        this.legalName = Strings.required(legalName, "Legal name cannot be blank");
+        this.tradeName = Strings.trimToNull(tradeName);
     }
 
     public void changeType(CompanyType type) {

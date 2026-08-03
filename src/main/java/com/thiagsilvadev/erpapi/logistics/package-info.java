@@ -5,6 +5,7 @@
             "common::numbering",
             "common::reporting",
             "common::tenant",
+            "common::validation",
             "common::web",
             "company::api",
             "inventory::api",

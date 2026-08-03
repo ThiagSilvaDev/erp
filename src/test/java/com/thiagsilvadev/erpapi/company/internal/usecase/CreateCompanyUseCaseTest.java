@@ -63,8 +63,6 @@ class CreateCompanyUseCaseTest {
         Cnpj cnpj = Cnpj.create(request.cnpj());
         when(companyMapper.toCnpj(request.cnpj())).thenReturn(cnpj);
         when(companyRepository.existsByCnpj(cnpj)).thenReturn(false);
-        when(companyMapper.trimToNull(request.legalName())).thenReturn(request.legalName());
-        when(companyMapper.trimToNull(request.tradeName())).thenReturn(request.tradeName());
         when(companyMapper.toAddress(request.address())).thenReturn(address());
         when(companyMapper.toContact(request.contact())).thenReturn(Contact.create("company@example.com", null));
         when(businessNumberService.next(BusinessNumberType.COMPANY)).thenReturn(1L);

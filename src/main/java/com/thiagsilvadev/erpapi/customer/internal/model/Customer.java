@@ -11,6 +11,7 @@ import jakarta.persistence.UniqueConstraint;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(
@@ -40,7 +41,7 @@ public class Customer extends AbstractBaseEntity {
     protected Customer() {}
 
     private Customer(String name, String document, UUID ownerCompanyId, Contact contact, Address address) {
-        this.name = required(name, "Customer name cannot be blank");
+        this.name = Strings.required(name, "Customer name cannot be blank");
         this.document = normalizeDocument(document);
         this.ownerCompanyId = requireOwnerCompanyId(ownerCompanyId);
         this.contact = contact;
@@ -72,7 +73,7 @@ public class Customer extends AbstractBaseEntity {
     }
 
     public static String normalizeDocument(String document) {
-        return required(document, "Customer document cannot be blank").replaceAll("\\D", "");
+        return Strings.required(document, "Customer document cannot be blank").replaceAll("\\D", "");
     }
 
     private static UUID requireOwnerCompanyId(UUID ownerCompanyId) {
@@ -80,12 +81,5 @@ public class Customer extends AbstractBaseEntity {
             throw new IllegalArgumentException("Customer owner company cannot be null");
         }
         return ownerCompanyId;
-    }
-
-    static String required(String value, String message) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(message);
-        }
-        return value.trim();
     }
 }

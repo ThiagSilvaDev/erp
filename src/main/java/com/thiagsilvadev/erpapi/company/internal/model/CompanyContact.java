@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(
@@ -38,8 +39,8 @@ public class CompanyContact extends AbstractBaseEntity {
 
     private CompanyContact(UUID companyId, String name, String role, Contact contact, boolean primaryContact) {
         this.companyId = requireCompanyId(companyId);
-        this.name = required(name, "Company contact name cannot be blank");
-        this.role = trimToNull(role);
+        this.name = Strings.required(name, "Company contact name cannot be blank");
+        this.role = Strings.trimToNull(role);
         this.contact = contact;
         this.primaryContact = primaryContact;
     }
@@ -82,22 +83,5 @@ public class CompanyContact extends AbstractBaseEntity {
             throw new IllegalArgumentException("Company contact company cannot be null");
         }
         return companyId;
-    }
-
-    private static String required(String value, String message) {
-        String trimmedValue = trimToNull(value);
-        if (trimmedValue == null) {
-            throw new IllegalArgumentException(message);
-        }
-        return trimmedValue;
-    }
-
-    private static String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        String trimmedValue = value.trim();
-        return trimmedValue.isEmpty() ? null : trimmedValue;
     }
 }

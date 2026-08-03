@@ -6,6 +6,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(
@@ -37,12 +38,9 @@ public class FinancialAccount extends AbstractBaseEntity {
 
     private FinancialAccount(UUID companyId, String name, FinancialAccountType type, String description) {
         this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Financial account name is required");
-        }
-        this.name = name.trim();
+        this.name = Strings.required(name, "Financial account name is required");
         this.type = Objects.requireNonNull(type, "Financial account type is required");
-        this.description = description == null ? null : description.trim();
+        this.description = Strings.trimToNull(description);
     }
 
     public static FinancialAccount create(UUID companyId, String name, FinancialAccountType type, String description) {

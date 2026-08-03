@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(name = "contact_persons")
@@ -26,7 +27,7 @@ public class ContactPerson extends AbstractBaseEntity {
     protected ContactPerson() {}
 
     private ContactPerson(String name, UUID customerId, Contact contact) {
-        this.name = Customer.required(name, "Contact person name cannot be blank");
+        this.name = Strings.required(name, "Contact person name cannot be blank");
         this.customerId = customerId;
         this.contact = contact;
     }

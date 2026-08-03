@@ -4,6 +4,7 @@
             "common::address",
             "common::exception",
             "common::numbering",
+            "common::validation",
             "common::web"
         })
 package com.thiagsilvadev.erpapi.company;

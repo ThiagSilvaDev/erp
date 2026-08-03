@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Plate;
 import com.thiagsilvadev.erpapi.common.domain.model.PlateType;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(
@@ -40,7 +41,7 @@ public class Vehicle extends AbstractBaseEntity {
     private Vehicle(UUID companyId, String plate, String description, int capacity) {
         this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.plate = Plate.of(plate, PlateType.MERCOSUL);
-        this.description = Driver.required(description, "Vehicle description cannot be blank");
+        this.description = Strings.required(description, "Vehicle description cannot be blank");
         if (capacity <= 0) {
             throw new IllegalArgumentException("Vehicle capacity must be positive");
         }

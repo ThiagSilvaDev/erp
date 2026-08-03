@@ -45,8 +45,8 @@ public class CreateCompanyUseCase {
 
         Company company = Company.create(
                 businessNumberService.next(BusinessNumberType.COMPANY),
-                companyMapper.trimToNull(request.legalName()),
-                companyMapper.trimToNull(request.tradeName()),
+                request.legalName(),
+                request.tradeName(),
                 cnpj,
                 request.type(),
                 companyMapper.toAddress(request.address()),

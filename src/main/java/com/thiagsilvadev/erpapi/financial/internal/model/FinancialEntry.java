@@ -8,6 +8,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(name = "financial_entries")
@@ -64,12 +65,10 @@ public class FinancialEntry extends AbstractBaseEntity {
             throw new IllegalArgumentException("Amount must be positive");
         }
         this.amount = amount;
-        if (currencyCode == null || currencyCode.isBlank()) {
-            throw new IllegalArgumentException("Currency code is required");
-        }
-        this.currencyCode = currencyCode.trim().toUpperCase();
+        this.currencyCode =
+                Strings.required(currencyCode, "Currency code is required").toUpperCase();
         this.referenceId = referenceId;
-        this.description = description;
+        this.description = Strings.trimToNull(description);
         this.occurredAt = Instant.now();
     }
 

@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
 import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Embeddable
 public class Address {
@@ -80,9 +81,8 @@ public class Address {
     }
 
     private static String processOptionalText(String rawValue) {
-        String normalizedValue = rawValue == null ? null : rawValue.trim();
-
-        if (normalizedValue == null || normalizedValue.isBlank()) {
+        String normalizedValue = Strings.trimToNull(rawValue);
+        if (normalizedValue == null) {
             return null;
         }
 

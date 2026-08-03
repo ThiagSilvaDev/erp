@@ -14,6 +14,7 @@ import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 
@@ -51,8 +52,8 @@ public class User extends AbstractBaseEntity {
 
     private User(
             String firstName, String lastName, Contact contact, LocalDate birthDate, UserRole role, UUID companyId) {
-        this.firstName = normalizeRequired(firstName, "User first name cannot be blank");
-        this.lastName = normalizeRequired(lastName, "User last name cannot be blank");
+        this.firstName = Strings.required(firstName, "User first name cannot be blank");
+        this.lastName = Strings.required(lastName, "User last name cannot be blank");
         this.contact = requireContact(contact);
         this.birthDate = birthDate;
         this.role = requireRole(role);
@@ -123,21 +124,5 @@ public class User extends AbstractBaseEntity {
             throw new IllegalArgumentException("User company cannot be null");
         }
         return companyId;
-    }
-
-    private static String normalizeRequired(String value, String message) {
-        String normalized = trimToNull(value);
-        if (normalized == null) {
-            throw new IllegalArgumentException(message);
-        }
-        return normalized;
-    }
-
-    private static String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 }

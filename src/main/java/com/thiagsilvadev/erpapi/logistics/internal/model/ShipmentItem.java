@@ -5,6 +5,8 @@ import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
+
 @Embeddable
 public class ShipmentItem {
 
@@ -31,8 +33,8 @@ public class ShipmentItem {
         }
         this.productId = java.util.Objects.requireNonNull(productId, "Product is required");
         this.warehouseId = java.util.Objects.requireNonNull(warehouseId, "Warehouse is required");
-        this.productSku = Driver.required(productSku, "Product SKU cannot be blank");
-        this.productName = Driver.required(productName, "Product name cannot be blank");
+        this.productSku = Strings.required(productSku, "Product SKU cannot be blank");
+        this.productName = Strings.required(productName, "Product name cannot be blank");
         this.quantity = quantity;
     }
 

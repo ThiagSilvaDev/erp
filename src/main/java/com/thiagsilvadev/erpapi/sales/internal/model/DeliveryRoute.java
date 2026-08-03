@@ -9,6 +9,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
 
 import com.thiagsilvadev.erpapi.common.domain.model.GeoLocation;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Embeddable
 public class DeliveryRoute {
@@ -39,17 +40,10 @@ public class DeliveryRoute {
 
     public static DeliveryRoute of(
             String routeName, UUID originWarehouseId, String destinationDescription, GeoLocation destinationLocation) {
-        if (routeName == null || routeName.isBlank()) {
-            throw new IllegalArgumentException("Route name cannot be blank");
-        }
-        if (destinationDescription == null || destinationDescription.isBlank()) {
-            throw new IllegalArgumentException("Destination description cannot be blank");
-        }
-
         return new DeliveryRoute(
-                routeName.trim(),
+                Strings.required(routeName, "Route name cannot be blank"),
                 Objects.requireNonNull(originWarehouseId, "Origin warehouse ID is required"),
-                destinationDescription.trim(),
+                Strings.required(destinationDescription, "Destination description cannot be blank"),
                 destinationLocation);
     }
 

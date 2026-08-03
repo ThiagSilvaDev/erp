@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyContactResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyContactRequest;
 import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
@@ -41,8 +42,8 @@ public class CreateCompanyContactUseCase {
 
         CompanyContact companyContact = CompanyContact.create(
                 request.companyId(),
-                companyMapper.trimToNull(request.name()),
-                companyMapper.trimToNull(request.role()),
+                Strings.trimToNull(request.name()),
+                Strings.trimToNull(request.role()),
                 companyMapper.toContact(request.contact()),
                 shouldBePrimary);
 

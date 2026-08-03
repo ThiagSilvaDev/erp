@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(
@@ -33,7 +34,7 @@ public class Warehouse extends AbstractBaseEntity {
     private Warehouse(UUID companyId, String code, String name) {
         this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.code = normalizeCode(code);
-        this.name = required(name, "Warehouse name cannot be blank");
+        this.name = Strings.required(name, "Warehouse name cannot be blank");
     }
 
     public static Warehouse create(UUID companyId, String code, String name) {
@@ -53,13 +54,6 @@ public class Warehouse extends AbstractBaseEntity {
     }
 
     public static String normalizeCode(String code) {
-        return required(code, "Warehouse code cannot be blank").toUpperCase();
-    }
-
-    static String required(String value, String message) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(message);
-        }
-        return value.trim();
+        return Strings.required(code, "Warehouse code cannot be blank").toUpperCase();
     }
 }

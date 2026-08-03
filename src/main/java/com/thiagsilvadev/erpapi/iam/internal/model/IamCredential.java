@@ -13,6 +13,7 @@ import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Email;
+import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
 @Table(
@@ -47,7 +48,7 @@ public class IamCredential extends AbstractBaseEntity {
     private IamCredential(UUID userId, String email, String passwordHash, String role) {
         this.userId = requireUserId(userId);
         this.email = Email.create(email);
-        this.passwordHash = requireText(passwordHash, "Password hash cannot be blank");
+        this.passwordHash = Strings.required(passwordHash, "Password hash cannot be blank");
         this.role = requireRole(role);
     }
 
@@ -95,16 +96,6 @@ public class IamCredential extends AbstractBaseEntity {
     }
 
     private static String requireRole(String role) {
-        if (role == null || role.isBlank()) {
-            throw new IllegalArgumentException("Role cannot be null");
-        }
-        return role.trim().toUpperCase(java.util.Locale.ROOT);
-    }
-
-    private static String requireText(String value, String message) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(message);
-        }
-        return value.trim();
+        return Strings.required(role, "Role cannot be null").toUpperCase(java.util.Locale.ROOT);
     }
 }

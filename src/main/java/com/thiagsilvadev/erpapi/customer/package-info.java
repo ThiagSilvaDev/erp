@@ -4,6 +4,7 @@
             "common::address",
             "common::exception",
             "common::tenant",
+            "common::validation",
             "common::web",
             "company::api"
         })
