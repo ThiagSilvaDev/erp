@@ -8,6 +8,7 @@ services:
     ports:
       - '5432:5432'
   lgtm:
+    profiles: ['lgtm']
     image: 'grafana/otel-lgtm:0.29.1'
     environment:
       - 'GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/otel-lgtm/grafana/conf/provisioning/dashboards/custom/erp-api-dashboard.json'

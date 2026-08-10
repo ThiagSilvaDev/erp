@@ -58,10 +58,16 @@ The Maven Wrapper is included, so a separate Maven installation is not needed.
 
 ## Running locally
 
-Start PostgreSQL and the local observability stack:
+Start PostgreSQL:
 
 ```bash
 docker compose up -d
+```
+
+Optionally start the local observability stack (Grafana LGTM) as well:
+
+```bash
+docker compose --profile lgtm up -d
 ```
 
 Run the application with the development profile:
@@ -71,8 +77,8 @@ Run the application with the development profile:
 ```
 
 The API starts at `http://localhost:8080`. The development profile creates the
-schema through Hibernate, loads deterministic sample data, and exports
-telemetry to the local LGTM stack.
+schema through Hibernate and loads deterministic sample data. When the LGTM
+profile is enabled, the app can export telemetry to the local observability stack.
 
 Development-only administrator credentials:
 
@@ -154,7 +160,9 @@ point-in-time `current` snapshot.
 ## Observability
 
 The development profile exports logs, metrics, and traces over OTLP to the
-Grafana LGTM service in `compose.yaml`.
+Grafana LGTM service in `compose.yaml`. LGTM is opt-in via the Compose
+`lgtm` profile (`docker compose --profile lgtm up -d`); plain
+`docker compose up -d` starts only PostgreSQL.
 
 | Service | URL | Credentials |
 | --- | --- | --- |

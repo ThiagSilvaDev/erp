@@ -364,6 +364,8 @@ Useful commands:
 ```bash
 docker compose up -d
 
+docker compose --profile lgtm up -d
+
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 
 ./mvnw spotless:apply
