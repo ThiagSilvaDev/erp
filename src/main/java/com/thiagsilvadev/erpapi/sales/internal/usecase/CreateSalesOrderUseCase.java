@@ -21,6 +21,8 @@ import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.dto.*;
+import com.thiagsilvadev.erpapi.sales.internal.exception.SalesOrderErrorCode;
+import com.thiagsilvadev.erpapi.sales.internal.exception.SalesOrderException;
 import com.thiagsilvadev.erpapi.sales.internal.model.DeliveryRoute;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesBuyer;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
@@ -112,26 +114,26 @@ public class CreateSalesOrderUseCase {
 
     private void validateB2b(UUID sellerCompanyId, SalesBuyer buyer, CompanySnapshot seller) {
         if (seller.type() != CompanyType.FACTORY) {
-            throw new IllegalArgumentException("B2B seller must be a factory");
+            throw new SalesOrderException(SalesOrderErrorCode.B2B_SELLER_MUST_BE_FACTORY);
         }
         if (sellerCompanyId.equals(buyer.getBuyerCompanyId())) {
-            throw new IllegalArgumentException("B2B buyer company cannot be the seller company");
+            throw new SalesOrderException(SalesOrderErrorCode.B2B_BUYER_CANNOT_BE_SELLER);
         }
 
         CompanySnapshot buyerCompany = companyFacade.getCompany(buyer.getBuyerCompanyId());
         if (buyerCompany.type() != CompanyType.CORRESPONDENT) {
-            throw new IllegalArgumentException("B2B buyer company must be a correspondent");
+            throw new SalesOrderException(SalesOrderErrorCode.B2B_BUYER_MUST_BE_CORRESPONDENT);
         }
     }
 
     private void validateB2c(UUID sellerCompanyId, SalesBuyer buyer, CompanySnapshot seller) {
         if (seller.type() != CompanyType.FACTORY && seller.type() != CompanyType.CORRESPONDENT) {
-            throw new IllegalArgumentException("B2C seller must be a factory or correspondent");
+            throw new SalesOrderException(SalesOrderErrorCode.B2C_SELLER_MUST_BE_FACTORY_OR_CORRESPONDENT);
         }
 
         CustomerSnapshot customer = customerFacade.getCustomer(sellerCompanyId, buyer.getCustomerId());
         if (!sellerCompanyId.equals(customer.ownerCompanyId())) {
-            throw new IllegalArgumentException("B2C customer must belong to the seller company");
+            throw new SalesOrderException(SalesOrderErrorCode.B2C_CUSTOMER_MUST_BELONG_TO_SELLER);
         }
     }
 

@@ -35,6 +35,8 @@ import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderItemRequest;
 import com.thiagsilvadev.erpapi.sales.internal.dto.CreateSalesOrderRequest;
+import com.thiagsilvadev.erpapi.sales.internal.exception.SalesOrderErrorCode;
+import com.thiagsilvadev.erpapi.sales.internal.exception.SalesOrderException;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 
@@ -120,7 +122,10 @@ class CreateSalesOrderUseCaseTest {
         TenantContext.setTenantId(companyId);
         givenCompany(companyId, CompanyType.FACTORY);
 
-        assertThatThrownBy(() -> useCase().execute(request)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> useCase().execute(request))
+                .isInstanceOf(SalesOrderException.class)
+                .extracting(ex -> ((SalesOrderException) ex).getErrorCode())
+                .isEqualTo(SalesOrderErrorCode.B2B_BUYER_CANNOT_BE_SELLER);
     }
 
     @Test
@@ -133,7 +138,10 @@ class CreateSalesOrderUseCaseTest {
         when(customerFacade.getCustomer(sellerCompanyId, customerId))
                 .thenReturn(new CustomerSnapshot(customerId, "Customer", "123", UUID.randomUUID()));
 
-        assertThatThrownBy(() -> useCase().execute(request)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> useCase().execute(request))
+                .isInstanceOf(SalesOrderException.class)
+                .extracting(ex -> ((SalesOrderException) ex).getErrorCode())
+                .isEqualTo(SalesOrderErrorCode.B2C_CUSTOMER_MUST_BELONG_TO_SELLER);
     }
 
     @Test

@@ -24,6 +24,8 @@ public interface SalesOrderApi {
     @PostMapping(consumes = "application/json")
     @Operation(operationId = "createSalesOrder")
     @ApiResponse(responseCode = "201")
+    @ApiResponse(responseCode = "400")
+    @ApiResponse(responseCode = "422")
     ResponseEntity<SalesOrderResponse> createOrder(@Valid @RequestBody CreateSalesOrderRequest request);
 
     @GetMapping("/{id}")
