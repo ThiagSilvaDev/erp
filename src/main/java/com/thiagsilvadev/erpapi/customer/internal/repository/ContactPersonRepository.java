@@ -15,6 +15,8 @@ import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;
 public interface ContactPersonRepository
         extends JpaRepository<ContactPerson, UUID>, JpaSpecificationExecutor<ContactPerson> {
 
+    boolean existsByCustomerId(UUID customerId);
+
     @Query(
             """
             select contact
