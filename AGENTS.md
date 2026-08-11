@@ -368,6 +368,8 @@ docker compose --profile lgtm up -d
 
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev,otel
+
 ./mvnw spotless:apply
 
 ./mvnw test

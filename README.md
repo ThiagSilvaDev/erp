@@ -76,9 +76,17 @@ Run the application with the development profile:
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
+With LGTM running, also activate the `otel` profile so the app exports telemetry:
+
+```bash
+docker compose --profile lgtm up -d
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev,otel
+```
+
 The API starts at `http://localhost:8080`. The development profile creates the
-schema through Hibernate and loads deterministic sample data. When the LGTM
-profile is enabled, the app can export telemetry to the local observability stack.
+schema through Hibernate and loads deterministic sample data. OTLP export is
+disabled unless the `otel` profile is active (avoids connection errors when
+LGTM is not running).
 
 Development-only administrator credentials:
 
@@ -159,10 +167,10 @@ point-in-time `current` snapshot.
 
 ## Observability
 
-The development profile exports logs, metrics, and traces over OTLP to the
-Grafana LGTM service in `compose.yaml`. LGTM is opt-in via the Compose
-`lgtm` profile (`docker compose --profile lgtm up -d`); plain
-`docker compose up -d` starts only PostgreSQL.
+OTLP export is opt-in via the Spring `otel` profile and targets the Grafana
+LGTM service in `compose.yaml`. LGTM itself is opt-in via the Compose `lgtm`
+profile (`docker compose --profile lgtm up -d`); plain `docker compose up -d`
+starts only PostgreSQL. Use both together (`dev,otel` + `--profile lgtm`).
 
 | Service | URL | Credentials |
 | --- | --- | --- |
@@ -191,12 +199,13 @@ export OTEL_EXPORTER_OTLP_METRICS_ENDPOINT='http://localhost:4318/v1/metrics'
 export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT='http://localhost:4318/v1/traces'
 ```
 
-OTLP export is disabled outside the `dev` profile. A deployed environment must
-explicitly enable OpenTelemetry and OTLP metrics export and provide collector
-endpoints:
+OTLP export is disabled unless the `otel` profile is active (or equivalent
+flags are set). A deployed environment must explicitly enable OpenTelemetry and
+OTLP metrics export and provide collector endpoints:
 
 ```bash
-export MANAGEMENT_OPENTELEMETRY_ENABLED=true
+export MANAGEMENT_LOGGING_EXPORT_OTLP_ENABLED=true
+export MANAGEMENT_TRACING_EXPORT_OTLP_ENABLED=true
 export MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED=true
 export OTEL_EXPORTER_OTLP_ENDPOINT='https://collector.example'
 ```
