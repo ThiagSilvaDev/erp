@@ -39,6 +39,10 @@ const shipmentDetailPage = () =>
   import('./logistics/pages/shipment-detail-page/shipment-detail-page').then(
     (m) => m.ShipmentDetailPage,
   );
+const salesOrderDetailPage = () =>
+  import('./sales/pages/sales-order-detail-page/sales-order-detail-page').then(
+    (m) => m.SalesOrderDetailPage,
+  );
 
 function entityRoute(
   path: EntityKey,
@@ -81,11 +85,27 @@ export const ERP_ROUTES: Routes = [
     path: 'pdv',
     loadComponent: () => import('./pdv/pages/pdv-page/pdv-page').then((m) => m.PdvPage),
   },
-  entityRoute(
-    'sales-orders',
-    provideSalesOrderListEntityConfig(),
-    provideSalesOrderCreateEntityConfig(),
-  ),
+  {
+    path: 'sales-orders',
+    children: [
+      {
+        path: 'new',
+        data: { entity: 'sales-orders' as EntityKey },
+        providers: provideSalesOrderCreateEntityConfig(),
+        loadComponent: entityCreatePage,
+      },
+      {
+        path: ':id',
+        loadComponent: salesOrderDetailPage,
+      },
+      {
+        path: '',
+        data: { entity: 'sales-orders' as EntityKey },
+        providers: provideSalesOrderListEntityConfig(),
+        loadComponent: entityPage,
+      },
+    ],
+  },
   {
     path: 'logistics',
     children: [

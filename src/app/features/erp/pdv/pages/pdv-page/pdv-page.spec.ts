@@ -13,6 +13,7 @@ import {
   CreateSalesOrderRequestPaymentMethod,
   CreateSalesOrderRequestSaleType,
 } from '@generated-api/modules/sales/dtos';
+import { AuthService } from '@core/auth/auth.service';
 import { PdvPage } from './pdv-page';
 
 function page(content: object[] = []) {
@@ -83,6 +84,9 @@ describe('PdvPage', () => {
     confirmSalesOrder: vi.fn(() => of({ id: 'order-1', status: 'CONFIRMED' })),
     createSalesOrder: vi.fn(() => of({ id: 'order-1', status: 'DRAFT' })),
   };
+  const auth = {
+    session: vi.fn(() => ({ activeCompany: { id: 'company-1', name: 'Seller' } })),
+  };
 
   function createComponent(): ComponentFixture<PdvPage> {
     TestBed.configureTestingModule({
@@ -95,6 +99,7 @@ describe('PdvPage', () => {
         { provide: InventoryService, useValue: inventory },
         { provide: NzMessageService, useValue: messages },
         { provide: SalesService, useValue: sales },
+        { provide: AuthService, useValue: auth },
       ],
     });
 
@@ -207,6 +212,12 @@ describe('PdvPage', () => {
       ],
     });
     expect(sales.confirmSalesOrder).toHaveBeenCalledWith('order-1');
+  });
+
+  it('excludes the active (our own) company from buyer company options', () => {
+    const component = createComponent().componentInstance;
+
+    expect(component.companyOptions().map((option) => option.value)).toEqual(['company-2']);
   });
 
   it('creates a B2B sale with buyer company and confirms it', () => {

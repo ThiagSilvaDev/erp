@@ -10,9 +10,9 @@
 
   <form nz-form nzLayout="vertical" class="sale-context" [formGroup]="saleForm">
     <nz-form-item class="m-0">
-        <nz-form-label nzFor="sale-target">Sell to</nz-form-label>
-        <nz-form-control>
-          <nz-radio-group id="sale-target" formControlName="targetType" class="target-toggle">
+      <nz-form-label nzFor="sale-target">Sell to</nz-form-label>
+      <nz-form-control>
+        <nz-radio-group id="sale-target" formControlName="targetType" class="target-toggle">
           <label nz-radio-button for="sale-target-customer" nzValue="customer">Customer</label>
           <label nz-radio-button for="sale-target-company" nzValue="company">Company</label>
         </nz-radio-group>
@@ -86,7 +86,11 @@
     <nz-form-item class="m-0">
       <nz-form-label nzFor="fulfillment-type" nzRequired>Fulfillment</nz-form-label>
       <nz-form-control nzErrorTip="Fulfillment type is required.">
-        <nz-radio-group id="fulfillment-type" formControlName="fulfillmentType" class="target-toggle">
+        <nz-radio-group
+          id="fulfillment-type"
+          formControlName="fulfillmentType"
+          class="target-toggle"
+        >
           @for (option of fulfillmentTypeOptions; track option.value) {
             <label
               nz-radio-button
@@ -167,7 +171,7 @@
           @for (product of products(); track product.id ?? product.sku) {
             <article class="product-card">
               <div class="product-image" aria-hidden="true">
-                <nz-icon nzType="shop" />
+                <img [src]="productImage(product)" alt="" loading="lazy" />
               </div>
               <div class="product-info">
                 <div class="product-sku">{{ text(product.sku) || '-' }}</div>

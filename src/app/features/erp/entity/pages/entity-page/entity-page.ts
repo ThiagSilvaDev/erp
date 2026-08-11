@@ -161,6 +161,13 @@ export class EntityPage {
 
   openDetail(record: EntityRecord): void {
     const id = text('id' in record ? record.id : '');
+    const detailRoute = this.config().detailRoute;
+
+    if (detailRoute && id) {
+      void this.router.navigateByUrl(detailRoute(id));
+      return;
+    }
+
     if (!id) {
       this.selectedRecord.set(record);
       this.isDetailOpen.set(true);

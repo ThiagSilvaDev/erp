@@ -34,6 +34,7 @@ import type {
 } from '@generated-api/modules/companies/dtos';
 import { CustomersService } from '@generated-api/modules/customers/Customers.service';
 import type { CustomerResponse } from '@generated-api/modules/customers/dtos';
+import { AuthService } from '@core/auth/auth.service';
 import { InventoryService } from '@generated-api/modules/inventory/Inventory.service';
 import type { WarehouseResponse } from '@generated-api/modules/inventory/dtos';
 import { SalesService } from '@generated-api/modules/sales/Sales.service';
@@ -78,6 +79,106 @@ interface TypedSelectOption<TValue extends string> {
 
 const PAGE_SIZE = 12;
 const LOOKUP_SIZE = 50;
+const PRODUCT_IMAGE_PATHS = [
+  '/images/pdv/product-grocery.webp',
+  '/images/pdv/product-electronics.webp',
+  '/images/pdv/product-office.webp',
+  '/images/pdv/product-home-care.webp',
+  '/images/pdv/product-apparel.webp',
+  '/images/pdv/product-tools.webp',
+] as const;
+const PRODUCT_IMAGE_RULES: ReadonlyArray<{ keywords: readonly string[]; path: string }> = [
+  {
+    keywords: [
+      'tool',
+      'hardware',
+      'industrial',
+      'construction',
+      'safety',
+      'ferramenta',
+      'construcao',
+      'seguranca',
+      'capacete',
+      'furadeira',
+    ],
+    path: '/images/pdv/product-tools.webp',
+  },
+  {
+    keywords: [
+      'electronic',
+      'computer',
+      'technology',
+      'phone',
+      'audio',
+      'informatica',
+      'celular',
+      'teclado',
+      'mouse',
+      'fone',
+      'cabo',
+    ],
+    path: '/images/pdv/product-electronics.webp',
+  },
+  {
+    keywords: [
+      'grocery',
+      'food',
+      'beverage',
+      'pantry',
+      'market',
+      'alimento',
+      'bebida',
+      'mercado',
+      'cozinha',
+      'arroz',
+      'massa',
+    ],
+    path: '/images/pdv/product-grocery.webp',
+  },
+  {
+    keywords: [
+      'cleaning',
+      'cleaner',
+      'hygiene',
+      'detergent',
+      'household',
+      'limpeza',
+      'higiene',
+      'detergente',
+      'sabao',
+    ],
+    path: '/images/pdv/product-home-care.webp',
+  },
+  {
+    keywords: [
+      'apparel',
+      'clothing',
+      'fashion',
+      'shoe',
+      'shirt',
+      'roupa',
+      'calcado',
+      'tenis',
+      'vestuario',
+      'camisa',
+    ],
+    path: '/images/pdv/product-apparel.webp',
+  },
+  {
+    keywords: [
+      'office',
+      'stationery',
+      'notebook',
+      'paper',
+      'escritorio',
+      'papelaria',
+      'caderno',
+      'papel',
+      'caneta',
+    ],
+    path: '/images/pdv/product-office.webp',
+  },
+];
 const PAYMENT_METHOD_OPTIONS: TypedSelectOption<CreateSalesOrderRequestPaymentMethod>[] = [
   { label: 'Cash', value: CreateSalesOrderRequestPaymentMethod.CASH },
   { label: 'PIX', value: CreateSalesOrderRequestPaymentMethod.PIX },
@@ -112,6 +213,7 @@ const FULFILLMENT_TYPE_OPTIONS: TypedSelectOption<CreateSalesOrderRequestFulfill
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PdvPage {
+  private readonly auth = inject(AuthService);
   private readonly catalog = inject(CatalogService);
   private readonly companies = inject(CompaniesService);
   private readonly customers = inject(CustomersService);
@@ -192,7 +294,8 @@ export class PdvPage {
   readonly isDelivery = computed(() => {
     this.saleFormRevision();
     return (
-      this.saleForm.controls.fulfillmentType.value === CreateSalesOrderRequestFulfillmentType.DELIVERY
+      this.saleForm.controls.fulfillmentType.value ===
+      CreateSalesOrderRequestFulfillmentType.DELIVERY
     );
   });
 
@@ -258,7 +361,8 @@ export class PdvPage {
 
   updateDeliveryRouteValidators(): void {
     const isDelivery =
-      this.saleForm.controls.fulfillmentType.value === CreateSalesOrderRequestFulfillmentType.DELIVERY;
+      this.saleForm.controls.fulfillmentType.value ===
+      CreateSalesOrderRequestFulfillmentType.DELIVERY;
     const routeControls = [
       this.saleForm.controls.deliveryRouteName,
       this.saleForm.controls.deliveryRouteDestinationDescription,
@@ -404,6 +508,35 @@ export class PdvPage {
     return product.name || product.sku || product.id || 'Product';
   }
 
+  productImage(product: ProductResponse): string {
+    const searchableText = [
+      product.category?.name,
+      product.category?.code,
+      product.name,
+      product.description,
+      product.sku,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase();
+    const match = PRODUCT_IMAGE_RULES.find((rule) =>
+      rule.keywords.some((keyword) => searchableText.includes(keyword)),
+    );
+
+    if (match) {
+      return match.path;
+    }
+
+    const stableKey = this.text(product.id) || this.text(product.sku) || this.productLabel(product);
+    const imageIndex = [...stableKey].reduce(
+      (hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0,
+      0,
+    );
+    return PRODUCT_IMAGE_PATHS[imageIndex % PRODUCT_IMAGE_PATHS.length];
+  }
+
   text(value: unknown): string {
     if (typeof value === 'string' || typeof value === 'number') {
       return String(value);
@@ -538,8 +671,11 @@ export class PdvPage {
       )
       .subscribe({
         next: ({ companies, customers, warehouses }) => {
+          const activeCompanyId = this.auth.session()?.activeCompany?.id;
           this.companyOptions.set(
-            (companies.content ?? []).map((company) => this.companyOption(company)),
+            (companies.content ?? [])
+              .filter((company) => company.id !== activeCompanyId)
+              .map((company) => this.companyOption(company)),
           );
           this.customerOptions.set(
             (customers.content ?? []).map((customer) => this.customerOption(customer)),

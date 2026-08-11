@@ -84,6 +84,7 @@ export interface EntityConfig {
   createFields: EntityField[];
   createMode?: 'modal' | 'page';
   readonly?: boolean;
+  detailRoute?: (id: string) => string;
   list: (
     criteria: Record<string, string>,
     page: number,

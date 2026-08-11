@@ -22,6 +22,7 @@ import {
 import { EntityConfig, EntityCreateValue } from '../entity/models/entity-view-model';
 import { provideEntityFeature } from '../entity/providers/entity-feature.provider';
 import { getValue, optionalNumber, pageData, text } from '../entity/utils/entity-utils';
+import { appPaths } from '../../../core/routing/app-paths';
 
 function salesOrderItems(value: EntityCreateValue) {
   const items = value['items'];
@@ -70,6 +71,7 @@ export function salesOrdersEntityConfig(): EntityConfig {
     title: 'Sales orders',
     description: 'Customer orders, totals, and fulfillment state.',
     createMode: 'page',
+    detailRoute: (id) => appPaths.salesOrderDetail(id),
     columns: [
       { key: 'orderNumber', label: 'Order' },
       { key: 'sellerSummary.companyName', label: 'Seller company Name' },
