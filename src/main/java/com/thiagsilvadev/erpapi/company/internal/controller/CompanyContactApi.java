@@ -45,9 +45,7 @@ public interface CompanyContactApi {
     @Operation(operationId = "listCompanyContacts")
     @ApiResponse(responseCode = "200")
     Page<CompanyContactResponse> listCompanyContacts(
-            @RequestParam(required = false) UUID companyId,
-            @RequestParam(required = false) Boolean primaryContact,
-            @ParameterObject Pageable pageable);
+            @RequestParam(required = false) Boolean primaryContact, @ParameterObject Pageable pageable);
 
     @PostMapping("/{id}/primary")
     @Operation(operationId = "markCompanyContactPrimary")

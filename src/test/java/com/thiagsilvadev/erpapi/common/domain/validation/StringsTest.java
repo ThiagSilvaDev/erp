@@ -21,4 +21,22 @@ class StringsTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Value is required");
     }
+
+    @Test
+    void shouldNormalizeCodeByTrimmingAndUppercasingWithRootLocale() {
+        assertThat(Strings.normalizeCode("  owner  ", "Code is required")).isEqualTo("OWNER");
+        assertThat(Strings.normalizeCode("café", "Code is required")).isEqualTo("CAFÉ");
+        assertThat(Strings.normalizeCode("order-item", "Code is required")).isEqualTo("ORDER-ITEM");
+    }
+
+    @Test
+    void shouldRejectBlankCode() {
+        assertThatThrownBy(() -> Strings.normalizeCode(null, "Code is required"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Code is required");
+
+        assertThatThrownBy(() -> Strings.normalizeCode("   ", "Code is required"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Code is required");
+    }
 }

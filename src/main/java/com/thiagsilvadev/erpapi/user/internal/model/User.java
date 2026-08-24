@@ -1,7 +1,6 @@
 package com.thiagsilvadev.erpapi.user.internal.model;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -15,7 +14,6 @@ import jakarta.persistence.UniqueConstraint;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 
 @Entity
@@ -39,30 +37,19 @@ public class User extends AbstractBaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole role;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private UserStatus status = UserStatus.ACTIVE;
-
-    @Column(nullable = false, updatable = false)
-    private UUID companyId;
 
     protected User() {}
 
-    private User(
-            String firstName, String lastName, Contact contact, LocalDate birthDate, UserRole role, UUID companyId) {
+    private User(String firstName, String lastName, Contact contact, LocalDate birthDate) {
         this.firstName = Strings.required(firstName, "User first name cannot be blank");
         this.lastName = Strings.required(lastName, "User last name cannot be blank");
         this.contact = requireContact(contact);
         this.birthDate = birthDate;
-        this.role = requireRole(role);
-        this.companyId = requireCompanyId(companyId);
     }
 
-    public static User create(
-            String firstName, String lastName, Contact contact, LocalDate birthDate, UserRole role, UUID companyId) {
-        return new User(firstName, lastName, contact, birthDate, role, companyId);
+    public static User create(String firstName, String lastName, Contact contact, LocalDate birthDate) {
+        return new User(firstName, lastName, contact, birthDate);
     }
 
     public void activate() {
@@ -93,16 +80,8 @@ public class User extends AbstractBaseEntity {
         return birthDate;
     }
 
-    public UserRole getRole() {
-        return role;
-    }
-
     public UserStatus getStatus() {
         return status;
-    }
-
-    public UUID getCompanyId() {
-        return companyId;
     }
 
     private static Contact requireContact(Contact contact) {
@@ -110,19 +89,5 @@ public class User extends AbstractBaseEntity {
             throw new IllegalArgumentException("User contact cannot be null");
         }
         return contact;
-    }
-
-    private static UserRole requireRole(UserRole role) {
-        if (role == null) {
-            throw new IllegalArgumentException("User role cannot be null");
-        }
-        return role;
-    }
-
-    private static UUID requireCompanyId(UUID companyId) {
-        if (companyId == null) {
-            throw new IllegalArgumentException("User company cannot be null");
-        }
-        return companyId;
     }
 }

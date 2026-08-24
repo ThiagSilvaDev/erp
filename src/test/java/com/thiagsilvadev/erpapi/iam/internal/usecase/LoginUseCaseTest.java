@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.iam.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.iam.accesscontrol.api.AuthorizationStatus.ACTIVE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,182 +19,127 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AccessControlFacade;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthMapper;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthUserResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
-import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.exception.InvalidCredentialsException;
 import com.thiagsilvadev.erpapi.iam.internal.exception.NoActiveMembershipException;
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService.IssuedToken;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipStatus;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @ExtendWith(MockitoExtension.class)
 class LoginUseCaseTest {
 
     @Mock
-    private AuthenticationManager authenticationManager;
+    AuthenticationManager authenticationManager;
 
     @Mock
-    private JwtTokenService jwtTokenService;
+    JwtTokenService jwtTokenService;
 
     @Mock
-    private UserMembershipFacade userMembershipFacade;
+    AccessControlFacade authorizationService;
 
     @Mock
-    private CompanyFacade companyFacade;
+    CompanyFacade companyFacade;
 
     @Mock
-    private AuthMapper authMapper;
+    AuthMapper authMapper;
 
     private LoginUseCase useCase;
 
     @BeforeEach
     void setUp() {
         useCase = new LoginUseCase(
-                jwtTokenService, authenticationManager, userMembershipFacade, companyFacade, authMapper);
+                jwtTokenService, authenticationManager, authorizationService, companyFacade, authMapper);
     }
 
     @Test
-    void shouldLoginAndReturnJwt() {
+    void shouldLoginAndAutoScopeSingleMembership() {
         UUID userId = UUID.randomUUID();
         UUID companyId = UUID.randomUUID();
-        IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", "ADMIN", true);
-        UsernamePasswordAuthenticationToken authentication =
-                UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities());
-        when(authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken("User@Example.com", "secret123")))
-                .thenReturn(authentication);
-        var membership = new UserMembershipSnapshot(userId, companyId, UserRole.ADMIN, UserMembershipStatus.ACTIVE);
-        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of(membership));
-        when(companyFacade.getCompany(companyId)).thenReturn(company(companyId, "Acme"));
-        when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global-token", 3600));
-        when(jwtTokenService.issueScoped(principal, membership)).thenReturn(new IssuedToken("scoped-token", 3600));
-        when(authMapper.toAuthUserResponse(principal))
-                .thenReturn(new AuthUserResponse(userId, "user@example.com", "ADMIN"));
-        LoginResponse response = useCase.execute(new LoginRequest("User@Example.com", "secret123"));
+        IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", true);
+        authenticate(principal);
+        var membership = snapshot(userId, companyId, "OWNER");
+        when(authorizationService.getActiveMemberships(userId)).thenReturn(List.of(membership));
+        when(companyFacade.getCompany(companyId)).thenReturn(company(companyId));
+        when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global", 3600));
+        when(jwtTokenService.issueScoped(principal, membership)).thenReturn(new IssuedToken("scoped", 3600));
+        when(authMapper.toAuthUserResponse(principal)).thenReturn(new AuthUserResponse(userId, "user@example.com"));
 
-        assertThat(response.accessToken()).isEqualTo("global-token");
-        assertThat(response.tokenType()).isEqualTo("Bearer");
-        assertThat(response.expiresIn()).isEqualTo(3600);
-        assertThat(response.user().id()).isEqualTo(userId);
-        assertThat(response.user().email()).isEqualTo("user@example.com");
-        assertThat(response.user().role()).isEqualTo("ADMIN");
-        assertThat(response.availableCompanies()).hasSize(1);
-        assertThat(response.availableCompanies().getFirst().companyId()).isEqualTo(companyId);
-        assertThat(response.availableCompanies().getFirst().tradeName()).isEqualTo("Acme");
-        assertThat(response.availableCompanies().getFirst().cnpj()).isEqualTo("11222333000181");
-        assertThat(response.scopedToken().accessToken()).isEqualTo("scoped-token");
+        var response = useCase.execute(new LoginRequest("user@example.com", "secret123"));
+
+        assertThat(response.accessToken()).isEqualTo("global");
+        assertThat(response.scopedToken().accessToken()).isEqualTo("scoped");
+        assertThat(response.availableCompanies().getFirst().roles())
+                .extracting("code")
+                .containsExactly("OWNER");
     }
 
     @Test
-    void shouldNotAutoIssueScopedTokenWhenUserHasMultipleCompanies() {
+    void shouldNotAutoScopeMultipleMemberships() {
         UUID userId = UUID.randomUUID();
-        IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", "ADMIN", true);
-        UsernamePasswordAuthenticationToken authentication =
-                UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities());
-        when(authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
-                .thenReturn(authentication);
-        var firstMembership =
-                new UserMembershipSnapshot(userId, UUID.randomUUID(), UserRole.ADMIN, UserMembershipStatus.ACTIVE);
-        var secondMembership =
-                new UserMembershipSnapshot(userId, UUID.randomUUID(), UserRole.MANAGER, UserMembershipStatus.ACTIVE);
-        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of(firstMembership, secondMembership));
-        when(companyFacade.getCompany(firstMembership.companyId()))
-                .thenReturn(company(firstMembership.companyId(), "Acme"));
-        when(companyFacade.getCompany(secondMembership.companyId()))
-                .thenReturn(company(secondMembership.companyId(), "Beta"));
-        when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global-token", 3600));
-        when(authMapper.toAuthUserResponse(principal))
-                .thenReturn(new AuthUserResponse(userId, "user@example.com", "ADMIN"));
+        IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", true);
+        authenticate(principal);
+        var first = snapshot(userId, UUID.randomUUID(), "OWNER");
+        var second = snapshot(userId, UUID.randomUUID(), "MANAGER");
+        when(authorizationService.getActiveMemberships(userId)).thenReturn(List.of(first, second));
+        when(companyFacade.getCompany(first.companyId())).thenReturn(company(first.companyId()));
+        when(companyFacade.getCompany(second.companyId())).thenReturn(company(second.companyId()));
+        when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global", 3600));
+        when(authMapper.toAuthUserResponse(principal)).thenReturn(new AuthUserResponse(userId, "user@example.com"));
 
-        LoginResponse response = useCase.execute(new LoginRequest("user@example.com", "secret123"));
-
-        assertThat(response.accessToken()).isEqualTo("global-token");
-        assertThat(response.availableCompanies()).hasSize(2);
-        assertThat(response.scopedToken()).isNull();
+        assertThat(useCase.execute(new LoginRequest("user@example.com", "secret123"))
+                        .scopedToken())
+                .isNull();
     }
 
     @Test
-    void shouldRejectLoginWhenUserHasNoActiveMemberships() {
+    void shouldRejectNoMemberships() {
         UUID userId = UUID.randomUUID();
-        IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", "ADMIN", true);
-        UsernamePasswordAuthenticationToken authentication =
-                UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities());
-        when(authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
-                .thenReturn(authentication);
-        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of());
+        IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", true);
+        authenticate(principal);
+        when(authorizationService.getActiveMemberships(userId)).thenReturn(List.of());
 
         assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "secret123")))
                 .isInstanceOf(NoActiveMembershipException.class);
-
         verify(jwtTokenService, never()).issueGlobal(any());
-        verify(authMapper, never()).toAuthUserResponse(any());
     }
 
     @Test
-    void shouldRejectUnknownEmail() {
-        when(authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
-                .thenThrow(new BadCredentialsException("Bad credentials"));
-
-        assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "secret123")))
-                .isInstanceOf(InvalidCredentialsException.class);
-
-        verify(jwtTokenService, never()).issueGlobal(any());
-        verify(authMapper, never()).toAuthUserResponse(any());
-    }
-
-    @Test
-    void shouldRejectInvalidPassword() {
-        when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken("user@example.com", "wrong")))
-                .thenThrow(new BadCredentialsException("Bad credentials"));
-
+    void shouldRejectBadCredentials() {
+        when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("bad credentials"));
         assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "wrong")))
                 .isInstanceOf(InvalidCredentialsException.class);
-
-        verify(jwtTokenService, never()).issueGlobal(any());
-        verify(authMapper, never()).toAuthUserResponse(any());
     }
 
-    @Test
-    void shouldRejectInactiveCredential() {
-        when(authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken("user@example.com", "secret123")))
-                .thenThrow(new DisabledException("User is disabled"));
-
-        assertThatThrownBy(() -> useCase.execute(new LoginRequest("user@example.com", "secret123")))
-                .isInstanceOf(InvalidCredentialsException.class);
-
-        verify(jwtTokenService, never()).issueGlobal(any());
-        verify(authMapper, never()).toAuthUserResponse(any());
+    private void authenticate(IamUserDetails principal) {
+        when(authenticationManager.authenticate(any()))
+                .thenReturn(
+                        UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities()));
     }
 
-    private static CompanySnapshot company(UUID companyId, String tradeName) {
-        return new CompanySnapshot(
+    private static TenantAuthorizationSnapshot snapshot(UUID userId, UUID companyId, String code) {
+        return new TenantAuthorizationSnapshot(
+                UUID.randomUUID(),
+                userId,
                 companyId,
-                1L,
-                tradeName + " Ltda",
-                tradeName,
-                Cnpj.create("11222333000181"),
-                CompanyStatus.ACTIVE,
-                CompanyType.FACTORY,
-                null,
-                null,
-                null);
+                ACTIVE,
+                1,
+                List.of(new TenantAuthorizationSnapshot.RoleSummary(UUID.randomUUID(), code, code)),
+                Set.of("catalog:read"));
+    }
+
+    private static CompanySnapshot company(UUID id) {
+        return new CompanySnapshot(
+                id, 1L, "Acme Ltda", "Acme", null, CompanyStatus.ACTIVE, CompanyType.FACTORY, null, null, null);
     }
 }

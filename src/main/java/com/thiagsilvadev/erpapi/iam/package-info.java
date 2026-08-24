@@ -5,14 +5,8 @@
             "common::tenant",
             "common::validation",
             "common::web",
-            "catalog::api",
             "company::api",
-            "customer::api",
-            "financial::api",
-            "inventory::api",
-            "kpi::api",
-            "logistics::api",
-            "sales::api",
+            "iam.accesscontrol::api",
             "user::api"
         })
 package com.thiagsilvadev.erpapi.iam;

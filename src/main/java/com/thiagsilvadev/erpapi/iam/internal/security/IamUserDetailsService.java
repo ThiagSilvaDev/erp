@@ -15,12 +15,9 @@ import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 public class IamUserDetailsService implements UserDetailsService {
 
     private final IamCredentialRepository credentialRepository;
-    private final RolePermissionResolver rolePermissionResolver;
 
-    public IamUserDetailsService(
-            IamCredentialRepository credentialRepository, RolePermissionResolver rolePermissionResolver) {
+    public IamUserDetailsService(IamCredentialRepository credentialRepository) {
         this.credentialRepository = credentialRepository;
-        this.rolePermissionResolver = rolePermissionResolver;
     }
 
     @Override
@@ -31,11 +28,6 @@ public class IamUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Credential not found"));
 
         return new IamUserDetails(
-                credential.getUserId(),
-                credential.getEmail(),
-                credential.getPasswordHash(),
-                credential.getRole(),
-                credential.isActive(),
-                SecurityAuthorities.fromRole(credential.getRole(), rolePermissionResolver));
+                credential.getUserId(), credential.getEmail(), credential.getPasswordHash(), credential.isActive());
     }
 }

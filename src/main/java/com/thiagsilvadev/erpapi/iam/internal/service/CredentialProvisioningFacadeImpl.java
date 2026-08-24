@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.model.Email;
@@ -27,7 +28,7 @@ public class CredentialProvisioningFacadeImpl implements CredentialProvisioningF
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void provision(CredentialProvisioningRequest request) {
         String normalizedEmail = Email.create(request.email()).getValue();
 
@@ -39,8 +40,8 @@ public class CredentialProvisioningFacadeImpl implements CredentialProvisioningF
             throw new CredentialAlreadyExistsException("email", normalizedEmail);
         }
 
-        IamCredential credential = IamCredential.create(
-                request.userId(), normalizedEmail, passwordEncoder.encode(request.rawPassword()), request.role());
+        IamCredential credential =
+                IamCredential.create(request.userId(), normalizedEmail, passwordEncoder.encode(request.rawPassword()));
         try {
             credentialRepository.saveAndFlush(credential);
         } catch (DataIntegrityViolationException e) {

@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.iam.internal.service;
 
+import static com.thiagsilvadev.erpapi.iam.accesscontrol.api.AuthorizationStatus.ACTIVE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Clock;
@@ -8,81 +9,74 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
 import com.thiagsilvadev.erpapi.iam.internal.config.IamJwtProperties;
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
-import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipStatus;
 import com.thiagsilvadev.erpapi.user.api.UserPermissions;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 class JwtTokenServiceTest {
 
     @Test
-    void shouldIssueGlobalTokenWithIamPrincipalClaims() {
-        Instant now = Instant.parse("2026-05-11T00:00:00Z");
-        CapturingJwtEncoder jwtEncoder = new CapturingJwtEncoder();
-        IamJwtProperties properties = new IamJwtProperties();
-        properties.setIssuer("erp-api-test");
-        properties.setExpiration(Duration.ofMinutes(15));
-        JwtTokenService tokenService = new JwtTokenService(
-                jwtEncoder, properties, Clock.fixed(now, ZoneOffset.UTC), new RolePermissionResolver());
+    void shouldIssueGlobalTokenWithoutTenantAuthorization() {
+        var fixture = fixture();
         UUID userId = UUID.randomUUID();
-        IamUserDetails principal = new IamUserDetails(
-                userId,
-                "user@example.com",
-                "hash",
-                "ADMIN",
-                true,
-                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority(UserPermissions.WRITE)));
 
-        JwtTokenService.IssuedToken issuedToken = tokenService.issueGlobal(principal);
+        var token = fixture.service.issueGlobal(new IamUserDetails(userId, "user@example.com", "hash", true));
 
-        assertThat(issuedToken.value()).isEqualTo("encoded-token");
-        assertThat(issuedToken.expiresIn()).isEqualTo(900);
-        assertThat(jwtEncoder.claims).containsEntry("iss", "erp-api-test");
-        assertThat(jwtEncoder.claims).containsEntry("sub", userId.toString());
-        assertThat(jwtEncoder.claims).containsEntry("email", "user@example.com");
-        assertThat(jwtEncoder.claims).containsEntry("token_use", "global");
-        assertThat(jwtEncoder.claims).doesNotContainKeys("role", "authorities", "company_id");
-        assertThat(jwtEncoder.claims).containsEntry("iat", now);
-        assertThat(jwtEncoder.claims).containsEntry("exp", now.plus(Duration.ofMinutes(15)));
-        assertThat(jwtEncoder.claims).containsKey("jti");
+        assertThat(token.value()).isEqualTo("encoded-token");
+        assertThat(fixture.encoder.claims)
+                .containsEntry("sub", userId.toString())
+                .containsEntry("token_use", "global")
+                .doesNotContainKeys("membership_id", "tenant_id", "authorities");
     }
 
     @Test
-    void shouldIssueScopedTokenWithMembershipClaimsAndAuthorities() {
-        Instant now = Instant.parse("2026-05-11T00:00:00Z");
-        CapturingJwtEncoder jwtEncoder = new CapturingJwtEncoder();
+    void shouldIssueScopedTokenWithMembershipVersionRolesAndAuthorities() {
+        var fixture = fixture();
+        UUID userId = UUID.randomUUID();
+        UUID companyId = UUID.randomUUID();
+        UUID membershipId = UUID.randomUUID();
+        UUID roleId = UUID.randomUUID();
+        var authorization = new TenantAuthorizationSnapshot(
+                membershipId,
+                userId,
+                companyId,
+                ACTIVE,
+                7,
+                List.of(new TenantAuthorizationSnapshot.RoleSummary(roleId, "MANAGER", "Manager")),
+                Set.of(UserPermissions.READ));
+
+        fixture.service.issueScoped(new IamUserDetails(userId, "user@example.com", "hash", true), authorization);
+
+        assertThat(fixture.encoder.claims)
+                .containsEntry("token_use", "scoped")
+                .containsEntry("tenant_id", companyId.toString())
+                .containsEntry("membership_id", membershipId.toString())
+                .containsEntry("authz_version", 7L);
+        assertThat((Object) fixture.encoder.claims.get("roles")).asList().containsExactly("MANAGER");
+        assertThat((Object) fixture.encoder.claims.get("authorities")).asList().containsExactly(UserPermissions.READ);
+    }
+
+    private static Fixture fixture() {
+        CapturingJwtEncoder encoder = new CapturingJwtEncoder();
         IamJwtProperties properties = new IamJwtProperties();
         properties.setIssuer("erp-api-test");
         properties.setExpiration(Duration.ofMinutes(15));
-        JwtTokenService tokenService = new JwtTokenService(
-                jwtEncoder, properties, Clock.fixed(now, ZoneOffset.UTC), new RolePermissionResolver());
-        UUID userId = UUID.randomUUID();
-        UUID companyId = UUID.randomUUID();
-        IamUserDetails principal = new IamUserDetails(userId, "user@example.com", "hash", "ADMIN", true);
-        var membership = new UserMembershipSnapshot(userId, companyId, UserRole.ADMIN, UserMembershipStatus.ACTIVE);
-
-        JwtTokenService.IssuedToken issuedToken = tokenService.issueScoped(principal, membership);
-
-        assertThat(issuedToken.value()).isEqualTo("encoded-token");
-        assertThat(jwtEncoder.claims).containsEntry("token_use", "scoped");
-        assertThat(jwtEncoder.claims).containsEntry("sub", userId.toString());
-        assertThat(jwtEncoder.claims).containsEntry("email", "user@example.com");
-        assertThat(jwtEncoder.claims).containsEntry("company_id", companyId.toString());
-        assertThat(jwtEncoder.claims).containsEntry("tenant_id", companyId.toString());
-        assertThat(jwtEncoder.claims).containsEntry("role", "ADMIN");
-        assertThat((Object) jwtEncoder.claims.get("authorities")).asList().contains(UserPermissions.WRITE);
+        return new Fixture(
+                encoder,
+                new JwtTokenService(
+                        encoder, properties, Clock.fixed(Instant.parse("2026-05-11T00:00:00Z"), ZoneOffset.UTC)));
     }
+
+    private record Fixture(CapturingJwtEncoder encoder, JwtTokenService service) {}
 
     private static class CapturingJwtEncoder implements JwtEncoder {
 

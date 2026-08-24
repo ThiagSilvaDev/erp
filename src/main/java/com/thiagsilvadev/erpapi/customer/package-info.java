@@ -3,6 +3,7 @@
             "common::model",
             "common::address",
             "common::exception",
+            "common::permission",
             "common::tenant",
             "common::validation",
             "common::web",

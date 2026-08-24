@@ -30,12 +30,12 @@ The code is organized by business capability under
 | `company` | Companies, addresses, and company contacts |
 | `customer` | Customers, suppliers, and contact people |
 | `financial` | Accounts, ledger entries, invoices, and payments |
-| `iam` | Authentication, JWT issuance, and authorization |
+| `iam` | Authentication, tenant memberships, roles, permissions, and JWT issuance |
 | `inventory` | Warehouses, stock, movements, and reservations |
 | `kpi` | Tenant-scoped executive business indicators |
 | `logistics` | Drivers, vehicles, shipments, and tracking |
 | `sales` | Sales orders and their lifecycle |
-| `user` | Users and company memberships |
+| `user` | Global user identities and profiles |
 
 Each business module separates its public contracts from its implementation:
 
@@ -133,6 +133,30 @@ curl http://localhost:8080/api/v1/catalog/products \
 
 If the user has only one active company membership, the login response also
 contains a scoped token in `scopedToken`.
+
+A membership can have multiple roles. Scoped tokens expose the selected
+membership, its authorization version, assigned role codes, and the effective
+union of their permissions. The API validates that version against the active
+membership on every scoped request, so role changes and membership deactivation
+invalidate existing scoped tokens immediately.
+
+Tenant role and membership administration is available under:
+
+```text
+/api/v1/iam/roles
+/api/v1/iam/memberships
+```
+
+Every company receives the built-in `OWNER`, `ADMIN`, `MANAGER`, `OPERATOR`, and
+`DRIVER` roles. Custom roles are tenant-owned, and assigned roles must belong to
+the active tenant. The authorization model stores an explicit assignment scope;
+the current API grants tenant-wide assignments and reserves branch and warehouse
+scope types for future scoped workflows.
+
+Platform administration is separate from tenant roles. A platform administrator
+can exchange the global token at `POST /api/v1/auth/select-platform` and use the
+returned token for endpoints under `/api/v1/platform`, including company
+administration at `/api/v1/platform/companies`.
 
 ## API documentation
 

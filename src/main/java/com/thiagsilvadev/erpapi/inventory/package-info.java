@@ -4,6 +4,7 @@
             "common::model",
             "common::validation",
             "common::numbering",
+            "common::permission",
             "common::reporting",
             "common::tenant",
             "common::web",

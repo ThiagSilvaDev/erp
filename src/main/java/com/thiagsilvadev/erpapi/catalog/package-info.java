@@ -2,6 +2,7 @@
         allowedDependencies = {
             "common::exception",
             "common::model",
+            "common::permission",
             "common::tenant",
             "common::validation",
             "common::web",

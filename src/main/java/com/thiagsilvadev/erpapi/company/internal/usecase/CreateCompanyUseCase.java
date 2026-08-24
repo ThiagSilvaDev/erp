@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.company.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.company.api.CompanyPermissions.WRITE;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -35,7 +37,7 @@ public class CreateCompanyUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.company.api.CompanyPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public CompanyResponse execute(CreateCompanyRequest request) {
         var cnpj = companyMapper.toCnpj(request.cnpj());
 

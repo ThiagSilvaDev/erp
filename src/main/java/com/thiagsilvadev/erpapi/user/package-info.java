@@ -1,5 +1,12 @@
 @ApplicationModule(
-        allowedDependencies = {"common::exception", "common::model", "common::validation", "common::web", "company::api"
+        allowedDependencies = {
+            "common::exception",
+            "common::model",
+            "common::permission",
+            "common::tenant",
+            "common::validation",
+            "common::web",
+            "company::api"
         })
 package com.thiagsilvadev.erpapi.user;
 

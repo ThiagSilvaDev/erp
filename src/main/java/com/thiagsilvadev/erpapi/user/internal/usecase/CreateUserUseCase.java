@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
-import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
+import com.thiagsilvadev.erpapi.user.api.TenantAccessProvisioningFacade;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserResponse;
 import com.thiagsilvadev.erpapi.user.internal.event.UserCredentialProvisioningAfterCommitHandler;
@@ -16,61 +17,48 @@ import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.exception.EmailAlreadyExistsException;
 import com.thiagsilvadev.erpapi.user.internal.mapper.UserMapper;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
-import com.thiagsilvadev.erpapi.user.internal.model.UserMembership;
-import com.thiagsilvadev.erpapi.user.internal.repository.UserMembershipRepository;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
 @Component
 public class CreateUserUseCase {
 
     private final UserRepository userRepository;
-    private final CompanyFacade companyFacade;
     private final UserMapper userMapper;
     private final UserEventPublisher eventPublisher;
     private final UserCredentialProvisioningAfterCommitHandler credentialProvisioningAfterCommitHandler;
-    private final UserMembershipRepository userMembershipRepository;
+    private final TenantAccessProvisioningFacade tenantAccessProvisioningFacade;
 
     public CreateUserUseCase(
             UserRepository userRepository,
-            CompanyFacade companyFacade,
             UserMapper userMapper,
             UserEventPublisher eventPublisher,
             UserCredentialProvisioningAfterCommitHandler credentialProvisioningAfterCommitHandler,
-            UserMembershipRepository userMembershipRepository) {
+            TenantAccessProvisioningFacade tenantAccessProvisioningFacade) {
         this.userRepository = userRepository;
-        this.companyFacade = companyFacade;
         this.userMapper = userMapper;
         this.eventPublisher = eventPublisher;
         this.credentialProvisioningAfterCommitHandler = credentialProvisioningAfterCommitHandler;
-        this.userMembershipRepository = userMembershipRepository;
+        this.tenantAccessProvisioningFacade = tenantAccessProvisioningFacade;
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('" + WRITE + "')")
+    @PreAuthorize("hasAuthority('" + WRITE + "') and hasAuthority('iam:role:assign')")
     public UserResponse execute(CreateUserRequest request) {
+        var companyId = TenantContext.requireTenantId();
         Contact contact = Contact.create(request.email(), request.phone());
 
         if (userRepository.existsByContactEmailValue(contact.getEmail())) {
             throw new EmailAlreadyExistsException(contact.getEmail());
         }
 
-        companyFacade.getCompany(request.companyId());
-
-        User user = User.create(
-                request.firstName(),
-                request.lastName(),
-                contact,
-                request.birthDate(),
-                request.role(),
-                request.companyId());
+        User user = User.create(request.firstName(), request.lastName(), contact, request.birthDate());
         User savedUser;
         try {
             savedUser = userRepository.saveAndFlush(user);
         } catch (DataIntegrityViolationException e) {
             throw new EmailAlreadyExistsException(contact.getEmail());
         }
-        userMembershipRepository.save(
-                UserMembership.create(savedUser.getId(), request.companyId(), savedUser.getRole()));
+        tenantAccessProvisioningFacade.provision(savedUser.getId(), companyId, request.roleIds());
         credentialProvisioningAfterCommitHandler.provisionAfterCommit(savedUser, request.password());
         eventPublisher.userCreated(savedUser);
 

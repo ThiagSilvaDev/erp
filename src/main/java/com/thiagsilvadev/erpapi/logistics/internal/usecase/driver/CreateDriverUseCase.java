@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.usecase.driver;
 
+import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.WRITE;
+
 import java.util.Map;
 import java.util.UUID;
 
@@ -9,16 +11,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverRequest;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
+import com.thiagsilvadev.erpapi.user.api.TenantUserAccessFacade;
 import com.thiagsilvadev.erpapi.user.api.UserFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 
@@ -28,21 +28,21 @@ public class CreateDriverUseCase {
     private final DriverRepository driverRepository;
     private final LogisticsMapper mapper;
     private final UserFacade userFacade;
-    private final UserMembershipFacade userMembershipFacade;
+    private final TenantUserAccessFacade tenantUserAccessFacade;
 
     public CreateDriverUseCase(
             DriverRepository driverRepository,
             LogisticsMapper mapper,
             UserFacade userFacade,
-            UserMembershipFacade userMembershipFacade) {
+            TenantUserAccessFacade tenantUserAccessFacade) {
         this.driverRepository = driverRepository;
         this.mapper = mapper;
         this.userFacade = userFacade;
-        this.userMembershipFacade = userMembershipFacade;
+        this.tenantUserAccessFacade = tenantUserAccessFacade;
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public DriverResponse execute(CreateDriverRequest request) {
         var companyId = TenantContext.requireTenantId();
         var licenseNumber = Driver.normalizeLicenseNumber(request.licenseNumber());
@@ -60,17 +60,7 @@ public class CreateDriverUseCase {
             throw new ConflictException("User must be active.", Map.of("userId", user.id()));
         }
 
-        boolean isDriver;
-        try {
-            isDriver = userMembershipFacade
-                            .getActiveMembership(user.id(), companyId)
-                            .role()
-                    == UserRole.DRIVER;
-        } catch (ResourceNotFoundException exception) {
-            isDriver = false;
-        }
-
-        if (!isDriver) {
+        if (!tenantUserAccessFacade.hasRole(user.id(), companyId, "DRIVER")) {
             throw new ConflictException(
                     "User must have an active DRIVER membership in the current company.", Map.of("userId", user.id()));
         }

@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.logistics.internal.seed;
 
+import static com.thiagsilvadev.erpapi.user.api.UserStatus.ACTIVE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -124,9 +125,7 @@ class LogisticsDevSeederTest {
                         LogisticsDevSeeder.DRIVER_EMAIL,
                         "11999999999",
                         null,
-                        null,
-                        null,
-                        COMPANY_ID));
+                        ACTIVE));
         return userFacade;
     }
 }

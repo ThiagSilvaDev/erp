@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.logistics.internal.model;
 
-import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -40,7 +39,7 @@ public class Driver extends AbstractBaseEntity {
     private Driver(UUID companyId, UUID userId, String licenseNumber) {
         this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
         this.userId = Objects.requireNonNull(userId, "User ID is required");
-        this.licenseNumber = normalize(licenseNumber, "Driver license number cannot be blank");
+        this.licenseNumber = Strings.normalizeCode(licenseNumber, "Driver license number cannot be blank");
     }
 
     public static Driver create(UUID companyId, UUID userId, String licenseNumber) {
@@ -64,10 +63,6 @@ public class Driver extends AbstractBaseEntity {
     }
 
     public static String normalizeLicenseNumber(String value) {
-        return normalize(value, "Driver license number cannot be blank");
-    }
-
-    private static String normalize(String value, String message) {
-        return Strings.required(value, message).toUpperCase(Locale.ROOT);
+        return Strings.normalizeCode(value, "Driver license number cannot be blank");
     }
 }

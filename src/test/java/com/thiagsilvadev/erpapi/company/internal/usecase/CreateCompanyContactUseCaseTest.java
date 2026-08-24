@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,6 +21,7 @@ import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyContactResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.ContactRequest;
@@ -34,6 +36,11 @@ import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
 @ExtendWith(MockitoExtension.class)
 class CreateCompanyContactUseCaseTest {
 
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
+
     @Mock
     private CompanyRepository companyRepository;
 
@@ -46,6 +53,7 @@ class CreateCompanyContactUseCaseTest {
     @Test
     void shouldCreateFirstContactAsPrimary() {
         UUID companyId = UUID.randomUUID();
+        TenantContext.setTenantId(companyId);
         CreateCompanyContactRequest request = request(companyId, false);
         Contact contact = Contact.create("buyer@example.com", "11912345678");
         CompanyContactResponse response = response(companyId, true);
@@ -68,6 +76,7 @@ class CreateCompanyContactUseCaseTest {
     @Test
     void shouldRejectMissingCompany() {
         UUID companyId = UUID.randomUUID();
+        TenantContext.setTenantId(companyId);
         CreateCompanyContactRequest request = request(companyId, false);
         when(companyRepository.findById(companyId)).thenReturn(Optional.empty());
 
@@ -77,6 +86,7 @@ class CreateCompanyContactUseCaseTest {
     @Test
     void shouldDemoteExistingPrimaryWhenCreatingNewPrimary() {
         UUID companyId = UUID.randomUUID();
+        TenantContext.setTenantId(companyId);
         CreateCompanyContactRequest request = request(companyId, true);
         CompanyContact previousPrimary = CompanyContact.create(
                 companyId, "Old Primary", "manager", Contact.create("old@example.com", null), true);
@@ -101,11 +111,7 @@ class CreateCompanyContactUseCaseTest {
 
     private static CreateCompanyContactRequest request(UUID companyId, boolean primaryContact) {
         return new CreateCompanyContactRequest(
-                companyId,
-                "Maria Silva",
-                "buyer",
-                new ContactRequest("buyer@example.com", "11912345678"),
-                primaryContact);
+                "Maria Silva", "buyer", new ContactRequest("buyer@example.com", "11912345678"), primaryContact);
     }
 
     private static CompanyContactResponse response(UUID companyId, boolean primaryContact) {

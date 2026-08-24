@@ -13,15 +13,14 @@ class IamCredentialTest {
 
     @Test
     void shouldNormalizeCredentialEmailWithEmailValueObject() {
-        IamCredential credential = IamCredential.create(UUID.randomUUID(), " User@Example.com ", "hash", "admin");
+        IamCredential credential = IamCredential.create(UUID.randomUUID(), " User@Example.com ", "hash");
 
         assertThat(credential.getEmail()).isEqualTo("user@example.com");
-        assertThat(credential.getRole()).isEqualTo("ADMIN");
     }
 
     @Test
     void shouldRejectInvalidCredentialEmail() {
-        assertThatThrownBy(() -> IamCredential.create(UUID.randomUUID(), "invalid-email", "hash", "ADMIN"))
+        assertThatThrownBy(() -> IamCredential.create(UUID.randomUUID(), "invalid-email", "hash"))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessage("Invalid email format");
     }

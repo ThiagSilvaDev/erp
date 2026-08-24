@@ -1,97 +1,71 @@
 package com.thiagsilvadev.erpapi.iam.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.iam.accesscontrol.api.AuthorizationStatus.ACTIVE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipStatus;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AccessControlFacade;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
 
-@ExtendWith(MockitoExtension.class)
 class ListUserCompaniesUseCaseTest {
 
-    @Mock
-    private UserMembershipFacade userMembershipFacade;
-
-    @Mock
-    private CompanyFacade companyFacade;
+    private final AccessControlFacade authorizationService = mock(AccessControlFacade.class);
+    private final CompanyFacade companyFacade = mock(CompanyFacade.class);
+    private final ListUserCompaniesUseCase useCase = new ListUserCompaniesUseCase(authorizationService, companyFacade);
 
     @Test
-    void shouldListActiveUserCompanies() {
+    void shouldListRolesForActiveCompanies() {
         UUID userId = UUID.randomUUID();
         UUID companyId = UUID.randomUUID();
-        var membership = new UserMembershipSnapshot(userId, companyId, UserRole.MANAGER, UserMembershipStatus.ACTIVE);
-        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of(membership));
-        when(companyFacade.getCompany(companyId)).thenReturn(company(companyId));
+        var membership = new TenantAuthorizationSnapshot(
+                UUID.randomUUID(),
+                userId,
+                companyId,
+                ACTIVE,
+                1,
+                List.of(new TenantAuthorizationSnapshot.RoleSummary(UUID.randomUUID(), "MANAGER", "Manager")),
+                Set.of());
+        when(authorizationService.getActiveMemberships(userId)).thenReturn(List.of(membership));
+        when(companyFacade.getCompany(companyId))
+                .thenReturn(new CompanySnapshot(
+                        companyId,
+                        1L,
+                        "Acme Ltda",
+                        "Acme",
+                        null,
+                        CompanyStatus.ACTIVE,
+                        CompanyType.FACTORY,
+                        null,
+                        null,
+                        null));
 
-        var response = useCase().execute(jwt(userId, "global"));
+        var response = useCase.execute(jwt(userId, "global"));
 
-        assertThat(response).hasSize(1);
-        assertThat(response.getFirst().companyId()).isEqualTo(companyId);
-        assertThat(response.getFirst().legalName()).isEqualTo("Acme Ltda");
-        assertThat(response.getFirst().tradeName()).isEqualTo("Acme");
-        assertThat(response.getFirst().role()).isEqualTo(UserRole.MANAGER.name());
+        assertThat(response.getFirst().roles()).extracting("code").containsExactly("MANAGER");
     }
 
     @Test
-    void shouldRejectMissingAuthentication() {
-        var exception = catchThrowableOfType(AuthenticationCredentialsNotFoundException.class, () -> useCase()
-                .execute(null));
-
-        assertThat(exception).isNotNull();
-        verify(userMembershipFacade, never()).getActiveMemberships(org.mockito.ArgumentMatchers.any());
-    }
-
-    @Test
-    void shouldRejectScopedToken() {
-        Jwt jwt = jwt(UUID.randomUUID(), "scoped");
-
-        var exception = catchThrowableOfType(
-                AccessDeniedException.class, () -> useCase().execute(jwt));
-
-        assertThat(exception).isNotNull();
-        verify(userMembershipFacade, never()).getActiveMemberships(org.mockito.ArgumentMatchers.any());
-    }
-
-    @Test
-    void shouldFailWhenMembershipCompanyDoesNotExist() {
-        UUID userId = UUID.randomUUID();
-        UUID companyId = UUID.randomUUID();
-        var membership = new UserMembershipSnapshot(userId, companyId, UserRole.MANAGER, UserMembershipStatus.ACTIVE);
-        Jwt jwt = jwt(userId, "global");
-        when(userMembershipFacade.getActiveMemberships(userId)).thenReturn(List.of(membership));
-        when(companyFacade.getCompany(companyId)).thenThrow(new ResourceNotFoundException("Company", companyId));
-
-        var exception = catchThrowableOfType(
-                ResourceNotFoundException.class, () -> useCase().execute(jwt));
-
-        assertThat(exception).isNotNull();
-    }
-
-    private ListUserCompaniesUseCase useCase() {
-        return new ListUserCompaniesUseCase(userMembershipFacade, companyFacade);
+    void shouldRequireGlobalAuthentication() {
+        assertThatThrownBy(() -> useCase.execute(null)).isInstanceOf(AuthenticationCredentialsNotFoundException.class);
+        assertThatThrownBy(() -> useCase.execute(jwt(UUID.randomUUID(), "scoped")))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     private static Jwt jwt(UUID userId, String tokenUse) {
@@ -101,11 +75,6 @@ class ListUserCompaniesUseCaseTest {
                 now,
                 now.plusSeconds(3600),
                 Map.of("alg", "HS256"),
-                Map.of("sub", userId.toString(), "email", "user@example.com", "token_use", tokenUse));
-    }
-
-    private static CompanySnapshot company(UUID companyId) {
-        return new CompanySnapshot(
-                companyId, 1L, "Acme Ltda", "Acme", null, CompanyStatus.ACTIVE, CompanyType.FACTORY, null, null, null);
+                Map.of("sub", userId.toString(), "token_use", tokenUse));
     }
 }

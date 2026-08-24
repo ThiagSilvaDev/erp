@@ -12,8 +12,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AccessControlFacade;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthCompanyResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.AuthMapper;
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthRoleResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyResponse;
@@ -22,8 +25,6 @@ import com.thiagsilvadev.erpapi.iam.internal.exception.NoActiveMembershipExcepti
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService.IssuedToken;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
 
 @Component
 public class LoginUseCase {
@@ -32,19 +33,19 @@ public class LoginUseCase {
 
     private final JwtTokenService jwtTokenService;
     private final AuthenticationManager authenticationManager;
-    private final UserMembershipFacade userMembershipFacade;
+    private final AccessControlFacade accessControlFacade;
     private final CompanyFacade companyFacade;
     private final AuthMapper authMapper;
 
     public LoginUseCase(
             JwtTokenService jwtTokenService,
             AuthenticationManager authenticationManager,
-            UserMembershipFacade userMembershipFacade,
+            AccessControlFacade accessControlFacade,
             CompanyFacade companyFacade,
             AuthMapper authMapper) {
         this.jwtTokenService = jwtTokenService;
         this.authenticationManager = authenticationManager;
-        this.userMembershipFacade = userMembershipFacade;
+        this.accessControlFacade = accessControlFacade;
         this.companyFacade = companyFacade;
         this.authMapper = authMapper;
     }
@@ -56,7 +57,7 @@ public class LoginUseCase {
         if (!(authentication.getPrincipal() instanceof IamUserDetails principal)) {
             throw new InvalidCredentialsException();
         }
-        List<UserMembershipSnapshot> memberships = userMembershipFacade.getActiveMemberships(principal.getUserId());
+        List<TenantAuthorizationSnapshot> memberships = accessControlFacade.getActiveMemberships(principal.getUserId());
         if (memberships.isEmpty()) {
             log.warn("Login failed: no active memberships. userId={}", principal.getUserId());
             throw new NoActiveMembershipException();
@@ -73,14 +74,16 @@ public class LoginUseCase {
                 scopedToken);
     }
 
-    private AuthCompanyResponse toAuthCompanyResponse(UserMembershipSnapshot membership) {
+    private AuthCompanyResponse toAuthCompanyResponse(TenantAuthorizationSnapshot membership) {
         var company = companyFacade.getCompany(membership.companyId());
 
         return new AuthCompanyResponse(
                 membership.companyId(),
                 company.tradeName(),
                 company.cnpj() != null ? company.cnpj().getNumber() : null,
-                membership.role());
+                membership.roles().stream()
+                        .map(role -> new AuthRoleResponse(role.id(), role.code(), role.name()))
+                        .toList());
     }
 
     private Authentication authenticate(LoginRequest request) {
@@ -93,16 +96,23 @@ public class LoginUseCase {
         }
     }
 
-    private SelectCompanyResponse maybeAutoScope(IamUserDetails principal, List<UserMembershipSnapshot> memberships) {
+    private SelectCompanyResponse maybeAutoScope(
+            IamUserDetails principal, List<TenantAuthorizationSnapshot> memberships) {
         if (memberships.size() != 1) {
             return null;
         }
         return scopedToken(principal, memberships.getFirst());
     }
 
-    private SelectCompanyResponse scopedToken(IamUserDetails principal, UserMembershipSnapshot membership) {
+    private SelectCompanyResponse scopedToken(IamUserDetails principal, TenantAuthorizationSnapshot membership) {
         IssuedToken token = jwtTokenService.issueScoped(principal, membership);
         return SelectCompanyResponse.bearer(
-                token.value(), token.expiresIn(), membership.companyId(), membership.role());
+                token.value(),
+                token.expiresIn(),
+                membership.companyId(),
+                membership.roles().stream()
+                        .map(role -> new AuthRoleResponse(role.id(), role.code(), role.name()))
+                        .toList(),
+                membership.permissions());
     }
 }

@@ -1,6 +1,10 @@
 package com.thiagsilvadev.erpapi.iam.internal.config;
 
 import static com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions.WRITE;
+import static com.thiagsilvadev.erpapi.iam.accesscontrol.api.AuthorizationStatus.ACTIVE;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -13,6 +17,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -45,9 +50,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AccessControlFacade;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
-import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
 
 @SpringBootTest(
         classes = {
@@ -58,8 +64,7 @@ import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
             IamSecurityConfiguration.class,
             ProblemDetailFactory.class,
             CustomAuthenticationEntryPoint.class,
-            CustomAccessDeniedHandler.class,
-            RolePermissionResolver.class
+            CustomAccessDeniedHandler.class
         },
         properties = {
             "erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes",
@@ -71,7 +76,7 @@ import com.thiagsilvadev.erpapi.iam.internal.security.RolePermissionResolver;
             DataJpaRepositoriesAutoConfiguration.class,
             EventPublicationAutoConfiguration.class
         },
-        excludeName = JpaEventPublicationAutoConfigurationExclusion.NAME)
+        excludeName = JdbcEventPublicationAutoConfigurationExclusion.NAME)
 class IamSecurityConfigurationTest {
 
     @Autowired
@@ -80,10 +85,14 @@ class IamSecurityConfigurationTest {
     @Autowired
     private JwtEncoder jwtEncoder;
 
+    @Autowired
+    private AccessControlFacade accessControlFacade;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
+        reset(accessControlFacade);
         mockMvc = MockMvcBuilders.webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
@@ -226,27 +235,32 @@ class IamSecurityConfigurationTest {
     }
 
     @Test
-    void shouldAuthorizeWithAuthoritiesClaim() throws Exception {
-        String token = tokenWithAuthorities("UNKNOWN", List.of("ROLE_UNKNOWN", WRITE));
+    void shouldIgnoreAuthoritiesClaim() throws Exception {
+        String token = tokenWithAuthorities("UNKNOWN", List.of("ROLE_UNKNOWN", WRITE), Set.of());
+
+        mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldUseAuthoritativePermissionWhenTokenClaimDoesNotContainIt() throws Exception {
+        String token = tokenWithAuthorities("ADMIN", List.of("ROLE_ADMIN"), Set.of(WRITE));
 
         mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void shouldRejectWhenAuthoritiesClaimDoesNotGrantPermission() throws Exception {
-        String token = tokenWithAuthorities("ADMIN", List.of("ROLE_ADMIN"));
+    void shouldDenyScopedTokenWithMissingAuthorizationClaimsInsteadOfFailing() throws Exception {
+        String token = tokenWithAuthorizationClaimsMissing();
 
         mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
 
-    private String tokenWithRole(String role) {
-        return tokenWithRole(role, UUID.randomUUID());
-    }
-
-    private String tokenWithRole(String role, UUID tenantId) {
+    private String tokenWithAuthorizationClaimsMissing() {
         Instant issuedAt = Instant.now();
+        UUID tenantId = UUID.randomUUID();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("erp-api")
                 .issuedAt(issuedAt)
@@ -256,7 +270,6 @@ class IamSecurityConfigurationTest {
                 .claim("email", "user@example.com")
                 .claim("tenant_id", tenantId.toString())
                 .claim("company_id", tenantId.toString())
-                .claim("role", role)
                 .build();
         return jwtEncoder
                 .encode(JwtEncoderParameters.from(
@@ -264,18 +277,52 @@ class IamSecurityConfigurationTest {
                 .getTokenValue();
     }
 
-    private String tokenWithAuthorities(String role, List<String> authorities) {
+    private String tokenWithRole(String role) {
+        return tokenWithRole(role, UUID.randomUUID());
+    }
+
+    private String tokenWithRole(String role, UUID tenantId) {
+        Set<String> permissions =
+                switch (role) {
+                    case "ADMIN", "MANAGER" -> Set.of(WRITE);
+                    default -> Set.of();
+                };
+        return tokenWithAuthorization(role, tenantId, List.of(), permissions);
+    }
+
+    private String tokenWithAuthorities(String role, List<String> claimedAuthorities, Set<String> permissions) {
+        return tokenWithAuthorization(role, UUID.randomUUID(), claimedAuthorities, permissions);
+    }
+
+    private String tokenWithAuthorization(
+            String role, UUID tenantId, List<String> claimedAuthorities, Set<String> permissions) {
         Instant issuedAt = Instant.now();
+        UUID userId = UUID.randomUUID();
+        UUID membershipId = UUID.randomUUID();
+        long authorizationVersion = 3L;
+        var authorization = new TenantAuthorizationSnapshot(
+                membershipId,
+                userId,
+                tenantId,
+                ACTIVE,
+                authorizationVersion,
+                List.of(new TenantAuthorizationSnapshot.RoleSummary(UUID.randomUUID(), role, role)),
+                permissions);
+        when(accessControlFacade.validateScopedToken(membershipId, userId, tenantId, authorizationVersion))
+                .thenReturn(authorization);
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("erp-api")
                 .issuedAt(issuedAt)
                 .expiresAt(issuedAt.plusSeconds(3600))
-                .subject(UUID.randomUUID().toString())
+                .subject(userId.toString())
                 .claim("token_use", "scoped")
                 .claim("email", "user@example.com")
-                .claim("tenant_id", UUID.randomUUID().toString())
-                .claim("role", role)
-                .claim("authorities", authorities)
+                .claim("tenant_id", tenantId.toString())
+                .claim("company_id", tenantId.toString())
+                .claim("membership_id", membershipId.toString())
+                .claim("authz_version", authorizationVersion)
+                .claim("roles", List.of(role))
+                .claim("authorities", claimedAuthorities)
                 .build();
         return jwtEncoder
                 .encode(JwtEncoderParameters.from(
@@ -305,6 +352,11 @@ class IamSecurityConfigurationTest {
         @Bean
         Clock clock() {
             return Clock.fixed(Instant.parse("2026-05-16T00:00:00Z"), ZoneOffset.UTC);
+        }
+
+        @Bean
+        AccessControlFacade accessControlFacade() {
+            return mock(AccessControlFacade.class);
         }
     }
 
@@ -354,9 +406,10 @@ class IamSecurityConfigurationTest {
     }
 }
 
-final class JpaEventPublicationAutoConfigurationExclusion {
+final class JdbcEventPublicationAutoConfigurationExclusion {
 
-    static final String NAME = "org." + "springframework.modulith.events.jpa." + "JpaEventPublicationAutoConfiguration";
+    static final String NAME =
+            "org." + "springframework.modulith.events.jdbc." + "JdbcEventPublicationAutoConfiguration";
 
-    private JpaEventPublicationAutoConfigurationExclusion() {}
+    private JdbcEventPublicationAutoConfigurationExclusion() {}
 }

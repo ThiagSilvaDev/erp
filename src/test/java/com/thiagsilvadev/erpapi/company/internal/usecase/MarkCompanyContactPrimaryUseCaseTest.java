@@ -10,8 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyContactResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.ContactResponse;
 import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
@@ -35,10 +37,11 @@ class MarkCompanyContactPrimaryUseCaseTest {
                 companyId, "New Primary", "owner", Contact.create("new@example.com", null), false);
         CompanyContact previous = CompanyContact.create(
                 companyId, "Old Primary", "manager", Contact.create("old@example.com", null), true);
-        org.springframework.test.util.ReflectionTestUtils.setField(requested, "id", contactId);
-        org.springframework.test.util.ReflectionTestUtils.setField(previous, "id", UUID.randomUUID());
+        ReflectionTestUtils.setField(requested, "id", contactId);
+        ReflectionTestUtils.setField(previous, "id", UUID.randomUUID());
 
-        when(companyContactRepository.findById(contactId)).thenReturn(Optional.of(requested));
+        when(companyContactRepository.findByIdAndCompanyId(contactId, companyId))
+                .thenReturn(Optional.of(requested));
         when(companyContactRepository.findByCompanyIdAndPrimaryContactTrue(companyId))
                 .thenReturn(Optional.of(previous));
         when(companyMapper.toResponse(requested))
@@ -50,8 +53,13 @@ class MarkCompanyContactPrimaryUseCaseTest {
                         new ContactResponse("new@example.com", null),
                         true));
 
-        CompanyContactResponse response =
-                new MarkCompanyContactPrimaryUseCase(companyContactRepository, companyMapper).execute(contactId);
+        TenantContext.setTenantId(companyId);
+        CompanyContactResponse response;
+        try {
+            response = new MarkCompanyContactPrimaryUseCase(companyContactRepository, companyMapper).execute(contactId);
+        } finally {
+            TenantContext.clear();
+        }
 
         assertThat(previous.isPrimaryContact()).isFalse();
         assertThat(requested.isPrimaryContact()).isTrue();

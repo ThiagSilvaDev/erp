@@ -11,6 +11,4 @@ public record UserSnapshot(
         String email,
         String phone,
         LocalDate birthDate,
-        UserRole role,
-        UserStatus status,
-        UUID companyId) {}
+        UserStatus status) {}

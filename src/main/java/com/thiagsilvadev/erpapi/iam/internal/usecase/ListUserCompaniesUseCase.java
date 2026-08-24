@@ -10,18 +10,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AccessControlFacade;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthRoleResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.UserCompanyResponse;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
 
 @Component
 public class ListUserCompaniesUseCase {
 
-    private final UserMembershipFacade userMembershipFacade;
+    private final AccessControlFacade accessControlFacade;
     private final CompanyFacade companyFacade;
 
-    public ListUserCompaniesUseCase(UserMembershipFacade userMembershipFacade, CompanyFacade companyFacade) {
-        this.userMembershipFacade = userMembershipFacade;
+    public ListUserCompaniesUseCase(AccessControlFacade accessControlFacade, CompanyFacade companyFacade) {
+        this.accessControlFacade = accessControlFacade;
         this.companyFacade = companyFacade;
     }
 
@@ -35,12 +36,12 @@ public class ListUserCompaniesUseCase {
         }
 
         UUID userId = UUID.fromString(jwt.getSubject());
-        List<UserMembershipSnapshot> memberships = userMembershipFacade.getActiveMemberships(userId);
+        List<TenantAuthorizationSnapshot> memberships = accessControlFacade.getActiveMemberships(userId);
 
         return memberships.stream().map(this::toUserCompanyResponse).toList();
     }
 
-    private UserCompanyResponse toUserCompanyResponse(UserMembershipSnapshot membership) {
+    private UserCompanyResponse toUserCompanyResponse(TenantAuthorizationSnapshot membership) {
         var company = companyFacade.getCompany(membership.companyId());
 
         return new UserCompanyResponse(
@@ -48,6 +49,8 @@ public class ListUserCompaniesUseCase {
                 company.legalName(),
                 company.tradeName(),
                 company.cnpj() != null ? company.cnpj().getNumber() : null,
-                membership.role().name());
+                membership.roles().stream()
+                        .map(role -> new AuthRoleResponse(role.id(), role.code(), role.name()))
+                        .toList());
     }
 }

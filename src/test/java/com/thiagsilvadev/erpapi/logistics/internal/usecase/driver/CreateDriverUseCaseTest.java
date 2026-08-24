@@ -18,11 +18,8 @@ import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverReques
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
+import com.thiagsilvadev.erpapi.user.api.TenantUserAccessFacade;
 import com.thiagsilvadev.erpapi.user.api.UserFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipStatus;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 
@@ -34,7 +31,7 @@ class CreateDriverUseCaseTest {
     private DriverRepository driverRepository;
     private LogisticsMapper mapper;
     private UserFacade userFacade;
-    private UserMembershipFacade membershipFacade;
+    private TenantUserAccessFacade tenantUserAccessFacade;
     private CreateDriverUseCase useCase;
 
     @BeforeEach
@@ -43,8 +40,8 @@ class CreateDriverUseCaseTest {
         driverRepository = mock(DriverRepository.class);
         mapper = mock(LogisticsMapper.class);
         userFacade = mock(UserFacade.class);
-        membershipFacade = mock(UserMembershipFacade.class);
-        useCase = new CreateDriverUseCase(driverRepository, mapper, userFacade, membershipFacade);
+        tenantUserAccessFacade = mock(TenantUserAccessFacade.class);
+        useCase = new CreateDriverUseCase(driverRepository, mapper, userFacade, tenantUserAccessFacade);
     }
 
     @AfterEach
@@ -55,8 +52,7 @@ class CreateDriverUseCaseTest {
     @Test
     void shouldCreateProfileForActiveDriverMembership() {
         when(userFacade.getUser(USER_ID)).thenReturn(user(UserStatus.ACTIVE));
-        when(membershipFacade.getActiveMembership(USER_ID, COMPANY_ID))
-                .thenReturn(membership(UserRole.DRIVER, UserMembershipStatus.ACTIVE));
+        when(tenantUserAccessFacade.hasRole(USER_ID, COMPANY_ID, "DRIVER")).thenReturn(true);
         when(driverRepository.saveAndFlush(any(Driver.class))).thenAnswer(invocation -> invocation.getArgument(0));
         DriverResponse response = new DriverResponse(UUID.randomUUID(), USER_ID, "CNH-1", null);
         when(mapper.toResponse(any(Driver.class))).thenReturn(response);
@@ -75,8 +71,7 @@ class CreateDriverUseCaseTest {
     @Test
     void shouldRejectUserWithoutDriverMembership() {
         when(userFacade.getUser(USER_ID)).thenReturn(user(UserStatus.ACTIVE));
-        when(membershipFacade.getActiveMembership(USER_ID, COMPANY_ID))
-                .thenReturn(membership(UserRole.OPERATOR, UserMembershipStatus.ACTIVE));
+        when(tenantUserAccessFacade.hasRole(USER_ID, COMPANY_ID, "DRIVER")).thenReturn(false);
 
         assertThatThrownBy(() -> useCase.execute(new CreateDriverRequest(USER_ID, "CNH-1")))
                 .isInstanceOf(ConflictException.class)
@@ -88,8 +83,7 @@ class CreateDriverUseCaseTest {
     @Test
     void shouldRejectDuplicateUserLink() {
         when(userFacade.getUser(USER_ID)).thenReturn(user(UserStatus.ACTIVE));
-        when(membershipFacade.getActiveMembership(USER_ID, COMPANY_ID))
-                .thenReturn(membership(UserRole.DRIVER, UserMembershipStatus.ACTIVE));
+        when(tenantUserAccessFacade.hasRole(USER_ID, COMPANY_ID, "DRIVER")).thenReturn(true);
         when(driverRepository.existsByCompanyIdAndUserId(COMPANY_ID, USER_ID)).thenReturn(true);
 
         assertThatThrownBy(() -> useCase.execute(new CreateDriverRequest(USER_ID, "CNH-1")))
@@ -101,19 +95,6 @@ class CreateDriverUseCaseTest {
 
     private static UserSnapshot user(UserStatus status) {
         return new UserSnapshot(
-                USER_ID,
-                "Alex Driver",
-                "Alex",
-                "Driver",
-                "alex@example.com",
-                "11999999999",
-                null,
-                UserRole.DRIVER,
-                status,
-                COMPANY_ID);
-    }
-
-    private static UserMembershipSnapshot membership(UserRole role, UserMembershipStatus status) {
-        return new UserMembershipSnapshot(USER_ID, COMPANY_ID, role, status);
+                USER_ID, "Alex Driver", "Alex", "Driver", "alex@example.com", "11999999999", null, status);
     }
 }

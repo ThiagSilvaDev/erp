@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.iam.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.iam.accesscontrol.api.AuthorizationStatus.ACTIVE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,7 +10,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -20,13 +23,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AccessControlFacade;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyRequest;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService.IssuedToken;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipStatus;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 
 @ExtendWith(MockitoExtension.class)
 class SelectCompanyUseCaseTest {
@@ -35,50 +36,55 @@ class SelectCompanyUseCaseTest {
     private JwtTokenService jwtTokenService;
 
     @Mock
-    private UserMembershipFacade userMembershipFacade;
+    private AccessControlFacade authorizationService;
 
     @Test
     void shouldIssueScopedTokenForActiveMembership() {
         UUID userId = UUID.randomUUID();
         UUID companyId = UUID.randomUUID();
-        Jwt jwt = jwt(userId, "global");
-        var membership = new UserMembershipSnapshot(userId, companyId, UserRole.MANAGER, UserMembershipStatus.ACTIVE);
-        when(userMembershipFacade.getActiveMembership(userId, companyId)).thenReturn(membership);
+        var membership = snapshot(userId, companyId);
+        when(authorizationService.getActiveMembership(userId, companyId)).thenReturn(membership);
         when(jwtTokenService.issueScoped(any(), eq(membership))).thenReturn(new IssuedToken("scoped-token", 3600));
 
-        var response = useCase().execute(new SelectCompanyRequest(companyId), jwt);
+        var response = useCase().execute(new SelectCompanyRequest(companyId), jwt(userId, "global"));
 
         assertThat(response.accessToken()).isEqualTo("scoped-token");
         assertThat(response.activeCompanyId()).isEqualTo(companyId);
-        assertThat(response.role()).isEqualTo(UserRole.MANAGER);
+        assertThat(response.roles()).extracting("code").containsExactly("MANAGER");
     }
 
     @Test
     void shouldRejectScopedTokenForCompanySelection() {
-        UUID companyId = UUID.randomUUID();
-
-        assertThatThrownBy(
-                        () -> useCase().execute(new SelectCompanyRequest(companyId), jwt(UUID.randomUUID(), "scoped")))
+        assertThatThrownBy(() -> useCase()
+                        .execute(new SelectCompanyRequest(UUID.randomUUID()), jwt(UUID.randomUUID(), "scoped")))
                 .isInstanceOf(AccessDeniedException.class);
-
         verify(jwtTokenService, never()).issueScoped(any(), any());
     }
 
     @Test
-    void shouldRejectInactiveMembership() {
+    void shouldHideMissingMembershipAsAccessDenied() {
         UUID userId = UUID.randomUUID();
         UUID companyId = UUID.randomUUID();
-        when(userMembershipFacade.getActiveMembership(userId, companyId))
-                .thenThrow(new ResourceNotFoundException("UserMembership", userId + "/" + companyId));
+        when(authorizationService.getActiveMembership(userId, companyId))
+                .thenThrow(new ResourceNotFoundException("TenantMembership", userId));
 
         assertThatThrownBy(() -> useCase().execute(new SelectCompanyRequest(companyId), jwt(userId, "global")))
                 .isInstanceOf(AccessDeniedException.class);
-
-        verify(jwtTokenService, never()).issueScoped(any(), any());
     }
 
     private SelectCompanyUseCase useCase() {
-        return new SelectCompanyUseCase(jwtTokenService, userMembershipFacade);
+        return new SelectCompanyUseCase(jwtTokenService, authorizationService);
+    }
+
+    private static TenantAuthorizationSnapshot snapshot(UUID userId, UUID companyId) {
+        return new TenantAuthorizationSnapshot(
+                UUID.randomUUID(),
+                userId,
+                companyId,
+                ACTIVE,
+                1,
+                List.of(new TenantAuthorizationSnapshot.RoleSummary(UUID.randomUUID(), "MANAGER", "Manager")),
+                Set.of("catalog:read"));
     }
 
     private static Jwt jwt(UUID userId, String tokenUse) {

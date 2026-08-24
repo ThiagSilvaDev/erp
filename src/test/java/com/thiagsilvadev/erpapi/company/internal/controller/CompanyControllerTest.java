@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.company.internal.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -42,10 +44,10 @@ class CompanyControllerTest {
 
     @BeforeEach
     void setUp() {
-        createCompanyUseCase = org.mockito.Mockito.mock(CreateCompanyUseCase.class);
-        getCompanyByIdUseCase = org.mockito.Mockito.mock(GetCompanyByIdUseCase.class);
-        getCompanyAddressUseCase = org.mockito.Mockito.mock(GetCompanyAddressUseCase.class);
-        listCompaniesUseCase = org.mockito.Mockito.mock(ListCompaniesUseCase.class);
+        createCompanyUseCase = mock(CreateCompanyUseCase.class);
+        getCompanyByIdUseCase = mock(GetCompanyByIdUseCase.class);
+        getCompanyAddressUseCase = mock(GetCompanyAddressUseCase.class);
+        listCompaniesUseCase = mock(ListCompaniesUseCase.class);
         mockMvc = standaloneSetup(new CompanyController(
                         createCompanyUseCase, getCompanyByIdUseCase, getCompanyAddressUseCase, listCompaniesUseCase))
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
@@ -58,7 +60,7 @@ class CompanyControllerTest {
         when(createCompanyUseCase.execute(any(CreateCompanyRequest.class))).thenReturn(companyResponse(id));
 
         mockMvc.perform(
-                        post("/api/v1/companies")
+                        post("/api/v1/platform/companies")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         """
@@ -79,7 +81,7 @@ class CompanyControllerTest {
                                 }
                                 """))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "http://localhost/api/v1/companies/" + id))
+                .andExpect(header().string("Location", "http://localhost/api/v1/platform/companies/" + id))
                 .andExpect(jsonPath("$.id").value(id.toString()));
     }
 
@@ -93,7 +95,7 @@ class CompanyControllerTest {
                         addressResponse(),
                         "Avenida Paulista, 1000 - Bela Vista, Sao Paulo - SP, BR, 01310100"));
 
-        mockMvc.perform(get("/api/v1/companies/{id}/address", id))
+        mockMvc.perform(get("/api/v1/platform/companies/{id}/address", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.companyId").value(id.toString()))
                 .andExpect(jsonPath("$.companyName").value("Trade"))
@@ -107,7 +109,7 @@ class CompanyControllerTest {
         UUID id = UUID.randomUUID();
         when(getCompanyByIdUseCase.execute(id)).thenReturn(companyResponse(id));
 
-        mockMvc.perform(get("/api/v1/companies/{id}", id))
+        mockMvc.perform(get("/api/v1/platform/companies/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id.toString()));
     }
@@ -115,9 +117,9 @@ class CompanyControllerTest {
     @Test
     void shouldListCompanies() throws Exception {
         when(listCompaniesUseCase.execute(any(CompanySearchCriteria.class), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(java.util.List.of(), PageRequest.of(0, 20), 0));
+                .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
 
-        mockMvc.perform(get("/api/v1/companies")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/platform/companies")).andExpect(status().isOk());
     }
 
     private static CompanyResponse companyResponse(UUID id) {

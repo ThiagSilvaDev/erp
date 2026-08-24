@@ -42,14 +42,13 @@ class CredentialProvisioningFacadeImplTest {
         when(credentialRepository.existsByEmailValue("user@example.com")).thenReturn(false);
         when(passwordEncoder.encode("secret123")).thenReturn("encoded-password");
 
-        service.provision(new CredentialProvisioningRequest(userId, " User@Example.com ", "secret123", "ADMIN"));
+        service.provision(new CredentialProvisioningRequest(userId, " User@Example.com ", "secret123"));
 
         ArgumentCaptor<IamCredential> captor = ArgumentCaptor.forClass(IamCredential.class);
         verify(credentialRepository).saveAndFlush(captor.capture());
         assertThat(captor.getValue().getUserId()).isEqualTo(userId);
         assertThat(captor.getValue().getEmail()).isEqualTo("user@example.com");
         assertThat(captor.getValue().getPasswordHash()).isEqualTo("encoded-password");
-        assertThat(captor.getValue().getRole()).isEqualTo("ADMIN");
     }
 
     @Test
@@ -57,8 +56,8 @@ class CredentialProvisioningFacadeImplTest {
         UUID userId = UUID.randomUUID();
         when(credentialRepository.existsByUserId(userId)).thenReturn(true);
 
-        assertThatThrownBy(() -> service.provision(
-                        new CredentialProvisioningRequest(userId, "user@example.com", "secret123", "ADMIN")))
+        assertThatThrownBy(() ->
+                        service.provision(new CredentialProvisioningRequest(userId, "user@example.com", "secret123")))
                 .isInstanceOf(CredentialAlreadyExistsException.class);
 
         verify(credentialRepository, never()).saveAndFlush(any());
@@ -70,8 +69,8 @@ class CredentialProvisioningFacadeImplTest {
         when(credentialRepository.existsByUserId(userId)).thenReturn(false);
         when(credentialRepository.existsByEmailValue("user@example.com")).thenReturn(true);
 
-        assertThatThrownBy(() -> service.provision(
-                        new CredentialProvisioningRequest(userId, "user@example.com", "secret123", "ADMIN")))
+        assertThatThrownBy(() ->
+                        service.provision(new CredentialProvisioningRequest(userId, "user@example.com", "secret123")))
                 .isInstanceOf(CredentialAlreadyExistsException.class);
 
         verify(credentialRepository, never()).saveAndFlush(any());
@@ -86,8 +85,8 @@ class CredentialProvisioningFacadeImplTest {
         when(credentialRepository.saveAndFlush(any()))
                 .thenThrow(new DataIntegrityViolationException("uk_iam_credential_email"));
 
-        assertThatThrownBy(() -> service.provision(
-                        new CredentialProvisioningRequest(userId, "user@example.com", "secret123", "ADMIN")))
+        assertThatThrownBy(() ->
+                        service.provision(new CredentialProvisioningRequest(userId, "user@example.com", "secret123")))
                 .isInstanceOf(CredentialAlreadyExistsException.class);
     }
 }

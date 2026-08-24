@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @NullMarked
@@ -15,25 +14,22 @@ public class IamUserDetails implements UserDetails {
     private final UUID userId;
     private final String email;
     private final String passwordHash;
-    private final String role;
     private final boolean active;
     private final List<GrantedAuthority> authorities;
 
-    public IamUserDetails(UUID userId, String email, String passwordHash, String role, boolean active) {
-        this(userId, email, passwordHash, role, active, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+    public IamUserDetails(UUID userId, String email, String passwordHash, boolean active) {
+        this(userId, email, passwordHash, active, List.of());
     }
 
     public IamUserDetails(
             UUID userId,
             String email,
             String passwordHash,
-            String role,
             boolean active,
             Collection<? extends GrantedAuthority> authorities) {
         this.userId = userId;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.role = role;
         this.active = active;
         this.authorities = List.copyOf(authorities);
     }
@@ -44,10 +40,6 @@ public class IamUserDetails implements UserDetails {
 
     public String getEmail() {
         return email;
-    }
-
-    public String getRole() {
-        return role;
     }
 
     @Override

@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@RequestMapping(value = "/api/v1/companies", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/platform/companies", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "companies")
 public interface CompanyApi {
 

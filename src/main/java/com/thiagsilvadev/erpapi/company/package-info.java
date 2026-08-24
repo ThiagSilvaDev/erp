@@ -4,6 +4,9 @@
             "common::address",
             "common::exception",
             "common::numbering",
+            "common::permission",
+            "common::security",
+            "common::tenant",
             "common::validation",
             "common::web"
         })

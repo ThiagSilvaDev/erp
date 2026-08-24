@@ -1,7 +1,6 @@
 package com.thiagsilvadev.erpapi.iam.internal.dto;
 
+import java.util.List;
 import java.util.UUID;
 
-import com.thiagsilvadev.erpapi.user.api.UserRole;
-
-public record AuthCompanyResponse(UUID companyId, String tradeName, String cnpj, UserRole role) {}
+public record AuthCompanyResponse(UUID companyId, String tradeName, String cnpj, List<AuthRoleResponse> roles) {}

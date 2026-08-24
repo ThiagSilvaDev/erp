@@ -3,150 +3,104 @@ package com.thiagsilvadev.erpapi.user.internal.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Set;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
-import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
+import com.thiagsilvadev.erpapi.user.api.TenantAccessProvisioningFacade;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
 import com.thiagsilvadev.erpapi.user.internal.event.UserCredentialProvisioningAfterCommitHandler;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.exception.EmailAlreadyExistsException;
 import com.thiagsilvadev.erpapi.user.internal.mapper.UserMapper;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
-import com.thiagsilvadev.erpapi.user.internal.model.UserMembership;
-import com.thiagsilvadev.erpapi.user.internal.repository.UserMembershipRepository;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CreateUserUseCaseTest {
 
-    @Mock
-    private UserRepository userRepository;
+    private static final UUID COMPANY_ID = UUID.randomUUID();
+    private static final UUID ROLE_ID = UUID.randomUUID();
 
     @Mock
-    private CompanyFacade companyFacade;
+    UserRepository userRepository;
 
     @Mock
-    private UserMapper userMapper;
+    UserMapper userMapper;
 
     @Mock
-    private UserEventPublisher eventPublisher;
+    UserEventPublisher eventPublisher;
 
     @Mock
-    private UserCredentialProvisioningAfterCommitHandler credentialProvisioningAfterCommitHandler;
+    UserCredentialProvisioningAfterCommitHandler credentialHandler;
 
     @Mock
-    private UserMembershipRepository userMembershipRepository;
+    TenantAccessProvisioningFacade accessProvisioningFacade;
 
     @InjectMocks
-    private CreateUserUseCase useCase;
+    CreateUserUseCase useCase;
+
+    @BeforeEach
+    void setUp() {
+        TenantContext.setTenantId(COMPANY_ID);
+    }
+
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
 
     @Test
     void shouldRejectDuplicatedEmail() {
-        CreateUserRequest request = userRequest();
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(true);
-
-        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(EmailAlreadyExistsException.class);
-
+        assertThatThrownBy(() -> useCase.execute(request())).isInstanceOf(EmailAlreadyExistsException.class);
         verify(userRepository, never()).saveAndFlush(any());
-        verify(credentialProvisioningAfterCommitHandler, never()).provisionAfterCommit(any(), any());
-        verify(eventPublisher, never()).userCreated(any());
     }
 
     @Test
-    void shouldRejectMissingCompany() {
-        CreateUserRequest request = userRequest();
-        when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
-        doThrow(new ResourceNotFoundException("Company", request.companyId()))
-                .when(companyFacade)
-                .getCompany(request.companyId());
-
-        assertThatThrownBy(() -> useCase.execute(request))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
-                        .containsEntry("resourceName", "Company"));
-
-        verify(userRepository, never()).saveAndFlush(any());
-        verify(credentialProvisioningAfterCommitHandler, never()).provisionAfterCommit(any(), any());
-        verify(eventPublisher, never()).userCreated(any());
-    }
-
-    @Test
-    void shouldCreateUserRegisterCredentialProvisioningAndPublishSafeEvent() {
-        CreateUserRequest request = userRequest();
+    void shouldCreateGlobalUserAndProvisionCurrentTenantRoles() {
         UUID userId = UUID.randomUUID();
-        when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
         when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             ReflectionTestUtils.setField(user, "id", userId);
             return user;
         });
 
-        useCase.execute(request);
+        useCase.execute(request());
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
-        verify(credentialProvisioningAfterCommitHandler)
-                .provisionAfterCommit(userCaptor.capture(), passwordCaptor.capture());
-        assertThat(userCaptor.getValue().getId()).isEqualTo(userId);
+        verify(userRepository).saveAndFlush(userCaptor.capture());
         assertThat(userCaptor.getValue().getContact().getEmail()).isEqualTo("user@example.com");
-        assertThat(passwordCaptor.getValue()).isEqualTo("secret123");
-
+        verify(accessProvisioningFacade).provision(userId, COMPANY_ID, Set.of(ROLE_ID));
+        verify(credentialHandler).provisionAfterCommit(userCaptor.getValue(), "secret123");
         verify(eventPublisher).userCreated(userCaptor.getValue());
-        verify(userRepository).saveAndFlush(userCaptor.getValue());
-        ArgumentCaptor<UserMembership> membershipCaptor = ArgumentCaptor.forClass(UserMembership.class);
-        verify(userMembershipRepository).save(membershipCaptor.capture());
-        assertThat(membershipCaptor.getValue().getUserId()).isEqualTo(userId);
-        assertThat(membershipCaptor.getValue().getCompanyId()).isEqualTo(request.companyId());
-        assertThat(membershipCaptor.getValue().getRole()).isEqualTo(UserRole.ADMIN);
-
-        InOrder inOrder = inOrder(
-                userRepository, userMembershipRepository, credentialProvisioningAfterCommitHandler, eventPublisher);
-        inOrder.verify(userRepository).saveAndFlush(any(User.class));
-        inOrder.verify(userMembershipRepository).save(any(UserMembership.class));
-        inOrder.verify(credentialProvisioningAfterCommitHandler).provisionAfterCommit(any(User.class), any());
-        inOrder.verify(eventPublisher).userCreated(any(User.class));
     }
 
     @Test
     void shouldTranslateDuplicateEmailRace() {
-        CreateUserRequest request = userRequest();
-        when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(false);
         when(userRepository.saveAndFlush(any(User.class)))
                 .thenThrow(new DataIntegrityViolationException("uk_user_email"));
-
-        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(EmailAlreadyExistsException.class);
-
-        verify(credentialProvisioningAfterCommitHandler, never()).provisionAfterCommit(any(), any());
-        verify(eventPublisher, never()).userCreated(any());
+        assertThatThrownBy(() -> useCase.execute(request())).isInstanceOf(EmailAlreadyExistsException.class);
+        verify(accessProvisioningFacade, never()).provision(any(), any(), any());
     }
 
-    private static CreateUserRequest userRequest() {
+    private static CreateUserRequest request() {
         return new CreateUserRequest(
-                "User",
-                "Example",
-                " User@Example.com ",
-                "11912345678",
-                null,
-                UserRole.ADMIN,
-                UUID.randomUUID(),
-                "secret123");
+                "User", "Example", " User@Example.com ", "11912345678", null, Set.of(ROLE_ID), "secret123");
     }
 }

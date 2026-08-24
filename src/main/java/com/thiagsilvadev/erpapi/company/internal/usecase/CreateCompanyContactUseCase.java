@@ -1,11 +1,14 @@
 package com.thiagsilvadev.erpapi.company.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.company.api.CompanyPermissions.WRITE;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyContactResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyContactRequest;
 import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
@@ -31,17 +34,18 @@ public class CreateCompanyContactUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.company.api.CompanyPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public CompanyContactResponse execute(CreateCompanyContactRequest request) {
+        var companyId = TenantContext.requireTenantId();
         companyRepository
-                .findById(request.companyId())
-                .orElseThrow(() -> new ResourceNotFoundException(Company.class, request.companyId()));
+                .findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(Company.class, companyId));
 
-        boolean firstContact = !companyContactRepository.existsByCompanyId(request.companyId());
+        boolean firstContact = !companyContactRepository.existsByCompanyId(companyId);
         boolean shouldBePrimary = firstContact || Boolean.TRUE.equals(request.primaryContact());
 
         CompanyContact companyContact = CompanyContact.create(
-                request.companyId(),
+                companyId,
                 Strings.trimToNull(request.name()),
                 Strings.trimToNull(request.role()),
                 companyMapper.toContact(request.contact()),
@@ -49,7 +53,7 @@ public class CreateCompanyContactUseCase {
 
         if (shouldBePrimary) {
             companyContactRepository
-                    .findByCompanyIdAndPrimaryContactTrue(request.companyId())
+                    .findByCompanyIdAndPrimaryContactTrue(companyId)
                     .ifPresent(CompanyContact::unmarkPrimary);
         }
 

@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.inventory.internal.usecase.stockmovement;
 
+import static com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions.ADJUST_STOCK;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +37,7 @@ public class CreateStockMovementUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + ADJUST_STOCK + "')")
     public StockMovementResponse execute(CreateStockMovementRequest request) {
         var companyId = TenantContext.requireTenantId();
         InventoryItem item = inventoryBalanceService.applyMovement(

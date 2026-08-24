@@ -14,17 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions;
-import com.thiagsilvadev.erpapi.company.api.CompanyPermissions;
-import com.thiagsilvadev.erpapi.customer.api.CustomerPermissions;
-import com.thiagsilvadev.erpapi.financial.api.FinancialPermissions;
 import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
-import com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions;
-import com.thiagsilvadev.erpapi.kpi.api.KpiPermissions;
-import com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions;
-import com.thiagsilvadev.erpapi.sales.api.SalesPermissions;
-import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 
 @ExtendWith(MockitoExtension.class)
 class IamUserDetailsServiceTest {
@@ -36,13 +27,13 @@ class IamUserDetailsServiceTest {
 
     @BeforeEach
     void setUp() {
-        userDetailsService = new IamUserDetailsService(credentialRepository, new RolePermissionResolver());
+        userDetailsService = new IamUserDetailsService(credentialRepository);
     }
 
     @Test
     void shouldLoadCredentialByNormalizedEmail() {
         UUID userId = UUID.randomUUID();
-        IamCredential credential = IamCredential.create(userId, "user@example.com", "hash", "ADMIN");
+        IamCredential credential = IamCredential.create(userId, "user@example.com", "hash");
         when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.of(credential));
 
         IamUserDetails userDetails = (IamUserDetails) userDetailsService.loadUserByUsername(" User@Example.com ");
@@ -51,19 +42,7 @@ class IamUserDetailsServiceTest {
         assertThat(userDetails.getUsername()).isEqualTo("user@example.com");
         assertThat(userDetails.getEmail()).isEqualTo("user@example.com");
         assertThat(userDetails.getPassword()).isEqualTo("hash");
-        assertThat(userDetails.getRole()).isEqualTo("ADMIN");
-        assertThat(userDetails.getAuthorities())
-                .extracting(authority -> authority.getAuthority())
-                .contains("ROLE_ADMIN")
-                .containsAll(CatalogPermissions.ALL)
-                .containsAll(CompanyPermissions.ALL)
-                .containsAll(CustomerPermissions.ALL)
-                .containsAll(FinancialPermissions.ALL)
-                .containsAll(InventoryPermissions.ALL)
-                .containsAll(LogisticsPermissions.ALL)
-                .containsAll(SalesPermissions.ALL)
-                .containsAll(UserPermissions.ALL)
-                .doesNotContain("*");
+        assertThat(userDetails.getAuthorities()).isEmpty();
         assertThat(userDetails.isEnabled()).isTrue();
     }
 
@@ -77,26 +56,13 @@ class IamUserDetailsServiceTest {
 
     @Test
     void shouldDisableInactiveCredential() {
-        IamCredential credential = IamCredential.create(UUID.randomUUID(), "user@example.com", "hash", "MANAGER");
+        IamCredential credential = IamCredential.create(UUID.randomUUID(), "user@example.com", "hash");
         credential.deactivate();
         when(credentialRepository.findByEmailValue("user@example.com")).thenReturn(Optional.of(credential));
 
         IamUserDetails userDetails = (IamUserDetails) userDetailsService.loadUserByUsername("user@example.com");
 
-        assertThat(userDetails.getAuthorities())
-                .extracting(authority -> authority.getAuthority())
-                .containsExactlyInAnyOrder(
-                        "ROLE_MANAGER",
-                        CatalogPermissions.READ,
-                        CatalogPermissions.WRITE,
-                        InventoryPermissions.READ,
-                        InventoryPermissions.WRITE,
-                        LogisticsPermissions.READ,
-                        LogisticsPermissions.WRITE,
-                        LogisticsPermissions.DISPATCH,
-                        LogisticsPermissions.TRACK,
-                        FinancialPermissions.READ,
-                        KpiPermissions.READ);
+        assertThat(userDetails.getAuthorities()).isEmpty();
         assertThat(userDetails.isEnabled()).isFalse();
     }
 }

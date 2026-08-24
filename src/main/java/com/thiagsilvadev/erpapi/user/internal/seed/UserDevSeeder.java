@@ -15,11 +15,9 @@ import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
+import com.thiagsilvadev.erpapi.user.api.TenantAccessProvisioningFacade;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
-import com.thiagsilvadev.erpapi.user.internal.model.UserMembership;
-import com.thiagsilvadev.erpapi.user.internal.repository.UserMembershipRepository;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
 @Component
@@ -38,19 +36,19 @@ class UserDevSeeder implements ApplicationRunner {
     private final CompanyFacade companyFacade;
     private final UserEventPublisher eventPublisher;
     private final CredentialProvisioningFacade credentialProvisioningFacade;
-    private final UserMembershipRepository userMembershipRepository;
+    private final TenantAccessProvisioningFacade tenantAccessProvisioningFacade;
 
     UserDevSeeder(
             UserRepository userRepository,
             CompanyFacade companyFacade,
             UserEventPublisher eventPublisher,
             CredentialProvisioningFacade credentialProvisioningFacade,
-            UserMembershipRepository userMembershipRepository) {
+            TenantAccessProvisioningFacade tenantAccessProvisioningFacade) {
         this.userRepository = userRepository;
         this.companyFacade = companyFacade;
         this.eventPublisher = eventPublisher;
         this.credentialProvisioningFacade = credentialProvisioningFacade;
-        this.userMembershipRepository = userMembershipRepository;
+        this.tenantAccessProvisioningFacade = tenantAccessProvisioningFacade;
     }
 
     @Override
@@ -59,28 +57,12 @@ class UserDevSeeder implements ApplicationRunner {
         CompanySnapshot acme = companyFacade.resolveCompany(ACME_CNPJ);
         CompanySnapshot partner = companyFacade.resolveCompany(PARTNER_CNPJ);
 
-        seedUser("Admin", "Acme", ADMIN_EMAIL, LocalDate.of(1990, 1, 1), UserRole.ADMIN, acme, partner);
-        seedUser(
-                "Mariana", "Silva", "mariana@acme.example", LocalDate.of(1992, 5, 15), UserRole.MANAGER, acme, partner);
-        seedUser(
-                "Carlos",
-                "Oliveira",
-                "carlos@acme.example",
-                LocalDate.of(1988, 11, 3),
-                UserRole.OPERATOR,
-                acme,
-                partner);
-        seedUser(
-                "Juliana",
-                "Santos",
-                "juliana@partner.example",
-                LocalDate.of(1995, 8, 22),
-                UserRole.MANAGER,
-                partner,
-                acme);
-        seedUser(
-                "Bruno", "Costa", "bruno@partner.example", LocalDate.of(1993, 3, 10), UserRole.OPERATOR, partner, acme);
-        seedUser("Alex", "Driver", DRIVER_EMAIL, LocalDate.of(1991, 6, 12), UserRole.DRIVER, acme);
+        seedUser("Admin", "Acme", ADMIN_EMAIL, LocalDate.of(1990, 1, 1), "OWNER", acme, partner);
+        seedUser("Mariana", "Silva", "mariana@acme.example", LocalDate.of(1992, 5, 15), "MANAGER", acme, partner);
+        seedUser("Carlos", "Oliveira", "carlos@acme.example", LocalDate.of(1988, 11, 3), "OPERATOR", acme, partner);
+        seedUser("Juliana", "Santos", "juliana@partner.example", LocalDate.of(1995, 8, 22), "MANAGER", partner, acme);
+        seedUser("Bruno", "Costa", "bruno@partner.example", LocalDate.of(1993, 3, 10), "OPERATOR", partner, acme);
+        seedUser("Alex", "Driver", DRIVER_EMAIL, LocalDate.of(1991, 6, 12), "DRIVER", acme);
     }
 
     private void seedUser(
@@ -88,39 +70,31 @@ class UserDevSeeder implements ApplicationRunner {
             String lastName,
             String email,
             LocalDate birthDate,
-            UserRole role,
+            String roleCode,
             CompanySnapshot primaryCompany,
             CompanySnapshot... otherCompanies) {
         if (userRepository.existsByContactEmailValue(email)) {
             User user = userRepository
                     .findByContactEmailValue(email)
                     .orElseThrow(() -> new IllegalStateException("Seed user lookup failed after existence check"));
-            seedMemberships(user, primaryCompany);
-            seedMemberships(user, otherCompanies);
+            seedMemberships(user, roleCode, primaryCompany);
+            seedMemberships(user, roleCode, otherCompanies);
             return;
         }
 
         Contact contact = Contact.create(email, "11987654321");
-        User user = User.create(firstName, lastName, contact, birthDate, role, primaryCompany.id());
+        User user = User.create(firstName, lastName, contact, birthDate);
         User savedUser = userRepository.saveAndFlush(user);
-        seedMemberships(savedUser, primaryCompany);
-        seedMemberships(savedUser, otherCompanies);
+        seedMemberships(savedUser, roleCode, primaryCompany);
+        seedMemberships(savedUser, roleCode, otherCompanies);
         credentialProvisioningFacade.provision(new CredentialProvisioningRequest(
-                savedUser.getId(),
-                savedUser.getContact().getEmail(),
-                SEED_PASSWORD,
-                savedUser.getRole().name()));
+                savedUser.getId(), savedUser.getContact().getEmail(), SEED_PASSWORD));
         eventPublisher.userCreated(savedUser);
     }
 
-    private void seedMemberships(User user, CompanySnapshot... companies) {
+    private void seedMemberships(User user, String roleCode, CompanySnapshot... companies) {
         for (CompanySnapshot company : companies) {
-            userMembershipRepository
-                    .findByUserIdAndCompanyId(user.getId(), company.id())
-                    .ifPresentOrElse(
-                            UserMembership::activate,
-                            () -> userMembershipRepository.save(
-                                    UserMembership.create(user.getId(), company.id(), user.getRole())));
+            tenantAccessProvisioningFacade.provisionBuiltIn(user.getId(), company.id(), roleCode);
         }
     }
 }

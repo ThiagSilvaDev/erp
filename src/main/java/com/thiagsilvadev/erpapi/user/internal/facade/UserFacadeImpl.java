@@ -42,4 +42,12 @@ public class UserFacadeImpl implements UserFacade {
                 .map(userMapper::toSnapshot)
                 .orElseThrow(() -> new ResourceNotFoundException(User.class, email));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void requireUser(UUID userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException(User.class, userId);
+        }
+    }
 }

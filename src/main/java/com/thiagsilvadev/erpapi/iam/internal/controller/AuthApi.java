@@ -16,6 +16,7 @@ import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyResponse;
+import com.thiagsilvadev.erpapi.iam.internal.dto.SelectPlatformResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.UserCompanyResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +42,9 @@ public interface AuthApi {
     @ApiResponse(responseCode = "400")
     SelectCompanyResponse selectCompany(
             @Valid @RequestBody SelectCompanyRequest request, @AuthenticationPrincipal Jwt jwt);
+
+    @PostMapping("/select-platform")
+    SelectPlatformResponse selectPlatform(@AuthenticationPrincipal Jwt jwt);
 
     @GetMapping(value = "/companies")
     @Operation(operationId = "listUserCompanies")

@@ -54,6 +54,6 @@ public class Warehouse extends AbstractBaseEntity {
     }
 
     public static String normalizeCode(String code) {
-        return Strings.required(code, "Warehouse code cannot be blank").toUpperCase();
+        return Strings.normalizeCode(code, "Warehouse code cannot be blank");
     }
 }

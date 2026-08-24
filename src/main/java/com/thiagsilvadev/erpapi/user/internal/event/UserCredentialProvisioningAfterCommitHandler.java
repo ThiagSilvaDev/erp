@@ -33,10 +33,7 @@ public class UserCredentialProvisioningAfterCommitHandler {
 
     private void provision(User user, String rawPassword) {
         var request = new CredentialProvisioningRequest(
-                user.getId(),
-                user.getContact().getEmail(),
-                rawPassword,
-                user.getRole().name());
+                user.getId(), user.getContact().getEmail(), rawPassword);
 
         credentialProvisioningFacade.provision(request);
     }

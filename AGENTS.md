@@ -54,6 +54,18 @@ Do not introduce new frameworks, abstractions, or dependencies unless clearly ju
 
 ---
 
+# Java Imports
+
+Never use fully qualified class names (FQNs) inline in Java source or test code.
+
+Always add an explicit import or static import and refer to the type, method, enum, or constant by its simple name. This rule also applies to annotations, generic type arguments, constructor calls, method references, Mockito calls, and Spring Security expressions such as `@PreAuthorize`.
+
+The only permitted FQNs are in `package` and `import` declarations, or where Java requires an FQN to resolve an unavoidable name collision. In that exceptional case, document the collision next to the usage.
+
+Before completing Java changes, verify that no new inline FQNs were introduced.
+
+---
+
 # Architecture
 
 ## Core Principles
@@ -227,6 +239,13 @@ model
 repository
 mapper
 ```
+
+### Naming
+
+- Facade contracts live in `api` as `XFacade`; their implementations live in `internal/service` as `XFacadeImpl`.
+- Never name a facade implementation `XService` — always derive the name from the interface it implements
+  (e.g. `CredentialProvisioningFacade` is implemented by `CredentialProvisioningFacadeImpl`, not `CredentialProvisioningService`).
+- Plain domain services that do not implement an `api` facade keep the `XService` name.
 
 ---
 

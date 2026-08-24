@@ -36,24 +36,20 @@ public class IamCredential extends AbstractBaseEntity {
     @Column(nullable = false, length = 120)
     private String passwordHash;
 
-    @Column(nullable = false, length = 40)
-    private String role;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CredentialStatus status = CredentialStatus.ACTIVE;
 
     protected IamCredential() {}
 
-    private IamCredential(UUID userId, String email, String passwordHash, String role) {
+    private IamCredential(UUID userId, String email, String passwordHash) {
         this.userId = requireUserId(userId);
         this.email = Email.create(email);
         this.passwordHash = Strings.required(passwordHash, "Password hash cannot be blank");
-        this.role = requireRole(role);
     }
 
-    public static IamCredential create(UUID userId, String email, String passwordHash, String role) {
-        return new IamCredential(userId, email, passwordHash, role);
+    public static IamCredential create(UUID userId, String email, String passwordHash) {
+        return new IamCredential(userId, email, passwordHash);
     }
 
     public void activate() {
@@ -80,10 +76,6 @@ public class IamCredential extends AbstractBaseEntity {
         return passwordHash;
     }
 
-    public String getRole() {
-        return role;
-    }
-
     public CredentialStatus getStatus() {
         return status;
     }
@@ -93,9 +85,5 @@ public class IamCredential extends AbstractBaseEntity {
             throw new IllegalArgumentException("Credential user cannot be null");
         }
         return userId;
-    }
-
-    private static String requireRole(String role) {
-        return Strings.required(role, "Role cannot be null").toUpperCase(java.util.Locale.ROOT);
     }
 }

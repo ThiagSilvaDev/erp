@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.sales.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.sales.api.SalesPermissions.CANCEL;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,7 +37,7 @@ public class CancelSalesOrderUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + CANCEL + "')")
     public SalesOrderResponse execute(UUID id) {
         var sellerCompanyId = TenantContext.requireTenantId();
         SalesOrder order = orderRepository

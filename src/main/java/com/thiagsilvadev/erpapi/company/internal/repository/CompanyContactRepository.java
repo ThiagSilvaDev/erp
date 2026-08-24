@@ -19,6 +19,8 @@ public interface CompanyContactRepository
 
     Optional<CompanyContact> findByCompanyIdAndPrimaryContactTrue(UUID companyId);
 
+    Optional<CompanyContact> findByIdAndCompanyId(UUID id, UUID companyId);
+
     List<CompanyContact> findByCompanyIdInAndPrimaryContactTrue(Collection<UUID> companyIds);
 
     Page<CompanyContact> findByCompanyId(UUID companyId, Pageable pageable);

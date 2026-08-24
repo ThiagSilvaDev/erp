@@ -55,10 +55,8 @@ class CompanyContactController implements CompanyContactApi {
 
     @Override
     public Page<CompanyContactResponse> listCompanyContacts(
-            @RequestParam(required = false) UUID companyId,
-            @RequestParam(required = false) Boolean primaryContact,
-            Pageable pageable) {
-        return listCompanyContactsUseCase.execute(companyId, primaryContact, pageable);
+            @RequestParam(required = false) Boolean primaryContact, Pageable pageable) {
+        return listCompanyContactsUseCase.execute(primaryContact, pageable);
     }
 
     @Override

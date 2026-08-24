@@ -1,5 +1,6 @@
 @ApplicationModule(
         allowedDependencies = {
+            "common::permission",
             "common::reporting",
             "common::tenant",
             "financial::api",

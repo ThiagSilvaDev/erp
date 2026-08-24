@@ -8,23 +8,24 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AccessControlFacade;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
+import com.thiagsilvadev.erpapi.iam.internal.dto.AuthRoleResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyRequest;
 import com.thiagsilvadev.erpapi.iam.internal.dto.SelectCompanyResponse;
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService.IssuedToken;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipFacade;
-import com.thiagsilvadev.erpapi.user.api.UserMembershipSnapshot;
 
 @Component
 public class SelectCompanyUseCase {
 
     private final JwtTokenService jwtTokenService;
-    private final UserMembershipFacade userMembershipFacade;
+    private final AccessControlFacade accessControlFacade;
 
-    public SelectCompanyUseCase(JwtTokenService jwtTokenService, UserMembershipFacade userMembershipFacade) {
+    public SelectCompanyUseCase(JwtTokenService jwtTokenService, AccessControlFacade accessControlFacade) {
         this.jwtTokenService = jwtTokenService;
-        this.userMembershipFacade = userMembershipFacade;
+        this.accessControlFacade = accessControlFacade;
     }
 
     @Transactional(readOnly = true)
@@ -34,17 +35,22 @@ public class SelectCompanyUseCase {
         }
 
         UUID userId = UUID.fromString(jwt.getSubject());
-        UserMembershipSnapshot membership;
+        TenantAuthorizationSnapshot membership;
         try {
-            membership = userMembershipFacade.getActiveMembership(userId, request.companyId());
+            membership = accessControlFacade.getActiveMembership(userId, request.companyId());
         } catch (ResourceNotFoundException exception) {
             throw new AccessDeniedException("User does not have access to the requested company.");
         }
 
-        IamUserDetails principal = new IamUserDetails(
-                userId, jwt.getClaimAsString("email"), "", membership.role().name(), true);
+        IamUserDetails principal = new IamUserDetails(userId, jwt.getClaimAsString("email"), "", true);
         IssuedToken token = jwtTokenService.issueScoped(principal, membership);
         return SelectCompanyResponse.bearer(
-                token.value(), token.expiresIn(), membership.companyId(), membership.role());
+                token.value(),
+                token.expiresIn(),
+                membership.companyId(),
+                membership.roles().stream()
+                        .map(role -> new AuthRoleResponse(role.id(), role.code(), role.name()))
+                        .toList(),
+                membership.permissions());
     }
 }

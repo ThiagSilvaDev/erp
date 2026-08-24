@@ -22,7 +22,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
 
 @ExtendWith(MockitoExtension.class)
@@ -94,18 +93,11 @@ class UserCredentialProvisioningAfterCommitHandlerTest {
         assertThat(request.userId()).isEqualTo(userId);
         assertThat(request.email()).isEqualTo("user@example.com");
         assertThat(request.rawPassword()).isEqualTo("secret123");
-        assertThat(request.role()).isEqualTo("ADMIN");
     }
 
     private static User user() {
         UUID userId = UUID.randomUUID();
-        User user = User.create(
-                "User",
-                "Example",
-                Contact.create("user@example.com", "11912345678"),
-                null,
-                UserRole.ADMIN,
-                UUID.randomUUID());
+        User user = User.create("User", "Example", Contact.create("user@example.com", "11912345678"), null);
         ReflectionTestUtils.setField(user, "id", userId);
         return user;
     }

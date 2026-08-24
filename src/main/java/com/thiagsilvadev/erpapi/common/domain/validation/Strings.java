@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.common.domain.validation;
 
+import java.util.Locale;
+
 public final class Strings {
 
     private Strings() {}
@@ -19,5 +21,9 @@ public final class Strings {
             throw new IllegalArgumentException(message);
         }
         return normalized;
+    }
+
+    public static String normalizeCode(String value, String message) {
+        return required(value, message).toUpperCase(Locale.ROOT);
     }
 }

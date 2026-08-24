@@ -34,6 +34,12 @@ import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepo
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.AuthorizationAuditRepository;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.PlatformRoleAssignmentRepository;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.RolePermissionRepository;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.TenantMembershipRepository;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.TenantRoleAssignmentRepository;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.TenantRoleRepository;
 import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryReservationRepository;
@@ -44,7 +50,6 @@ import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentTrackingEventRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
-import com.thiagsilvadev.erpapi.user.internal.repository.UserMembershipRepository;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
 @SpringBootTest(properties = {"erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes"})
@@ -55,7 +60,7 @@ import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
             DataJpaRepositoriesAutoConfiguration.class,
             EventPublicationAutoConfiguration.class
         },
-        excludeName = JpaEventPublicationAutoConfigurationExclusion.NAME)
+        excludeName = JdbcEventPublicationAutoConfigurationExclusion.NAME)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class ErpApiApplicationTests {
@@ -111,8 +116,33 @@ class ErpApiApplicationTests {
         }
 
         @Bean
-        UserMembershipRepository userMembershipRepository() {
-            return mock(UserMembershipRepository.class);
+        TenantMembershipRepository tenantMembershipRepository() {
+            return mock(TenantMembershipRepository.class);
+        }
+
+        @Bean
+        TenantRoleRepository tenantRoleRepository() {
+            return mock(TenantRoleRepository.class);
+        }
+
+        @Bean
+        RolePermissionRepository rolePermissionRepository() {
+            return mock(RolePermissionRepository.class);
+        }
+
+        @Bean
+        TenantRoleAssignmentRepository tenantRoleAssignmentRepository() {
+            return mock(TenantRoleAssignmentRepository.class);
+        }
+
+        @Bean
+        PlatformRoleAssignmentRepository platformRoleAssignmentRepository() {
+            return mock(PlatformRoleAssignmentRepository.class);
+        }
+
+        @Bean
+        AuthorizationAuditRepository authorizationAuditRepository() {
+            return mock(AuthorizationAuditRepository.class);
         }
 
         @Bean
@@ -222,9 +252,10 @@ class ErpApiApplicationTests {
     }
 }
 
-final class JpaEventPublicationAutoConfigurationExclusion {
+final class JdbcEventPublicationAutoConfigurationExclusion {
 
-    static final String NAME = "org." + "springframework.modulith.events.jpa." + "JpaEventPublicationAutoConfiguration";
+    static final String NAME =
+            "org." + "springframework.modulith.events.jdbc." + "JdbcEventPublicationAutoConfiguration";
 
-    private JpaEventPublicationAutoConfigurationExclusion() {}
+    private JdbcEventPublicationAutoConfigurationExclusion() {}
 }

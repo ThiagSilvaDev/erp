@@ -1,11 +1,11 @@
 package com.thiagsilvadev.erpapi.user.internal.repository;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import com.thiagsilvadev.erpapi.common.domain.model.Email;
-import com.thiagsilvadev.erpapi.user.api.UserRole;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserSearchCriteria;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
@@ -14,12 +14,11 @@ public class UserSpecification {
 
     private UserSpecification() {}
 
-    public static Specification<User> withCriteria(UserSearchCriteria criteria) {
+    public static Specification<User> withCriteria(UserSearchCriteria criteria, Set<UUID> allowedUserIds) {
         return Specification.where(hasEmail(criteria.email()))
                 .and(hasNameLike(criteria.name()))
-                .and(hasRole(criteria.role()))
                 .and(hasStatus(criteria.status()))
-                .and(hasCompany(criteria.companyId()));
+                .and(hasIdIn(allowedUserIds));
     }
 
     private static Specification<User> hasEmail(String email) {
@@ -43,16 +42,12 @@ public class UserSpecification {
         };
     }
 
-    private static Specification<User> hasRole(UserRole role) {
-        return (root, query, cb) -> role == null ? null : cb.equal(root.get("role"), role);
-    }
-
     private static Specification<User> hasStatus(UserStatus status) {
         return (root, query, cb) -> status == null ? null : cb.equal(root.get("status"), status);
     }
 
-    private static Specification<User> hasCompany(UUID companyId) {
-        return (root, query, cb) -> companyId == null ? null : cb.equal(root.get("companyId"), companyId);
+    private static Specification<User> hasIdIn(Set<UUID> ids) {
+        return (root, query, cb) -> root.get("id").in(ids);
     }
 
     public static String normalizeEmail(String email) {

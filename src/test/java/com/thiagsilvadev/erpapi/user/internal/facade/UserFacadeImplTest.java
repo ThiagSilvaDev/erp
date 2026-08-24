@@ -52,4 +52,22 @@ class UserFacadeImplTest {
 
         assertThatThrownBy(() -> facade.getUser(userId)).isInstanceOf(ResourceNotFoundException.class);
     }
+
+    @Test
+    void shouldNotThrowWhenUserExists() {
+        UUID userId = UUID.randomUUID();
+        when(userRepository.existsById(userId)).thenReturn(true);
+
+        facade.requireUser(userId);
+
+        verify(userRepository).existsById(userId);
+    }
+
+    @Test
+    void shouldRejectMissingUserWhenRequiring() {
+        UUID userId = UUID.randomUUID();
+        when(userRepository.existsById(userId)).thenReturn(false);
+
+        assertThatThrownBy(() -> facade.requireUser(userId)).isInstanceOf(ResourceNotFoundException.class);
+    }
 }
