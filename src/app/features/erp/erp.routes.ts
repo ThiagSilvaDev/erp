@@ -74,7 +74,53 @@ function entityRoute(
 
 export const ERP_ROUTES: Routes = [
   entityRoute('companies', provideCompaniesEntityConfig(), provideCompaniesEntityConfig()),
-  entityRoute('users', provideUsersEntityConfig(), provideUsersEntityConfig()),
+  {
+    path: 'users',
+    children: [
+      {
+        path: 'new',
+        loadComponent: () =>
+          import('./users/pages/user-create-page/user-create-page').then((m) => m.UserCreatePage),
+      },
+      {
+        path: '',
+        data: { entity: 'users' as EntityKey },
+        providers: provideUsersEntityConfig(),
+        loadComponent: entityPage,
+      },
+    ],
+  },
+  {
+    path: 'iam/roles',
+    children: [
+      {
+        path: 'new',
+        loadComponent: () =>
+          import('@features/iam/pages/role-editor-page/role-editor-page').then(
+            (m) => m.RoleEditorPage,
+          ),
+      },
+      {
+        path: ':roleId',
+        loadComponent: () =>
+          import('@features/iam/pages/role-editor-page/role-editor-page').then(
+            (m) => m.RoleEditorPage,
+          ),
+      },
+      {
+        path: '',
+        loadComponent: () =>
+          import('@features/iam/pages/iam-roles-page/iam-roles-page').then((m) => m.IamRolesPage),
+      },
+    ],
+  },
+  {
+    path: 'iam/memberships',
+    loadComponent: () =>
+      import('@features/iam/pages/iam-memberships-page/iam-memberships-page').then(
+        (m) => m.IamMembershipsPage,
+      ),
+  },
   entityRoute('categories', provideCategoriesEntityConfig()),
   entityRoute('products', provideProductsEntityConfig(), provideProductsEntityConfig()),
   entityRoute('customers', provideCustomersEntityConfig(), provideCustomersEntityConfig()),

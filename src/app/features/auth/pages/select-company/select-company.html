@@ -7,7 +7,20 @@
         <p>Pick the company workspace for this session.</p>
       </div>
 
-      <button nz-button nzType="default" type="button" (click)="logout()">Logout</button>
+      <div class="company-select-header-actions">
+        @if (canActAsPlatformAdmin()) {
+          <button
+            nz-button
+            nzType="default"
+            type="button"
+            [nzLoading]="isEnteringPlatform()"
+            (click)="enterPlatformAdmin()"
+          >
+            Platform admin
+          </button>
+        }
+        <button nz-button nzType="default" type="button" (click)="logout()">Logout</button>
+      </div>
     </div>
 
     @if (errorMessage()) {

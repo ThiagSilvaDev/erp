@@ -1,0 +1,105 @@
+<section class="mx-auto w-full max-w-3xl px-4 py-8">
+  <header class="mb-6">
+    <h1 class="text-2xl font-semibold text-slate-900">New user</h1>
+    <p class="mt-1 text-sm text-slate-600">
+      Create a user and grant tenant roles. The user joins the current tenant with the selected roles.
+    </p>
+  </header>
+
+  @if (!canCreate()) {
+    <nz-alert
+      class="mb-6"
+      nzType="warning"
+      nzShowIcon
+      nzMessage="You do not have permission to create users"
+      nzDescription="Creating a user requires both user:write and iam:role:assign permissions."
+    />
+  }
+
+  @if (errorMessage()) {
+    <nz-alert class="mb-6" nzType="error" [nzMessage]="errorMessage()" nzShowIcon />
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+    <nz-card class="shadow-sm">
+      <div class="mb-4 text-sm font-semibold uppercase text-slate-500">Profile</div>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label nz-form-label nzRequired for="firstName">First name</label>
+          <nz-input-group>
+            <input id="firstName" nz-input formControlName="firstName" />
+          </nz-input-group>
+          @if (form.controls.firstName.invalid && form.controls.firstName.touched) {
+            <div class="mt-1 text-xs text-red-600">First name is required.</div>
+          }
+        </div>
+        <div>
+          <label nz-form-label nzRequired for="lastName">Last name</label>
+          <nz-input-group>
+            <input id="lastName" nz-input formControlName="lastName" />
+          </nz-input-group>
+          @if (form.controls.lastName.invalid && form.controls.lastName.touched) {
+            <div class="mt-1 text-xs text-red-600">Last name is required.</div>
+          }
+        </div>
+        <div>
+          <label nz-form-label nzRequired for="email">Email</label>
+          <nz-input-group>
+            <input id="email" nz-input type="email" formControlName="email" />
+          </nz-input-group>
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <div class="mt-1 text-xs text-red-600">Enter a valid email.</div>
+          }
+        </div>
+        <div>
+          <label nz-form-label for="phone">Phone</label>
+          <nz-input-group>
+            <input id="phone" nz-input formControlName="phone" />
+          </nz-input-group>
+        </div>
+        <div>
+          <label nz-form-label for="birthDate">Birth date</label>
+          <nz-date-picker id="birthDate" formControlName="birthDate" class="w-full" />
+        </div>
+        <div>
+          <label nz-form-label nzRequired for="password">Password</label>
+          <nz-input-group>
+            <input id="password" nz-input type="password" formControlName="password" autocomplete="new-password" />
+          </nz-input-group>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <div class="mt-1 text-xs text-red-600">Password must be 8–72 characters.</div>
+          }
+        </div>
+      </div>
+    </nz-card>
+
+    <nz-card class="shadow-sm">
+      <div class="mb-4 text-sm font-semibold uppercase text-slate-500">Tenant roles</div>
+      <label nz-form-label for="roleIds">Roles</label>
+      <nz-select
+        id="roleIds"
+        formControlName="roleIds"
+        nzMode="multiple"
+        nzShowSearch
+        nzPlaceholder="Assign one or more roles"
+        [nzLoading]="isLoadingRoles()"
+        nzAllowClear
+        class="w-full"
+      >
+        @for (option of roleOptions(); track option.value) {
+          <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+        }
+      </nz-select>
+      @if (form.controls.roleIds.invalid && form.controls.roleIds.touched) {
+        <div class="mt-1 text-xs text-red-600">Select at least one role.</div>
+      }
+    </nz-card>
+
+    <div class="flex justify-end gap-3">
+      <button nz-button nzType="default" type="button" (click)="cancel()">Cancel</button>
+      <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving()" [disabled]="!canCreate()">
+        Create user
+      </button>
+    </div>
+  </form>
+</section>

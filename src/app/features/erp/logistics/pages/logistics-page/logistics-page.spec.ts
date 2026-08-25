@@ -8,6 +8,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { icons } from '@core/ui/icons-provider';
 import { LogisticsService } from '@generated-api/modules/logistics/Logistics.service';
 import { ShipmentSearchCriteriaStatus } from '@generated-api/modules/logistics/dtos';
+import { IamService } from '@generated-api/modules/iam/Iam.service';
 import { UsersService } from '@generated-api/modules/users/Users.service';
 import { LogisticsPage } from './logistics-page';
 
@@ -90,6 +91,11 @@ describe('LogisticsPage', () => {
       ]),
     ),
   };
+  const iam = {
+    listRoles: vi.fn(() =>
+      of([{ id: 'role-driver', code: 'DRIVER', name: 'Driver', status: 'ACTIVE' }]),
+    ),
+  };
   const auth = {
     session: vi.fn(() => ({ activeCompany: { id: 'company-1', name: 'ACME' } })),
   };
@@ -105,6 +111,7 @@ describe('LogisticsPage', () => {
         { provide: AuthService, useValue: auth },
         { provide: LogisticsService, useValue: logistics },
         { provide: UsersService, useValue: users },
+        { provide: IamService, useValue: iam },
       ],
     });
 
@@ -166,6 +173,9 @@ describe('LogisticsPage', () => {
     component.changeTab(1);
     logistics.listDrivers.mockClear();
 
+    component.openDriverCreate();
+    await vi.waitFor(() => expect(component.driverRoleId()).toBe('role-driver'));
+
     component.driverModel.set({
       firstName: 'Bruno',
       lastName: 'Silva',
@@ -185,8 +195,7 @@ describe('LogisticsPage', () => {
       phone: '555-0100',
       birthDate: '1990-01-01',
       password: 'password123',
-      companyId: 'company-1',
-      role: 'DRIVER',
+      roleIds: ['role-driver'],
     });
     expect(logistics.createDriver).toHaveBeenCalledWith({
       userId: 'user-2',
@@ -198,6 +207,9 @@ describe('LogisticsPage', () => {
   it('retries only driver creation after the user was created', async () => {
     const component = createComponent().componentInstance;
     logistics.createDriver.mockReturnValueOnce(throwError(() => new Error('failed')));
+    component.openDriverCreate();
+    await vi.waitFor(() => expect(component.driverRoleId()).toBe('role-driver'));
+
     component.driverModel.set({
       firstName: 'Bruno',
       lastName: 'Silva',

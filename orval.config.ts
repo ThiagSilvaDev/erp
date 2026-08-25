@@ -55,6 +55,7 @@ export default defineConfig({
   kpis: moduleConfig('kpis', 'kpis', 'Kpis', 'Kpis'),
   sales: moduleConfig('sales', 'sales', 'Sales', 'Sales'),
   users: moduleConfig('users', 'users', 'Users', 'Users'),
+  iam: moduleConfig('tenant-access-controller', 'iam', 'Iam', 'Iam'),
   logistics: moduleConfig(['logistics', 'driver mobile'], 'logistics', 'Logistics', 'Logistics'),
 
   financial: moduleConfig(

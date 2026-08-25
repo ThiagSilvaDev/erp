@@ -23,7 +23,7 @@ export class DashboardShellStateService {
   private readonly profileName = signal<string | null>(null);
 
   readonly isCollapsed = this.collapsed.asReadonly();
-  readonly isDriver = this.auth.isDriver;
+  readonly isDriver = computed(() => this.auth.hasRoleCode('DRIVER'));
   readonly userLabel = computed(
     () => this.profileName() ?? this.auth.session()?.user?.email ?? 'ERP user',
   );
@@ -31,11 +31,28 @@ export class DashboardShellStateService {
   readonly companies = computed(() => this.auth.availableCompanies() as CompanyOption[]);
   readonly activeCompanyId = computed(() => this.auth.session()?.activeCompany?.id ?? null);
   readonly switchingCompanyId = signal<string | null>(null);
+  readonly canActAsPlatformAdmin = computed(() => this.auth.canActAsPlatformAdmin());
+
+  hasPermission(permission: string): boolean {
+    return this.auth.hasPermission(permission);
+  }
+
+  hasAnyPermission(permissions: readonly string[]): boolean {
+    return this.auth.hasAnyPermission(permissions);
+  }
+
+  hasAllPermissions(permissions: readonly string[]): boolean {
+    return this.auth.hasAllPermissions(permissions);
+  }
+
+  hasRoleCode(code: string): boolean {
+    return this.auth.hasRoleCode(code);
+  }
 
   constructor() {
     const userId = this.auth.session()?.user?.id;
 
-    if (userId && !this.auth.isDriver()) {
+    if (userId && !this.auth.hasRoleCode('DRIVER')) {
       this.users
         .getUserById(userId)
         .pipe(takeUntilDestroyed(this.destroyRef))

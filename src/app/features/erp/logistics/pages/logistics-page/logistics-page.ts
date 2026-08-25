@@ -35,6 +35,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 
 import { AuthService } from '@core/auth/auth.service';
+import { PERMISSIONS } from '@core/auth/permissions';
 import { LogisticsService } from '@generated-api/modules/logistics/Logistics.service';
 import type {
   AssignDispatchRequest,
@@ -44,9 +45,9 @@ import type {
   ShipmentSearchCriteriaStatus,
   VehicleResponse,
 } from '@generated-api/modules/logistics/dtos';
+import { IamService } from '@generated-api/modules/iam/Iam.service';
 import { UsersService } from '@generated-api/modules/users/Users.service';
 import type { PagedModelUserResponse, UserResponse } from '@generated-api/modules/users/dtos';
-import { CreateUserRequestRole, ListUsersRole } from '@generated-api/modules/users/dtos';
 import {
   ShipmentResponseStatus as ShipmentState,
   ShipmentSearchCriteriaStatus as ShipmentStatus,
@@ -123,6 +124,7 @@ const EMPTY_DRIVER_FORM = {
 export class LogisticsPage {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly iam = inject(IamService);
   private readonly logistics = inject(LogisticsService);
   private readonly messages = inject(NzMessageService);
   private readonly route = inject(ActivatedRoute);
@@ -159,6 +161,8 @@ export class LogisticsPage {
     capacity: new FormControl<number | null>(null),
   });
   readonly pendingDriverUserId = signal<string | null>(null);
+  readonly driverRoleId = signal<string | null>(null);
+  readonly isDriverRoleLoading = signal(false);
   readonly driverModel = signal({ ...EMPTY_DRIVER_FORM });
   readonly driverForm = form(this.driverModel, (path) => {
     required(path.firstName, { message: 'First name is required.' });
@@ -293,17 +297,52 @@ export class LogisticsPage {
     this.driverModel.set({ ...EMPTY_DRIVER_FORM });
     this.pendingDriverUserId.set(null);
     this.isDriverCreateOpen.set(true);
+    this.ensureDriverRoleId();
   }
 
   closeDriverCreate(): void {
     this.isDriverCreateOpen.set(false);
   }
 
+  canCreateDriver(): boolean {
+    return this.auth.hasAllPermissions([PERMISSIONS.userWrite, PERMISSIONS.roleAssign]);
+  }
+
+  private ensureDriverRoleId(): void {
+    if (this.driverRoleId() || this.isDriverRoleLoading()) {
+      return;
+    }
+
+    this.isDriverRoleLoading.set(true);
+    this.iam
+      .listRoles()
+      .pipe(
+        finalize(() => this.isDriverRoleLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (roles) => {
+          const driverRole = roles.find(
+            (role) => role.code === 'DRIVER',
+          );
+          this.driverRoleId.set(driverRole?.id ?? null);
+          if (!driverRole) {
+            this.messages.warning(
+              'No DRIVER role is configured for this tenant. Create one in IAM roles first.',
+            );
+          }
+        },
+        error: () => this.messages.error('Unable to load tenant roles.'),
+      });
+  }
+
   submitDriver(): void {
     void submit(this.driverForm, async () => {
-      const companyId = this.auth.session()?.activeCompany?.id;
-      if (!companyId) {
-        this.messages.error('An active company is required to create a driver.');
+      const driverRoleId = this.driverRoleId();
+      if (!driverRoleId) {
+        this.messages.error(
+          'A DRIVER role is required before creating a driver. Configure one in IAM roles first.',
+        );
         return;
       }
 
@@ -322,8 +361,7 @@ export class LogisticsPage {
                 phone: value.phone.trim() || undefined,
                 birthDate: value.birthDate || undefined,
                 password: value.password,
-                companyId,
-                role: CreateUserRequestRole.DRIVER,
+                roleIds: [driverRoleId],
               })
               .pipe(takeUntilDestroyed(this.destroyRef)),
           );
@@ -644,7 +682,7 @@ export class LogisticsPage {
         page: this.driversPageIndex() - 1,
         size: PAGE_SIZE,
       }),
-      users: this.listAllDriverUsers().pipe(catchError(() => of([]))),
+      users: this.listAllUsers().pipe(catchError(() => of([]))),
     })
       .pipe(
         finalize(() => this.driversLoading.set(false)),
@@ -671,10 +709,9 @@ export class LogisticsPage {
       });
   }
 
-  private listAllDriverUsers(): Observable<UserResponse[]> {
+  private listAllUsers(): Observable<UserResponse[]> {
     return this.usersApi
       .listUsers({
-        role: ListUsersRole.DRIVER,
         page: 0,
         size: DRIVER_USER_PAGE_SIZE,
       })
@@ -687,7 +724,6 @@ export class LogisticsPage {
           }
 
           return this.usersApi.listUsers({
-            role: ListUsersRole.DRIVER,
             page: pageNumber + 1,
             size: DRIVER_USER_PAGE_SIZE,
           });

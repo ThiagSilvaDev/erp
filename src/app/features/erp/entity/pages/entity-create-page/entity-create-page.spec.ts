@@ -265,31 +265,42 @@ describe('EntityCreatePage', () => {
   });
 
   it('does not block non-sales creation with unused sales order item controls', () => {
-    const fixture = createComponent('users');
+    const fixture = createComponent('companies');
     const component = fixture.componentInstance;
 
     component.createForm().setValue({
-      firstName: 'Ada',
-      lastName: 'Lovelace',
-      email: 'ada@example.com',
+      legalName: 'ACME Ltd',
+      tradeName: 'ACME',
+      cnpj: '00.000.000/0001-00',
+      type: 'FACTORY',
+      postalCode: '01001-000',
+      email: 'acme@example.com',
       phone: '',
-      birthDate: '',
-      role: 'ADMIN',
-      companyId: 'company-1',
-      password: 'password123',
+      street: 'Praca da Se',
+      number: '1',
+      district: 'Se',
+      city: 'Sao Paulo',
+      region: 'SP',
+      country: 'Brazil',
     });
 
     component.submitCreate();
 
-    expect(users.createUser).toHaveBeenCalledWith({
-      firstName: 'Ada',
-      lastName: 'Lovelace',
-      email: 'ada@example.com',
-      phone: undefined,
-      birthDate: undefined,
-      role: 'ADMIN',
-      companyId: 'company-1',
-      password: 'password123',
+    expect(companies.createCompany).toHaveBeenCalledWith({
+      legalName: 'ACME Ltd',
+      tradeName: 'ACME',
+      cnpj: '00.000.000/0001-00',
+      type: 'FACTORY',
+      contact: { email: 'acme@example.com', phone: undefined },
+      address: {
+        street: 'Praca da Se',
+        number: '1',
+        district: 'Se',
+        city: 'Sao Paulo',
+        region: 'SP',
+        country: 'Brazil',
+        postalCode: '01001-000',
+      },
     });
   });
 

@@ -8,11 +8,6 @@ export const companyTypeOptions = [
   { label: 'Correspondent', value: 'CORRESPONDENT' },
 ];
 
-export const roleOptions = [
-  { label: 'Admin', value: 'ADMIN' },
-  { label: 'Manager', value: 'MANAGER' },
-];
-
 export const orderStatusOptions = [
   { label: 'Draft', value: 'DRAFT' },
   { label: 'Confirmed', value: 'CONFIRMED' },

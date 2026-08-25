@@ -1,0 +1,118 @@
+<section class="mx-auto w-full max-w-6xl px-4 py-8">
+  <header class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Roles</h1>
+      <p class="mt-1 text-sm text-slate-600">Tenant roles and their permissions.</p>
+    </div>
+    @if (canWrite()) {
+      <button nz-button nzType="primary" (click)="openCreate()">
+        <nz-icon nzType="plus" />
+        New role
+      </button>
+    }
+  </header>
+
+  @if (errorMessage()) {
+    <nz-alert class="mb-4" nzType="error" [nzMessage]="errorMessage()" nzShowIcon />
+  }
+
+  <nz-card class="shadow-sm">
+    <nz-table #table [nzData]="roles()" [nzLoading]="isLoading()" [nzPageSize]="10" nzSize="small">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Read</th>
+          <th>Write</th>
+          <th>Other</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (role of table.data; track role.id) {
+          <tr>
+            <td><nz-tag>{{ role.code || '—' }}</nz-tag></td>
+            <td>
+              <div>{{ role.name || '—' }}</div>
+            </td>
+            <td>
+              <nz-tag [nzColor]="isBuiltIn(role) ? 'blue' : 'default'">
+                {{ role.type === 'BUILT_IN' ? 'Built-in' : 'Custom' }}
+              </nz-tag>
+            </td>
+            <td>
+              <nz-tag [nzColor]="role.status === 'ACTIVE' ? 'success' : 'default'">
+                {{ role.status || '—' }}
+              </nz-tag>
+            </td>
+            <td>
+              @if (summaryFor(role).readModules.length) {
+                <div class="flex flex-wrap gap-1">
+                  @for (module of summaryFor(role).readModules; track module) {
+                    <nz-tag nzColor="purple">{{ module }}</nz-tag>
+                  }
+                </div>
+              } @else {
+                <span class="text-slate-300">—</span>
+              }
+            </td>
+            <td>
+              @if (summaryFor(role).writeModules.length) {
+                <div class="flex flex-wrap gap-1">
+                  @for (module of summaryFor(role).writeModules; track module) {
+                    <nz-tag nzColor="blue">{{ module }}</nz-tag>
+                  }
+                </div>
+              } @else {
+                <span class="text-slate-300">—</span>
+              }
+            </td>
+            <td>
+              @if (summaryFor(role).extraCodes.length) {
+                <div class="flex flex-wrap gap-1">
+                  @for (code of summaryFor(role).extraCodes; track code) {
+                    <nz-tag>{{ code }}</nz-tag>
+                  }
+                </div>
+              } @else {
+                <span class="text-slate-300">—</span>
+              }
+            </td>
+            <td class="text-right">
+              @if (canWrite()) {
+                <button nz-button nzType="link" nzSize="small" (click)="openEdit(role)">Edit</button>
+              }
+              @if (canWrite() && !isBuiltIn(role)) {
+                <button
+                  nz-button
+                  nzType="link"
+                  nzSize="small"
+                  nzDanger
+                  [disabled]="isBuiltIn(role)"
+                  (click)="confirmDelete(role)"
+                >
+                  Delete
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</section>
+
+<nz-modal
+  nzTitle="Delete role"
+  [nzVisible]="pendingDeleteId() !== null"
+  nzOkText="Delete"
+  nzOkDanger
+  (nzOnOk)="deleteRole()"
+  (nzOnCancel)="cancelDelete()"
+>
+  <ng-container *nzModalContent>
+    <p>Delete this role? Users holding it will lose its permissions immediately.</p>
+  </ng-container>
+</nz-modal>

@@ -49,7 +49,7 @@ export const driverGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isDriver()) {
+  if (authService.hasRoleCode('DRIVER')) {
     return true;
   }
 
@@ -60,7 +60,7 @@ export const officeGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (!authService.isDriver()) {
+  if (!authService.hasRoleCode('DRIVER')) {
     return true;
   }
 

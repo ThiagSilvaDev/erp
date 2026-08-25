@@ -87,7 +87,7 @@ const PRODUCT_IMAGE_PATHS = [
   '/images/pdv/product-apparel.webp',
   '/images/pdv/product-tools.webp',
 ] as const;
-const PRODUCT_IMAGE_RULES: ReadonlyArray<{ keywords: readonly string[]; path: string }> = [
+const PRODUCT_IMAGE_RULES: readonly { keywords: readonly string[]; path: string }[] = [
   {
     keywords: [
       'tool',

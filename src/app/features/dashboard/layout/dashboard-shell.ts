@@ -7,6 +7,7 @@ import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 
 import { appPaths } from '@core/routing/app-paths';
+import { PERMISSIONS } from '@core/auth/permissions';
 import { DashboardShellStateService } from './dashboard-shell-state.service';
 
 interface MenuItem {
@@ -46,89 +47,99 @@ export class DashboardShell {
       : [{ label: 'Dashboard', path: '/dashboard', icon: 'dashboard' }],
   );
 
-  readonly submenuGroups = computed<SubmenuGroup[]>(() =>
-    this.state.isDriver()
-      ? []
-      : [
+  readonly submenuGroups = computed<SubmenuGroup[]>(() => {
+    if (this.state.isDriver()) {
+      return [];
+    }
+
+    const adminItems: MenuItem[] = [];
+    adminItems.push({ label: 'Companies', path: '/companies', icon: 'apartment' });
+    adminItems.push({ label: 'Users', path: '/users', icon: 'team' });
+    if (this.state.hasPermission(PERMISSIONS.roleRead)) {
+      adminItems.push({ label: 'Roles', path: appPaths.iamRoles, icon: 'safety' });
+    }
+    if (this.state.hasPermission(PERMISSIONS.membershipRead)) {
+      adminItems.push({ label: 'Memberships', path: appPaths.iamMemberships, icon: 'team' });
+    }
+
+    const groups: SubmenuGroup[] = [
+      {
+        title: 'Catalog',
+        icon: 'appstore',
+        items: [
+          { label: 'Categories', path: '/categories', icon: 'appstore' },
+          { label: 'Products', path: '/products', icon: 'shop' },
+        ],
+      },
+      {
+        title: 'Contacts',
+        icon: 'contacts',
+        items: [
+          { label: 'Customers', path: '/customers', icon: 'user' },
+          { label: 'Suppliers', path: '/suppliers', icon: 'contacts' },
+          { label: 'Company contacts', path: '/company-contacts', icon: 'contacts' },
+          { label: 'Contact persons', path: '/contact-persons', icon: 'team' },
+        ],
+      },
+      {
+        title: 'Sales',
+        icon: 'shopping-cart',
+        items: [
+          { label: 'PDV', path: '/pdv', icon: 'credit-card' },
+          { label: 'Sales orders', path: '/sales-orders', icon: 'shopping-cart' },
+        ],
+      },
+      {
+        title: 'Logistics',
+        icon: 'truck',
+        items: [
+          { label: 'Vehicles', path: '/logistics/vehicles', icon: 'truck' },
+          { label: 'Drivers', path: '/logistics/drivers', icon: 'user' },
+          { label: 'Shipments', path: '/logistics/shipments', icon: 'container' },
+        ],
+      },
+      {
+        title: 'Inventory',
+        icon: 'database',
+        items: [
+          { label: 'Warehouses', path: '/warehouses', icon: 'inbox' },
+          { label: 'Inventory items', path: '/inventory-items', icon: 'database' },
+          { label: 'Stock movements', path: '/stock-movements', icon: 'file-text' },
+          { label: 'Reservations', path: '/reservations', icon: 'container' },
+        ],
+      },
+      {
+        title: 'Financial',
+        icon: 'wallet',
+        items: [
+          { label: 'Invoices', path: '/invoices', icon: 'wallet' },
+          { label: 'Payments', path: '/payments', icon: 'dollar' },
+          { label: 'Ledger entries', path: '/financial-entries', icon: 'file-text' },
           {
-            title: 'Catalog',
-            icon: 'appstore',
-            items: [
-              { label: 'Categories', path: '/categories', icon: 'appstore' },
-              { label: 'Products', path: '/products', icon: 'shop' },
-            ],
-          },
-          {
-            title: 'Contacts',
-            icon: 'contacts',
-            items: [
-              { label: 'Customers', path: '/customers', icon: 'user' },
-              { label: 'Suppliers', path: '/suppliers', icon: 'contacts' },
-              { label: 'Company contacts', path: '/company-contacts', icon: 'contacts' },
-              { label: 'Contact persons', path: '/contact-persons', icon: 'team' },
-            ],
-          },
-          {
-            title: 'Sales',
-            icon: 'shopping-cart',
-            items: [
-              { label: 'PDV', path: '/pdv', icon: 'credit-card' },
-              { label: 'Sales orders', path: '/sales-orders', icon: 'shopping-cart' },
-            ],
-          },
-          {
-            title: 'Logistics',
-            icon: 'truck',
-            items: [
-              { label: 'Vehicles', path: '/logistics/vehicles', icon: 'truck' },
-              { label: 'Drivers', path: '/logistics/drivers', icon: 'user' },
-              { label: 'Shipments', path: '/logistics/shipments', icon: 'container' },
-            ],
-          },
-          {
-            title: 'Inventory',
+            label: 'Chart of accounts',
+            path: appPaths.accountingAccounts,
             icon: 'database',
-            items: [
-              { label: 'Warehouses', path: '/warehouses', icon: 'inbox' },
-              { label: 'Inventory items', path: '/inventory-items', icon: 'database' },
-              { label: 'Stock movements', path: '/stock-movements', icon: 'file-text' },
-              { label: 'Reservations', path: '/reservations', icon: 'container' },
-            ],
           },
           {
-            title: 'Financial',
-            icon: 'wallet',
-            items: [
-              { label: 'Invoices', path: '/invoices', icon: 'wallet' },
-              { label: 'Payments', path: '/payments', icon: 'dollar' },
-              { label: 'Ledger entries', path: '/financial-entries', icon: 'file-text' },
-              {
-                label: 'Chart of accounts',
-                path: appPaths.accountingAccounts,
-                icon: 'database',
-              },
-              {
-                label: 'Accounting entries',
-                path: appPaths.accountingEntries,
-                icon: 'file-text',
-              },
-              {
-                label: 'Account balances',
-                path: appPaths.accountingBalances,
-                icon: 'dollar',
-              },
-            ],
+            label: 'Accounting entries',
+            path: appPaths.accountingEntries,
+            icon: 'file-text',
           },
           {
-            title: 'Admin',
-            icon: 'apartment',
-            items: [
-              { label: 'Companies', path: '/companies', icon: 'apartment' },
-              { label: 'Users', path: '/users', icon: 'team' },
-            ],
+            label: 'Account balances',
+            path: appPaths.accountingBalances,
+            icon: 'dollar',
           },
         ],
-  );
+      },
+    ];
+
+    if (adminItems.length) {
+      groups.push({ title: 'Admin', icon: 'apartment', items: adminItems });
+    }
+
+    return groups;
+  });
 
   toggleSidebar(): void {
     this.state.toggleSidebar();

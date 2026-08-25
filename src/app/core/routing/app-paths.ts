@@ -22,6 +22,9 @@ const STOCK_MOVEMENTS_SEGMENT = 'stock-movements';
 const SUPPLIERS_SEGMENT = 'suppliers';
 const USERS_SEGMENT = 'users';
 const WAREHOUSES_SEGMENT = 'warehouses';
+const IAM_ROLES_SEGMENT = 'iam/roles';
+const IAM_MEMBERSHIPS_SEGMENT = 'iam/memberships';
+const IAM_ROLE_CREATE_SEGMENT = 'iam/roles/new';
 
 export const appRoutePaths = {
   login: LOGIN_SEGMENT,
@@ -74,6 +77,10 @@ export const appPaths = {
   suppliers: `/${SUPPLIERS_SEGMENT}`,
   users: `/${USERS_SEGMENT}`,
   warehouses: `/${WAREHOUSES_SEGMENT}`,
+  iamRoles: `/${IAM_ROLES_SEGMENT}`,
+  iamMemberships: `/${IAM_MEMBERSHIPS_SEGMENT}`,
+  iamRoleCreate: `/${IAM_ROLE_CREATE_SEGMENT}`,
+  iamRoleEdit: (id: string | number) => `/${IAM_ROLES_SEGMENT}/${id}`,
 
   // Detail paths (if needed by the application in the future)
   categoryDetail: (id: string | number) => `/${CATEGORIES_SEGMENT}/${id}`,

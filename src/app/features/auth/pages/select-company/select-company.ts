@@ -41,8 +41,10 @@ export class SelectCompany {
   readonly companies = computed(() => this.auth.availableCompanies() as CompanyChoice[]);
   readonly isLoading = signal(false);
   readonly selectedCompanyId = signal<string | null>(null);
+  readonly isEnteringPlatform = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly activeCompanyId = computed(() => this.auth.session()?.activeCompany?.id ?? null);
+  readonly canActAsPlatformAdmin = computed(() => this.auth.canActAsPlatformAdmin());
 
   selectCompany(company: CompanyChoice): void {
     const companyId = company.companyId;
@@ -77,7 +79,35 @@ export class SelectCompany {
   }
 
   companyDocument(company: CompanyChoice): string {
-    return company.cnpj ?? company.role ?? 'No CNPJ';
+    return company.cnpj ?? this.rolesLabel(company) ?? 'No CNPJ';
+  }
+
+  rolesLabel(company: CompanyChoice): string | undefined {
+    const codes = (company.roles ?? [])
+      .map((role) => role.code)
+      .filter((code): code is string => Boolean(code));
+    return codes.length ? codes.join(', ') : undefined;
+  }
+
+  enterPlatformAdmin(): void {
+    if (this.isEnteringPlatform()) {
+      return;
+    }
+
+    this.isEnteringPlatform.set(true);
+    this.errorMessage.set(null);
+
+    this.auth
+      .selectPlatform()
+      .pipe(
+        finalize(() => this.isEnteringPlatform.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => void this.router.navigateByUrl(appPaths.companies),
+        error: () =>
+          this.errorMessage.set('Unable to enter platform admin mode. This account may not have platform access.'),
+      });
   }
 
   isSelecting(company: CompanyChoice): boolean {
