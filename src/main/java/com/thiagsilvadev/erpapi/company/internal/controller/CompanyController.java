@@ -15,26 +15,35 @@ import com.thiagsilvadev.erpapi.company.internal.dto.CompanyAddressResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyRequest;
+import com.thiagsilvadev.erpapi.company.internal.dto.UpdateCompanyRequest;
 import com.thiagsilvadev.erpapi.company.internal.usecase.CreateCompanyUseCase;
+import com.thiagsilvadev.erpapi.company.internal.usecase.DeleteCompanyUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyAddressUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyByIdUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.ListCompaniesUseCase;
+import com.thiagsilvadev.erpapi.company.internal.usecase.UpdateCompanyUseCase;
 
 @RestController
 @Validated
 class CompanyController implements CompanyApi {
 
     private final CreateCompanyUseCase createCompanyUseCase;
+    private final UpdateCompanyUseCase updateCompanyUseCase;
+    private final DeleteCompanyUseCase deleteCompanyUseCase;
     private final GetCompanyByIdUseCase getCompanyByIdUseCase;
     private final GetCompanyAddressUseCase getCompanyAddressUseCase;
     private final ListCompaniesUseCase listCompaniesUseCase;
 
     CompanyController(
             CreateCompanyUseCase createCompanyUseCase,
+            UpdateCompanyUseCase updateCompanyUseCase,
+            DeleteCompanyUseCase deleteCompanyUseCase,
             GetCompanyByIdUseCase getCompanyByIdUseCase,
             GetCompanyAddressUseCase getCompanyAddressUseCase,
             ListCompaniesUseCase listCompaniesUseCase) {
         this.createCompanyUseCase = createCompanyUseCase;
+        this.updateCompanyUseCase = updateCompanyUseCase;
+        this.deleteCompanyUseCase = deleteCompanyUseCase;
         this.getCompanyByIdUseCase = getCompanyByIdUseCase;
         this.getCompanyAddressUseCase = getCompanyAddressUseCase;
         this.listCompaniesUseCase = listCompaniesUseCase;
@@ -44,6 +53,17 @@ class CompanyController implements CompanyApi {
     public ResponseEntity<CompanyResponse> createCompany(@Valid @RequestBody CreateCompanyRequest request) {
         CompanyResponse response = createCompanyUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
+    }
+
+    @Override
+    public CompanyResponse updateCompany(@PathVariable UUID id, @Valid @RequestBody UpdateCompanyRequest request) {
+        return updateCompanyUseCase.execute(id, request);
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteCompany(@PathVariable UUID id) {
+        deleteCompanyUseCase.execute(id);
+        return ResponseEntity.noContent().build();
     }
 
     @Override

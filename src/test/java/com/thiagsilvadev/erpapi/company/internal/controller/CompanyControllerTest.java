@@ -1,10 +1,13 @@
 package com.thiagsilvadev.erpapi.company.internal.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,14 +32,19 @@ import com.thiagsilvadev.erpapi.company.internal.dto.CompanyAddressResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyRequest;
+import com.thiagsilvadev.erpapi.company.internal.dto.UpdateCompanyRequest;
 import com.thiagsilvadev.erpapi.company.internal.usecase.CreateCompanyUseCase;
+import com.thiagsilvadev.erpapi.company.internal.usecase.DeleteCompanyUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyAddressUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyByIdUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.ListCompaniesUseCase;
+import com.thiagsilvadev.erpapi.company.internal.usecase.UpdateCompanyUseCase;
 
 class CompanyControllerTest {
 
     private CreateCompanyUseCase createCompanyUseCase;
+    private UpdateCompanyUseCase updateCompanyUseCase;
+    private DeleteCompanyUseCase deleteCompanyUseCase;
     private GetCompanyByIdUseCase getCompanyByIdUseCase;
     private GetCompanyAddressUseCase getCompanyAddressUseCase;
     private ListCompaniesUseCase listCompaniesUseCase;
@@ -45,11 +53,18 @@ class CompanyControllerTest {
     @BeforeEach
     void setUp() {
         createCompanyUseCase = mock(CreateCompanyUseCase.class);
+        updateCompanyUseCase = mock(UpdateCompanyUseCase.class);
+        deleteCompanyUseCase = mock(DeleteCompanyUseCase.class);
         getCompanyByIdUseCase = mock(GetCompanyByIdUseCase.class);
         getCompanyAddressUseCase = mock(GetCompanyAddressUseCase.class);
         listCompaniesUseCase = mock(ListCompaniesUseCase.class);
         mockMvc = standaloneSetup(new CompanyController(
-                        createCompanyUseCase, getCompanyByIdUseCase, getCompanyAddressUseCase, listCompaniesUseCase))
+                        createCompanyUseCase,
+                        updateCompanyUseCase,
+                        deleteCompanyUseCase,
+                        getCompanyByIdUseCase,
+                        getCompanyAddressUseCase,
+                        listCompaniesUseCase))
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .build();
     }
@@ -120,6 +135,43 @@ class CompanyControllerTest {
                 .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
 
         mockMvc.perform(get("/api/v1/platform/companies")).andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldUpdateCompany() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(updateCompanyUseCase.execute(eq(id), any(UpdateCompanyRequest.class)))
+                .thenReturn(companyResponse(id));
+
+        mockMvc.perform(
+                        put("/api/v1/platform/companies/{id}", id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                {
+                                  "legalName": "Updated Company",
+                                  "tradeName": "Updated Trade",
+                                  "type": "CORRESPONDENT",
+                                  "address": {
+                                    "postalCode": "01310100",
+                                    "street": "Avenida Paulista",
+                                    "number": "1000",
+                                    "district": "Bela Vista",
+                                    "city": "Sao Paulo",
+                                    "region": "SP",
+                                    "country": "BR"
+                                  }
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id.toString()));
+    }
+
+    @Test
+    void shouldDeleteCompany() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(delete("/api/v1/platform/companies/{id}", id)).andExpect(status().isNoContent());
     }
 
     private static CompanyResponse companyResponse(UUID id) {
