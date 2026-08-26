@@ -69,8 +69,7 @@ public class AccountingEntry extends AbstractBaseEntity {
             throw new IllegalArgumentException("Amount must be positive");
         }
         this.amount = amount;
-        this.currencyCode =
-                Strings.required(currencyCode, "Currency code is required").toUpperCase();
+        this.currencyCode = Strings.required(currencyCode, "Currency code").toUpperCase();
         this.direction = Objects.requireNonNull(direction, "Direction is required");
         this.sourceType = Objects.requireNonNull(sourceType, "Source type is required");
         this.sourceId = sourceId;

@@ -31,7 +31,7 @@ public class RolePermission extends AbstractBaseEntity {
 
     private RolePermission(UUID roleId, String permissionKey) {
         this.roleId = Objects.requireNonNull(roleId, "Permission role cannot be null");
-        this.permissionKey = Strings.required(permissionKey, "Permission key cannot be blank");
+        this.permissionKey = Strings.required(permissionKey, "Permission key");
     }
 
     public static RolePermission create(UUID roleId, String permissionKey) {

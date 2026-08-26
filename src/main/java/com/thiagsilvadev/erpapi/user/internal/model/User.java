@@ -42,8 +42,8 @@ public class User extends AbstractBaseEntity {
     protected User() {}
 
     private User(String firstName, String lastName, Contact contact, LocalDate birthDate) {
-        this.firstName = Strings.required(firstName, "User first name cannot be blank");
-        this.lastName = Strings.required(lastName, "User last name cannot be blank");
+        this.firstName = Strings.required(firstName, "User first name");
+        this.lastName = Strings.required(lastName, "User last name");
         this.contact = requireContact(contact);
         this.birthDate = birthDate;
     }

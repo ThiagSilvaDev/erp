@@ -34,7 +34,7 @@ public class Warehouse extends AbstractBaseEntity {
     private Warehouse(UUID companyId, String code, String name) {
         this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.code = normalizeCode(code);
-        this.name = Strings.required(name, "Warehouse name cannot be blank");
+        this.name = Strings.required(name, "Warehouse name");
     }
 
     public static Warehouse create(UUID companyId, String code, String name) {
@@ -54,6 +54,6 @@ public class Warehouse extends AbstractBaseEntity {
     }
 
     public static String normalizeCode(String code) {
-        return Strings.normalizeCode(code, "Warehouse code cannot be blank");
+        return Strings.normalizeCode(code, "Warehouse code");
     }
 }

@@ -6,6 +6,7 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Cnpj;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
@@ -28,6 +29,7 @@ public class Company extends AbstractBaseEntity {
     private String tradeName;
 
     @Embedded
+    @AttributeOverride(name = "number", column = @Column(name = "cnpj", length = 14, nullable = false))
     private Cnpj cnpj;
 
     @Enumerated(EnumType.STRING)
@@ -54,11 +56,11 @@ public class Company extends AbstractBaseEntity {
             CompanyType type,
             Address address,
             Contact contact) {
-        this.companyCode = companyCode;
-        this.legalName = Strings.required(legalName, "Legal name cannot be blank");
+        this.companyCode = DomainAssert.requireRequired(companyCode, "Company code");
+        this.legalName = Strings.required(legalName, "Legal name");
         this.tradeName = Strings.trimToNull(tradeName);
-        this.cnpj = cnpj;
-        this.type = type;
+        this.cnpj = DomainAssert.requireRequired(cnpj, "CNPJ");
+        this.type = DomainAssert.requireRequired(type, "Company type");
         this.address = address;
         this.contact = contact;
     }
@@ -75,26 +77,20 @@ public class Company extends AbstractBaseEntity {
     }
 
     public void updateNames(String legalName, String tradeName) {
-        this.legalName = Strings.required(legalName, "Legal name cannot be blank");
+        this.legalName = Strings.required(legalName, "Legal name");
         this.tradeName = Strings.trimToNull(tradeName);
     }
 
     public void changeType(CompanyType type) {
-        if (type == null) {
-            throw new IllegalArgumentException("Company type cannot be null");
-        }
-        this.type = type;
+        this.type = DomainAssert.requireNotNull(type, "Company type");
     }
 
     public void changeAddress(Address address) {
-        if (address == null) {
-            throw new IllegalArgumentException("Address cannot be null");
-        }
-        this.address = address;
+        this.address = DomainAssert.requireNotNull(address, "Address");
     }
 
     public void changeContact(Contact contact) {
-        this.contact = contact;
+        this.contact = DomainAssert.requireNotNull(contact, "Contact");
     }
 
     public void activate() {

@@ -41,7 +41,7 @@ public class Supplier extends AbstractBaseEntity {
     protected Supplier() {}
 
     private Supplier(String name, String document, UUID companyId, Contact contact, Address address) {
-        this.name = Strings.required(name, "Supplier name cannot be blank");
+        this.name = Strings.required(name, "Supplier name");
         this.document = normalizeDocument(document);
         this.companyId = companyId;
         this.contact = contact;
@@ -73,6 +73,6 @@ public class Supplier extends AbstractBaseEntity {
     }
 
     public static String normalizeDocument(String document) {
-        return Strings.required(document, "Supplier document cannot be blank").replaceAll("\\D", "");
+        return Strings.required(document, "Supplier document").replaceAll("\\D", "");
     }
 }

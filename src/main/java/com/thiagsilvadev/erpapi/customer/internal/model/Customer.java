@@ -41,7 +41,7 @@ public class Customer extends AbstractBaseEntity {
     protected Customer() {}
 
     private Customer(String name, String document, UUID ownerCompanyId, Contact contact, Address address) {
-        this.name = Strings.required(name, "Customer name cannot be blank");
+        this.name = Strings.required(name, "Customer name");
         this.document = normalizeDocument(document);
         this.ownerCompanyId = requireOwnerCompanyId(ownerCompanyId);
         this.contact = contact;
@@ -73,7 +73,7 @@ public class Customer extends AbstractBaseEntity {
     }
 
     public static String normalizeDocument(String document) {
-        return Strings.required(document, "Customer document cannot be blank").replaceAll("\\D", "");
+        return Strings.required(document, "Customer document").replaceAll("\\D", "");
     }
 
     private static UUID requireOwnerCompanyId(UUID ownerCompanyId) {

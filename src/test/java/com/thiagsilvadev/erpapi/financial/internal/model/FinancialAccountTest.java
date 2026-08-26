@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.InvalidAttributeException;
+
 class FinancialAccountTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
 
@@ -34,8 +36,8 @@ class FinancialAccountTest {
     @Test
     void shouldFailWhenNameIsBlank() {
         assertThatThrownBy(() -> FinancialAccount.create(COMPANY_ID, "   ", FinancialAccountType.BANK_ACCOUNT, null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Financial account name is required");
+                .isInstanceOf(InvalidAttributeException.class)
+                .hasMessage("Financial account name cannot be blank");
     }
 
     @Test

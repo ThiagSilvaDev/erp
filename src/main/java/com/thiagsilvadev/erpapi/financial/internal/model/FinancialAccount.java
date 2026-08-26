@@ -38,7 +38,7 @@ public class FinancialAccount extends AbstractBaseEntity {
 
     private FinancialAccount(UUID companyId, String name, FinancialAccountType type, String description) {
         this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
-        this.name = Strings.required(name, "Financial account name is required");
+        this.name = Strings.required(name, "Financial account name");
         this.type = Objects.requireNonNull(type, "Financial account type is required");
         this.description = Strings.trimToNull(description);
     }

@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.InvalidAttributeException;
+
 class AccountingAccountTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
 
@@ -36,8 +38,8 @@ class AccountingAccountTest {
     void shouldFailWhenCodeIsBlank() {
         assertThatThrownBy(() -> AccountingAccount.create(
                         COMPANY_ID, "  ", "Name", null, null, AccountingAccountType.EXPENSE, null, true))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Accounting account code is required");
+                .isInstanceOf(InvalidAttributeException.class)
+                .hasMessage("Accounting account code cannot be blank");
     }
 
     @Test

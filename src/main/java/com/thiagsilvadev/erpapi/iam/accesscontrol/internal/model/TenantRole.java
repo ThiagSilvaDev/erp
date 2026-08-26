@@ -52,8 +52,8 @@ public class TenantRole extends AbstractBaseEntity {
 
     private TenantRole(UUID companyId, String code, String name, String description, TenantRoleType type) {
         this.companyId = Objects.requireNonNull(companyId, "Role company cannot be null");
-        this.code = Strings.normalizeCode(code, "Role code cannot be blank");
-        this.name = Strings.required(name, "Role name cannot be blank");
+        this.code = Strings.normalizeCode(code, "Role code");
+        this.name = Strings.required(name, "Role name");
         this.description = Strings.trimToNull(description);
         this.type = Objects.requireNonNull(type, "Role type cannot be null");
     }
@@ -73,7 +73,7 @@ public class TenantRole extends AbstractBaseEntity {
         if (status == AuthorizationStatus.INACTIVE) {
             throw new ConflictException("Deleted roles cannot be edited.");
         }
-        this.name = Strings.required(name, "Role name cannot be blank");
+        this.name = Strings.required(name, "Role name");
         this.description = Strings.trimToNull(description);
     }
 

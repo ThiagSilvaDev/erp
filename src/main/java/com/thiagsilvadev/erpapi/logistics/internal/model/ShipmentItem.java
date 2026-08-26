@@ -33,8 +33,8 @@ public class ShipmentItem {
         }
         this.productId = java.util.Objects.requireNonNull(productId, "Product is required");
         this.warehouseId = java.util.Objects.requireNonNull(warehouseId, "Warehouse is required");
-        this.productSku = Strings.required(productSku, "Product SKU cannot be blank");
-        this.productName = Strings.required(productName, "Product name cannot be blank");
+        this.productSku = Strings.required(productSku, "Product SKU");
+        this.productName = Strings.required(productName, "Product name");
         this.quantity = quantity;
     }
 

@@ -4,6 +4,7 @@ import java.util.regex.Pattern;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.DomainErrorCode;
 import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
+import com.thiagsilvadev.erpapi.common.domain.exception.InvalidAttributeException;
 
 public final class DomainAssert {
 
@@ -83,6 +84,20 @@ public final class DomainAssert {
     public static int requirePositive(int value, DomainErrorCode errorCode) {
         if (value <= 0) {
             throw new DomainValidationException(errorCode);
+        }
+        return value;
+    }
+
+    public static <T> T requireNotNull(T value, String attribute) {
+        if (value == null) {
+            throw InvalidAttributeException.cannotBeNull(attribute);
+        }
+        return value;
+    }
+
+    public static <T> T requireRequired(T value, String attribute) {
+        if (value == null) {
+            throw InvalidAttributeException.required(attribute);
         }
         return value;
     }

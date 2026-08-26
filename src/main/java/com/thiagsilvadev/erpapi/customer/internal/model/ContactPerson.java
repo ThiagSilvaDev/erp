@@ -27,7 +27,7 @@ public class ContactPerson extends AbstractBaseEntity {
     protected ContactPerson() {}
 
     private ContactPerson(String name, UUID customerId, Contact contact) {
-        this.name = Strings.required(name, "Contact person name cannot be blank");
+        this.name = Strings.required(name, "Contact person name");
         this.customerId = customerId;
         this.contact = contact;
     }

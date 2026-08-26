@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -39,7 +40,7 @@ public class CompanyContact extends AbstractBaseEntity {
 
     private CompanyContact(UUID companyId, String name, String role, Contact contact, boolean primaryContact) {
         this.companyId = requireCompanyId(companyId);
-        this.name = Strings.required(name, "Company contact name cannot be blank");
+        this.name = Strings.required(name, "Company contact name");
         this.role = Strings.trimToNull(role);
         this.contact = contact;
         this.primaryContact = primaryContact;
@@ -79,9 +80,6 @@ public class CompanyContact extends AbstractBaseEntity {
     }
 
     private static UUID requireCompanyId(UUID companyId) {
-        if (companyId == null) {
-            throw new IllegalArgumentException("Company contact company cannot be null");
-        }
-        return companyId;
+        return DomainAssert.requireNotNull(companyId, "Company contact company");
     }
 }

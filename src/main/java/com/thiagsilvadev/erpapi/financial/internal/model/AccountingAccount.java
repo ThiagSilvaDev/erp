@@ -59,8 +59,8 @@ public class AccountingAccount extends AbstractBaseEntity {
             AccountingSystemRole systemRole,
             boolean acceptsPostings) {
         this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
-        this.code = Strings.required(code, "Accounting account code is required");
-        this.name = Strings.required(name, "Accounting account name is required");
+        this.code = Strings.required(code, "Accounting account code");
+        this.name = Strings.required(name, "Accounting account name");
         this.description = Strings.trimToNull(description);
         this.parentId = parentId;
         this.type = Objects.requireNonNull(type, "Accounting account type is required");

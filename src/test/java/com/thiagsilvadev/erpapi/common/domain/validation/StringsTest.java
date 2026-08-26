@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.InvalidAttributeException;
+
 class StringsTest {
 
     @Test
@@ -15,28 +17,28 @@ class StringsTest {
 
     @Test
     void shouldRequireNonBlankValue() {
-        assertThat(Strings.required(" value ", "Value is required")).isEqualTo("value");
+        assertThat(Strings.required(" value ", "Value")).isEqualTo("value");
 
-        assertThatThrownBy(() -> Strings.required(null, "Value is required"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Value is required");
+        assertThatThrownBy(() -> Strings.required(null, "Value"))
+                .isInstanceOf(InvalidAttributeException.class)
+                .hasMessage("Value cannot be blank");
     }
 
     @Test
     void shouldNormalizeCodeByTrimmingAndUppercasingWithRootLocale() {
-        assertThat(Strings.normalizeCode("  owner  ", "Code is required")).isEqualTo("OWNER");
-        assertThat(Strings.normalizeCode("café", "Code is required")).isEqualTo("CAFÉ");
-        assertThat(Strings.normalizeCode("order-item", "Code is required")).isEqualTo("ORDER-ITEM");
+        assertThat(Strings.normalizeCode("  owner  ", "Code")).isEqualTo("OWNER");
+        assertThat(Strings.normalizeCode("café", "Code")).isEqualTo("CAFÉ");
+        assertThat(Strings.normalizeCode("order-item", "Code")).isEqualTo("ORDER-ITEM");
     }
 
     @Test
     void shouldRejectBlankCode() {
-        assertThatThrownBy(() -> Strings.normalizeCode(null, "Code is required"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Code is required");
+        assertThatThrownBy(() -> Strings.normalizeCode(null, "Code"))
+                .isInstanceOf(InvalidAttributeException.class)
+                .hasMessage("Code cannot be blank");
 
-        assertThatThrownBy(() -> Strings.normalizeCode("   ", "Code is required"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Code is required");
+        assertThatThrownBy(() -> Strings.normalizeCode("   ", "Code"))
+                .isInstanceOf(InvalidAttributeException.class)
+                .hasMessage("Code cannot be blank");
     }
 }

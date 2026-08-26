@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.InvalidAttributeException;
+
 class DriverTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
     private static final UUID USER_ID = UUID.randomUUID();
@@ -29,7 +31,7 @@ class DriverTest {
     @Test
     void shouldRejectBlankLicenseNumber() {
         assertThatThrownBy(() -> Driver.create(COMPANY_ID, USER_ID, " "))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidAttributeException.class)
                 .hasMessage("Driver license number cannot be blank");
     }
 }

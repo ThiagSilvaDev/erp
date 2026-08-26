@@ -2,6 +2,8 @@ package com.thiagsilvadev.erpapi.common.domain.validation;
 
 import java.util.Locale;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.InvalidAttributeException;
+
 public final class Strings {
 
     private Strings() {}
@@ -15,15 +17,15 @@ public final class Strings {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    public static String required(String value, String message) {
+    public static String required(String value, String attribute) {
         String normalized = trimToNull(value);
         if (normalized == null) {
-            throw new IllegalArgumentException(message);
+            throw InvalidAttributeException.cannotBeBlank(attribute);
         }
         return normalized;
     }
 
-    public static String normalizeCode(String value, String message) {
-        return required(value, message).toUpperCase(Locale.ROOT);
+    public static String normalizeCode(String value, String attribute) {
+        return required(value, attribute).toUpperCase(Locale.ROOT);
     }
 }

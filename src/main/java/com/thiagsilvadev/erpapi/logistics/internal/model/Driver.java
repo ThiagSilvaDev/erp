@@ -39,7 +39,7 @@ public class Driver extends AbstractBaseEntity {
     private Driver(UUID companyId, UUID userId, String licenseNumber) {
         this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
         this.userId = Objects.requireNonNull(userId, "User ID is required");
-        this.licenseNumber = Strings.normalizeCode(licenseNumber, "Driver license number cannot be blank");
+        this.licenseNumber = Strings.normalizeCode(licenseNumber, "Driver license number");
     }
 
     public static Driver create(UUID companyId, UUID userId, String licenseNumber) {
@@ -63,6 +63,6 @@ public class Driver extends AbstractBaseEntity {
     }
 
     public static String normalizeLicenseNumber(String value) {
-        return Strings.normalizeCode(value, "Driver license number cannot be blank");
+        return Strings.normalizeCode(value, "Driver license number");
     }
 }

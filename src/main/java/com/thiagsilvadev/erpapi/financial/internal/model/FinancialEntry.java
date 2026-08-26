@@ -65,8 +65,7 @@ public class FinancialEntry extends AbstractBaseEntity {
             throw new IllegalArgumentException("Amount must be positive");
         }
         this.amount = amount;
-        this.currencyCode =
-                Strings.required(currencyCode, "Currency code is required").toUpperCase();
+        this.currencyCode = Strings.required(currencyCode, "Currency code").toUpperCase();
         this.referenceId = referenceId;
         this.description = Strings.trimToNull(description);
         this.occurredAt = Instant.now();

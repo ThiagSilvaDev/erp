@@ -45,7 +45,7 @@ public class IamCredential extends AbstractBaseEntity {
     private IamCredential(UUID userId, String email, String passwordHash) {
         this.userId = requireUserId(userId);
         this.email = Email.create(email);
-        this.passwordHash = Strings.required(passwordHash, "Password hash cannot be blank");
+        this.passwordHash = Strings.required(passwordHash, "Password hash");
     }
 
     public static IamCredential create(UUID userId, String email, String passwordHash) {

@@ -41,7 +41,7 @@ public class Vehicle extends AbstractBaseEntity {
     private Vehicle(UUID companyId, String plate, String description, int capacity) {
         this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
         this.plate = Plate.of(plate, PlateType.MERCOSUL);
-        this.description = Strings.required(description, "Vehicle description cannot be blank");
+        this.description = Strings.required(description, "Vehicle description");
         if (capacity <= 0) {
             throw new IllegalArgumentException("Vehicle capacity must be positive");
         }

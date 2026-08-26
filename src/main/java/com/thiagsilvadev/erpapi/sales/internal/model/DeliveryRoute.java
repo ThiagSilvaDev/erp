@@ -41,9 +41,9 @@ public class DeliveryRoute {
     public static DeliveryRoute of(
             String routeName, UUID originWarehouseId, String destinationDescription, GeoLocation destinationLocation) {
         return new DeliveryRoute(
-                Strings.required(routeName, "Route name cannot be blank"),
+                Strings.required(routeName, "Route name"),
                 Objects.requireNonNull(originWarehouseId, "Origin warehouse ID is required"),
-                Strings.required(destinationDescription, "Destination description cannot be blank"),
+                Strings.required(destinationDescription, "Destination description"),
                 destinationLocation);
     }
 
