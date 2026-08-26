@@ -15,10 +15,6 @@ public class InvalidAttributeException extends DomainValidationException {
         this.attribute = attribute;
     }
 
-    public static InvalidAttributeException required(String attribute) {
-        return new InvalidAttributeException(attribute, "is required");
-    }
-
     public static InvalidAttributeException cannotBeNull(String attribute) {
         return new InvalidAttributeException(attribute, "cannot be null");
     }

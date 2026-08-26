@@ -94,11 +94,4 @@ public final class DomainAssert {
         }
         return value;
     }
-
-    public static <T> T requireRequired(T value, String attribute) {
-        if (value == null) {
-            throw InvalidAttributeException.required(attribute);
-        }
-        return value;
-    }
 }

@@ -315,6 +315,13 @@ Examples:
 
 Controllers should not translate exceptions manually.
 
+For required-attribute validation inside entities and value objects:
+
+- non-blank text → `Strings.required(...)` / `Strings.normalizeCode(...)`
+- non-null references → `DomainAssert.requireNotNull(...)`
+
+Both throw `InvalidAttributeException`.
+
 ---
 
 # Logging

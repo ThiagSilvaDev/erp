@@ -56,11 +56,11 @@ public class Company extends AbstractBaseEntity {
             CompanyType type,
             Address address,
             Contact contact) {
-        this.companyCode = DomainAssert.requireRequired(companyCode, "Company code");
+        this.companyCode = DomainAssert.requireNotNull(companyCode, "Company code");
         this.legalName = Strings.required(legalName, "Legal name");
         this.tradeName = Strings.trimToNull(tradeName);
-        this.cnpj = DomainAssert.requireRequired(cnpj, "CNPJ");
-        this.type = DomainAssert.requireRequired(type, "Company type");
+        this.cnpj = DomainAssert.requireNotNull(cnpj, "CNPJ");
+        this.type = DomainAssert.requireNotNull(type, "Company type");
         this.address = address;
         this.contact = contact;
     }

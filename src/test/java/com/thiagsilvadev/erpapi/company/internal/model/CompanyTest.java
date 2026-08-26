@@ -38,14 +38,14 @@ class CompanyTest {
         assertThatThrownBy(() -> Company.create(
                         null, "Acme", "Acme", Cnpj.create("11222333000181"), CompanyType.FACTORY, address(), contact()))
                 .isInstanceOf(InvalidAttributeException.class)
-                .hasMessage("Company code is required");
+                .hasMessage("Company code cannot be null");
     }
 
     @Test
     void shouldFailWhenCnpjIsNull() {
         assertThatThrownBy(() -> Company.create(1L, "Acme", "Acme", null, CompanyType.FACTORY, address(), contact()))
                 .isInstanceOf(InvalidAttributeException.class)
-                .hasMessage("CNPJ is required");
+                .hasMessage("CNPJ cannot be null");
     }
 
     @Test
@@ -53,7 +53,7 @@ class CompanyTest {
         assertThatThrownBy(() ->
                         Company.create(1L, "Acme", "Acme", Cnpj.create("11222333000181"), null, address(), contact()))
                 .isInstanceOf(InvalidAttributeException.class)
-                .hasMessage("Company type is required");
+                .hasMessage("Company type cannot be null");
     }
 
     @Test
