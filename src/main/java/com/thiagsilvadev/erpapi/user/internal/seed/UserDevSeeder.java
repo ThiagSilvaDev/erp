@@ -13,9 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
-import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
-import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.api.TenantAccessProvisioningFacade;
+import com.thiagsilvadev.erpapi.user.internal.event.UserCredentialProvisioningAfterCommitHandler;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
@@ -35,19 +34,19 @@ class UserDevSeeder implements ApplicationRunner {
     private final UserRepository userRepository;
     private final CompanyFacade companyFacade;
     private final UserEventPublisher eventPublisher;
-    private final CredentialProvisioningFacade credentialProvisioningFacade;
+    private final UserCredentialProvisioningAfterCommitHandler credentialProvisioningAfterCommitHandler;
     private final TenantAccessProvisioningFacade tenantAccessProvisioningFacade;
 
     UserDevSeeder(
             UserRepository userRepository,
             CompanyFacade companyFacade,
             UserEventPublisher eventPublisher,
-            CredentialProvisioningFacade credentialProvisioningFacade,
+            UserCredentialProvisioningAfterCommitHandler credentialProvisioningAfterCommitHandler,
             TenantAccessProvisioningFacade tenantAccessProvisioningFacade) {
         this.userRepository = userRepository;
         this.companyFacade = companyFacade;
         this.eventPublisher = eventPublisher;
-        this.credentialProvisioningFacade = credentialProvisioningFacade;
+        this.credentialProvisioningAfterCommitHandler = credentialProvisioningAfterCommitHandler;
         this.tenantAccessProvisioningFacade = tenantAccessProvisioningFacade;
     }
 
@@ -87,8 +86,7 @@ class UserDevSeeder implements ApplicationRunner {
         User savedUser = userRepository.saveAndFlush(user);
         seedMemberships(savedUser, roleCode, primaryCompany);
         seedMemberships(savedUser, roleCode, otherCompanies);
-        credentialProvisioningFacade.provision(new CredentialProvisioningRequest(
-                savedUser.getId(), savedUser.getContact().getEmail(), SEED_PASSWORD));
+        credentialProvisioningAfterCommitHandler.provisionAfterCommit(savedUser, SEED_PASSWORD);
         eventPublisher.userCreated(savedUser);
     }
 

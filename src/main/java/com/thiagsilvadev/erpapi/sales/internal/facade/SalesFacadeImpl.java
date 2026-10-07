@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.sales.internal.facade;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -30,5 +32,14 @@ public class SalesFacadeImpl implements SalesFacade {
                 .findByIdAndSellerCompanyId(salesOrderId, sellerCompanyId)
                 .map(salesMapper::toSnapshot)
                 .orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, salesOrderId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesOrderSnapshot> listOrders(UUID sellerCompanyId) {
+        return salesOrderRepository.findAllBySellerCompanyId(sellerCompanyId).stream()
+                .sorted(Comparator.comparing(SalesOrder::getOrderNumber))
+                .map(salesMapper::toSnapshot)
+                .toList();
     }
 }

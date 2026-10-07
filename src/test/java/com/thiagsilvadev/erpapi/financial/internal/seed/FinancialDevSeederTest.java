@@ -4,11 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +27,12 @@ import com.thiagsilvadev.erpapi.financial.internal.model.*;
 import com.thiagsilvadev.erpapi.financial.internal.repository.*;
 import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
 import com.thiagsilvadev.erpapi.financial.internal.service.ChartOfAccountsService;
+import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
+import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
+import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
+import com.thiagsilvadev.erpapi.sales.api.SaleType;
+import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
 
 class FinancialDevSeederTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
@@ -42,6 +51,7 @@ class FinancialDevSeederTest {
         BusinessNumberService businessNumberService = mock(BusinessNumberService.class);
         ChartOfAccountsService chartOfAccountsService = mock(ChartOfAccountsService.class);
         AccountingPostingService accountingPostingService = mock(AccountingPostingService.class);
+        SalesFacade salesFacade = mock(SalesFacade.class);
         FinancialAccount account =
                 FinancialAccount.create(COMPANY_ID, "Cash", FinancialAccountType.CASH_REGISTER, null);
         ReflectionTestUtils.setField(account, "id", UUID.randomUUID());
@@ -63,6 +73,7 @@ class FinancialDevSeederTest {
                 .thenReturn(new CompanySnapshot(COMPANY_ID, null, null, null, null, null, null, null, null, null));
         when(customerFacade.resolveCustomer(COMPANY_ID, "12345678901"))
                 .thenReturn(new CustomerSnapshot(UUID.randomUUID(), "Customer", "12345678901", COMPANY_ID));
+        when(salesFacade.listOrders(COMPANY_ID)).thenReturn(seededOrders());
         when(accountRepository.findAllByCompanyId(any(), any())).thenReturn(new PageImpl<>(List.of(account)));
         when(businessNumberService.next(any())).thenReturn(1L);
         when(invoiceRepository.saveAndFlush(any())).thenAnswer(invocation -> withId(invocation.getArgument(0)));
@@ -91,6 +102,7 @@ class FinancialDevSeederTest {
                         businessNumberService,
                         chartOfAccountsService,
                         accountingPostingService,
+                        salesFacade,
                         CLOCK)
                 .run(null);
 
@@ -107,6 +119,25 @@ class FinancialDevSeederTest {
                 .extracting(Invoice::getStatus)
                 .contains(InvoiceStatus.OPEN, InvoiceStatus.PAID, InvoiceStatus.CANCELLED);
         assertThat(captor.getAllValues()).extracting(Invoice::getCurrencyCode).contains("BRL", "USD");
+    }
+
+    private static List<SalesOrderSnapshot> seededOrders() {
+        return IntStream.rangeClosed(1, FinancialDevSeeder.seedInvoiceCount())
+                .mapToObj(index -> new SalesOrderSnapshot(
+                        UUID.randomUUID(),
+                        (long) index,
+                        SaleType.B2C,
+                        FulfillmentType.PICKUP,
+                        PaymentMethod.PIX,
+                        null,
+                        COMPANY_ID,
+                        null,
+                        UUID.randomUUID(),
+                        OrderStatus.CONFIRMED,
+                        BigDecimal.ONE,
+                        "BRL",
+                        Set.of()))
+                .toList();
     }
 
     private static <T> T withId(T entity) {

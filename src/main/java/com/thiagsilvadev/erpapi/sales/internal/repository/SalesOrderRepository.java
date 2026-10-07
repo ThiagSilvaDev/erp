@@ -19,6 +19,8 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, UUID>, J
 
     Optional<SalesOrder> findByIdAndSellerCompanyId(UUID id, UUID sellerCompanyId);
 
+    List<SalesOrder> findAllBySellerCompanyId(UUID sellerCompanyId);
+
     long countBySellerCompanyId(UUID sellerCompanyId);
 
     @Modifying(flushAutomatically = true)

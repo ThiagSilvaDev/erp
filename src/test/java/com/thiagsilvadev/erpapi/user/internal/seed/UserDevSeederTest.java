@@ -17,8 +17,8 @@ import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
-import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
 import com.thiagsilvadev.erpapi.user.api.TenantAccessProvisioningFacade;
+import com.thiagsilvadev.erpapi.user.internal.event.UserCredentialProvisioningAfterCommitHandler;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
@@ -30,7 +30,8 @@ class UserDevSeederTest {
         UserRepository users = mock(UserRepository.class);
         CompanyFacade companies = mock(CompanyFacade.class);
         UserEventPublisher events = mock(UserEventPublisher.class);
-        CredentialProvisioningFacade credentials = mock(CredentialProvisioningFacade.class);
+        UserCredentialProvisioningAfterCommitHandler credentials =
+                mock(UserCredentialProvisioningAfterCommitHandler.class);
         TenantAccessProvisioningFacade access = mock(TenantAccessProvisioningFacade.class);
         UUID acmeId = UUID.randomUUID();
         UUID partnerId = UUID.randomUUID();
@@ -51,7 +52,7 @@ class UserDevSeederTest {
                 .extracting(user -> user.getContact().getEmail())
                 .contains(UserDevSeeder.ADMIN_EMAIL);
         verify(access, atLeastOnce()).provisionBuiltIn(any(), any(), any());
-        verify(credentials, atLeastOnce()).provision(any());
+        verify(credentials, atLeastOnce()).provisionAfterCommit(any(User.class), any(String.class));
     }
 
     private static CompanySnapshot company(UUID id) {

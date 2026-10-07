@@ -1,7 +1,6 @@
 package com.thiagsilvadev.erpapi.financial.internal.seed;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -25,6 +24,8 @@ import com.thiagsilvadev.erpapi.financial.internal.repository.*;
 import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
 import com.thiagsilvadev.erpapi.financial.internal.service.ChartOfAccountsService;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
+import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
 
 @Component
 @Profile("dev")
@@ -59,6 +60,7 @@ class FinancialDevSeeder implements ApplicationRunner {
     private final BusinessNumberService businessNumberService;
     private final ChartOfAccountsService chartOfAccountsService;
     private final AccountingPostingService accountingPostingService;
+    private final SalesFacade salesFacade;
     private final Clock clock;
 
     FinancialDevSeeder(
@@ -73,6 +75,7 @@ class FinancialDevSeeder implements ApplicationRunner {
             BusinessNumberService businessNumberService,
             ChartOfAccountsService chartOfAccountsService,
             AccountingPostingService accountingPostingService,
+            SalesFacade salesFacade,
             Clock clock) {
         this.invoiceRepository = invoiceRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
@@ -85,6 +88,7 @@ class FinancialDevSeeder implements ApplicationRunner {
         this.businessNumberService = businessNumberService;
         this.chartOfAccountsService = chartOfAccountsService;
         this.accountingPostingService = accountingPostingService;
+        this.salesFacade = salesFacade;
         this.clock = clock;
     }
 
@@ -100,9 +104,14 @@ class FinancialDevSeeder implements ApplicationRunner {
             return;
         }
         var customer = customerFacade.resolveCustomer(companyId, CUSTOMER_DOCUMENT);
+        List<SalesOrderSnapshot> seededOrders = salesFacade.listOrders(companyId);
 
+        int seedIndex = 0;
         for (InvoiceSeed seed : INVOICES) {
-            UUID salesOrderReference = seedReference(seed);
+            UUID salesOrderReference = seedIndex < seededOrders.size()
+                    ? seededOrders.get(seedIndex).id()
+                    : null;
+            seedIndex++;
             Invoice invoice = invoiceRepository.saveAndFlush(Invoice.create(
                     businessNumberService.next(BusinessNumberType.INVOICE),
                     companyId,
@@ -239,11 +248,6 @@ class FinancialDevSeeder implements ApplicationRunner {
             invoice.markPaid();
             ledger.settle();
         }
-    }
-
-    private static UUID seedReference(InvoiceSeed seed) {
-        String value = "financial-seed-" + seed.daysAgo() + "-" + seed.currencyCode();
-        return UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
     }
 
     static int seedInvoiceCount() {
