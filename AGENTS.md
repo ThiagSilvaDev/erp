@@ -52,6 +52,20 @@ Before making changes:
 
 Do not introduce new frameworks, abstractions, or dependencies unless clearly justified.
 
+## Commit Messages
+
+Use Conventional Commit messages that match the repository history:
+
+```text
+<type>(<scope>): <short imperative summary>
+```
+
+Use a lowercase type and scope, such as `feat(company)`, `fix(financial)`,
+`refactor(validation)`, or `chore(compose)`. Choose a scope that names the
+affected module or component. Omit the scope only for changes that do not fit a
+single area. Keep the summary concise, start it with an imperative verb, and do
+not end it with a period.
+
 ---
 
 # Java Imports
