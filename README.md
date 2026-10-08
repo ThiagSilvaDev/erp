@@ -19,6 +19,15 @@ identity and access management, inventory, logistics, sales, and users.
 - JUnit 5, AssertJ, Mockito, and Spring Modulith Test
 - Maven Wrapper and Spotless
 
+## Technical documentation
+
+- [Architecture](docs/ARCHITECTURE.md): structure, modules, dependencies and workflows.
+- [Domain](docs/DOMAIN.md): ERP concepts and implemented business rules.
+- [Security](docs/SECURITY.md): authentication, authorization and token lifecycle.
+- [Testing](docs/TESTING.md): strategy, conventions and database prerequisites.
+- [Architecture decisions](docs/adr/README.md): current choices and their consequences.
+- [Agent instructions](AGENTS.md): repository working rules and commit conventions.
+
 ## Architecture
 
 The code is organized by business capability under
@@ -30,7 +39,8 @@ The code is organized by business capability under
 | `company` | Companies, addresses, and company contacts |
 | `customer` | Customers, suppliers, and contact people |
 | `financial` | Accounts, ledger entries, invoices, and payments |
-| `iam` | Authentication, tenant memberships, roles, permissions, and JWT issuance |
+| `iam` | Authentication, credentials, login, and JWT issuance |
+| `iam.accesscontrol` | Tenant memberships, roles, permissions, platform assignments, and authorization audit |
 | `inventory` | Warehouses, stock, movements, and reservations |
 | `kpi` | Tenant-scoped executive business indicators |
 | `logistics` | Drivers, vehicles, shipments, and tracking |
@@ -167,8 +177,8 @@ http://localhost:8080/v3/api-docs
 ```
 
 The API is rooted at `/api/v1`. Endpoint groups include authentication,
-catalog, companies, customers, suppliers, users, inventory, sales, finance,
-logistics, and executive KPIs.
+catalog, companies, company contacts, customers, suppliers, contact persons,
+users, inventory, sales, finance, logistics, and executive KPIs.
 
 ### Executive KPIs
 

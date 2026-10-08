@@ -26,11 +26,20 @@ Business modules:
 - financial
 - iam
 - inventory
+- kpi
 - logistics
 - sales
 - user
 
 Each module exposes public contracts through `api` and keeps implementation details inside `internal`.
+
+Supporting documentation:
+
+- [Architecture](docs/ARCHITECTURE.md): structure, module dependencies and workflows.
+- [Domain](docs/DOMAIN.md): implemented ERP concepts and business rules.
+- [Security](docs/SECURITY.md): authentication, authorization and token lifecycle.
+- [Testing](docs/TESTING.md): test strategy, conventions and prerequisites.
+- [ADRs](docs/adr/README.md): architectural decisions and consequences.
 
 Before completing any task, run:
 
