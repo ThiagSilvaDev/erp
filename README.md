@@ -214,9 +214,13 @@ starts only PostgreSQL. Use both together (`dev,otel` + `--profile lgtm`).
 | Application health | `http://localhost:8080/actuator/health` | None |
 
 Grafana opens the provisioned **ERP API Observability** dashboard by default.
-It displays HTTP request rate, server errors, p95 latency, JVM heap usage, and
-process CPU usage. Metrics are published every ten seconds, so new applications
-or requests may take a short time to appear.
+It summarizes request rate, server errors, p95 latency, and process CPU usage.
+HTTP charts break down traffic by endpoint, method, and status, with p95 and p99
+latency. Endpoint and HTTP method filters apply to HTTP panels only; JVM and
+database panels show heap usage, CPU history, average GC pause duration, and
+Hikari connection pool usage, waiting threads, and timeouts. Missing telemetry
+is shown as **No data**. Metrics are published every ten seconds, so new
+applications or requests may take a short time to appear.
 
 Application logs are available through the Loki data source and request traces
 through Tempo. Spring Boot adds `traceId` and `spanId` correlation values to
