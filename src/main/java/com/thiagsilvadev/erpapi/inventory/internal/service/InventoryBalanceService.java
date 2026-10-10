@@ -30,56 +30,23 @@ public class InventoryBalanceService {
     }
 
     @Transactional
-    public InventoryItem applyMovement(UUID productId, UUID warehouseId, int quantity, StockMovementType type) {
-        Warehouse warehouse = warehouseRepository
-                .findById(warehouseId)
-                .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, warehouseId));
-        return applyMovement(warehouse.getCompanyId(), productId, warehouseId, quantity, type);
-    }
-
-    @Transactional
     public InventoryItem applyMovement(
             UUID companyId, UUID productId, UUID warehouseId, int quantity, StockMovementType type) {
         catalogFacade.getProduct(companyId, productId);
         Warehouse warehouse = warehouseRepository
                 .findByIdAndCompanyId(warehouseId, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, warehouseId));
-        return switch (type) {
-            case IN, TRANSFER_IN, ADJUSTMENT ->
-                itemRepository
-                        .findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId)
-                        .map(item -> {
-                            item.increase(quantity);
-                            return item;
-                        })
-                        .orElseGet(() -> itemRepository.save(InventoryItem.create(productId, warehouse, quantity)));
-            case OUT, TRANSFER_OUT, RESERVE, RELEASE_RESERVATION -> {
-                InventoryItem item = getExistingItem(companyId, productId, warehouseId);
-                applyExistingItemMovement(item, quantity, type);
-                yield item;
-            }
-        };
-    }
-
-    private InventoryItem getExistingItem(UUID productId, UUID warehouseId) {
-        return itemRepository
-                .findByProductIdAndWarehouseId(productId, warehouseId)
-                .orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId));
-    }
-
-    private InventoryItem getExistingItem(UUID companyId, UUID productId, UUID warehouseId) {
         return itemRepository
                 .findByCompanyIdAndProductIdAndWarehouseId(companyId, productId, warehouseId)
-                .orElseThrow(() -> new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId));
-    }
-
-    private void applyExistingItemMovement(InventoryItem item, int quantity, StockMovementType type) {
-        switch (type) {
-            case OUT, TRANSFER_OUT -> item.decrease(quantity);
-            case RESERVE -> item.reserve(quantity);
-            case RELEASE_RESERVATION -> item.release(quantity);
-            case IN, TRANSFER_IN, ADJUSTMENT ->
-                throw new IllegalArgumentException("Movement type does not require existing item: " + type);
-        }
+                .map(item -> {
+                    type.applyTo(item, quantity);
+                    return item;
+                })
+                .orElseGet(() -> {
+                    if (!type.canCreateItem()) {
+                        throw new ResourceNotFoundException(InventoryItem.class, productId + "/" + warehouseId);
+                    }
+                    return itemRepository.save(InventoryItem.create(productId, warehouse, quantity));
+                });
     }
 }
