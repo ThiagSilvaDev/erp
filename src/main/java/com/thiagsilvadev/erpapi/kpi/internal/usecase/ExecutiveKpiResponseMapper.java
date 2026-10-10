@@ -2,9 +2,10 @@ package com.thiagsilvadev.erpapi.kpi.internal.usecase;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.springframework.stereotype.Component;
@@ -32,13 +33,13 @@ public class ExecutiveKpiResponseMapper {
                 period.generatedAt(),
                 new ExecutiveKpiResponse.Period(
                         period.from(), period.to(), period.previousFrom(), period.previousTo(), period.bucket(), "UTC"),
-                sales(sales),
-                financial(financial),
-                inventory(inventory),
-                logistics(logistics));
+                toSalesResponse(sales),
+                toFinancialResponse(financial),
+                toInventoryResponse(inventory),
+                toLogisticsResponse(logistics));
     }
 
-    private static ExecutiveKpiResponse.Sales sales(SalesKpiSnapshot snapshot) {
+    private static ExecutiveKpiResponse.Sales toSalesResponse(SalesKpiSnapshot snapshot) {
         var current = snapshot.current();
         var previous = snapshot.previous();
         var metrics = new ExecutiveKpiResponse.SalesMetrics(
@@ -46,8 +47,8 @@ public class ExecutiveKpiResponseMapper {
                 countComparison(current.confirmedOrders(), previous.confirmedOrders()),
                 countComparison(current.cancelledOrders(), previous.cancelledOrders()),
                 rateComparison(current.cancellationPercentage(), previous.cancellationPercentage()),
-                moneyComparison(current.confirmedRevenue(), previous.confirmedRevenue()),
-                moneyComparison(current.averageOrderValue(), previous.averageOrderValue()));
+                moneyComparisonsByCurrency(current.confirmedRevenue(), previous.confirmedRevenue()),
+                moneyComparisonsByCurrency(current.averageOrderValue(), previous.averageOrderValue()));
         var trend = snapshot.trend().stream()
                 .map(point -> new ExecutiveKpiResponse.SalesTrend(
                         point.from(),
@@ -60,13 +61,13 @@ public class ExecutiveKpiResponseMapper {
         return new ExecutiveKpiResponse.Sales(metrics, trend);
     }
 
-    private static ExecutiveKpiResponse.Financial financial(FinancialKpiSnapshot snapshot) {
+    private static ExecutiveKpiResponse.Financial toFinancialResponse(FinancialKpiSnapshot snapshot) {
         var current = snapshot.current();
         var previous = snapshot.previous();
         var metrics = new ExecutiveKpiResponse.FinancialMetrics(
                 countComparison(current.invoices(), previous.invoices()),
-                moneyComparison(current.invoiced(), previous.invoiced()),
-                moneyComparison(current.collected(), previous.collected()),
+                moneyComparisonsByCurrency(current.invoiced(), previous.invoiced()),
+                moneyComparisonsByCurrency(current.collected(), previous.collected()),
                 moneyValues(snapshot.receivables().open()),
                 moneyValues(snapshot.receivables().overdue()));
         var trend = snapshot.trend().stream()
@@ -80,7 +81,7 @@ public class ExecutiveKpiResponseMapper {
         return new ExecutiveKpiResponse.Financial(metrics, trend);
     }
 
-    private static ExecutiveKpiResponse.Inventory inventory(InventoryKpiSnapshot snapshot) {
+    private static ExecutiveKpiResponse.Inventory toInventoryResponse(InventoryKpiSnapshot snapshot) {
         var current = snapshot.current();
         var currentMovements = snapshot.currentMovements();
         var previousMovements = snapshot.previousMovements();
@@ -109,7 +110,7 @@ public class ExecutiveKpiResponseMapper {
         return new ExecutiveKpiResponse.Inventory(currentResponse, metrics, trend);
     }
 
-    private static ExecutiveKpiResponse.Logistics logistics(LogisticsKpiSnapshot snapshot) {
+    private static ExecutiveKpiResponse.Logistics toLogisticsResponse(LogisticsKpiSnapshot snapshot) {
         var current = snapshot.current();
         var currentTotals = snapshot.currentTotals();
         var previousTotals = snapshot.previousTotals();
@@ -135,45 +136,46 @@ public class ExecutiveKpiResponseMapper {
 
     private static ExecutiveKpiResponse.CountComparison countComparison(long current, long previous) {
         return new ExecutiveKpiResponse.CountComparison(
-                current, previous, percentageChange(BigDecimal.valueOf(current), BigDecimal.valueOf(previous)));
+                current, previous, percentageChangeOrNull(BigDecimal.valueOf(current), BigDecimal.valueOf(previous)));
     }
 
     private static ExecutiveKpiResponse.DecimalComparison decimalComparison(BigDecimal current, BigDecimal previous) {
-        return new ExecutiveKpiResponse.DecimalComparison(
-                current, previous, current == null || previous == null ? null : percentageChange(current, previous));
+        return new ExecutiveKpiResponse.DecimalComparison(current, previous, percentageChangeOrNull(current, previous));
     }
 
     private static ExecutiveKpiResponse.RateComparison rateComparison(BigDecimal current, BigDecimal previous) {
         return new ExecutiveKpiResponse.RateComparison(
-                current, previous, current == null || previous == null ? null : scale(current.subtract(previous)));
+                current, previous, percentagePointChangeOrNull(current, previous));
     }
 
-    private static java.util.List<ExecutiveKpiResponse.MoneyComparison> moneyComparison(
+    private static BigDecimal percentagePointChangeOrNull(BigDecimal current, BigDecimal previous) {
+        return current == null || previous == null ? null : roundPercentage(current.subtract(previous));
+    }
+
+    private static List<ExecutiveKpiResponse.MoneyComparison> moneyComparisonsByCurrency(
             Map<String, BigDecimal> current, Map<String, BigDecimal> previous) {
         return unionKeys(current, previous).stream()
-                .map(currency -> {
-                    BigDecimal currentAmount = current.getOrDefault(currency, BigDecimal.ZERO);
-                    BigDecimal previousAmount = previous.getOrDefault(currency, BigDecimal.ZERO);
-                    return new ExecutiveKpiResponse.MoneyComparison(
-                            currency,
-                            money(currentAmount),
-                            money(previousAmount),
-                            percentageChange(currentAmount, previousAmount));
-                })
+                .map(currency -> moneyComparisonForCurrency(
+                        currency,
+                        current.getOrDefault(currency, BigDecimal.ZERO),
+                        previous.getOrDefault(currency, BigDecimal.ZERO)))
                 .toList();
     }
 
-    private static java.util.List<ExecutiveKpiResponse.MoneyValue> moneyValues(Map<String, BigDecimal> values) {
-        return moneyValues(values, values.keySet());
+    private static ExecutiveKpiResponse.MoneyComparison moneyComparisonForCurrency(
+            String currency, BigDecimal currentAmount, BigDecimal previousAmount) {
+        return new ExecutiveKpiResponse.MoneyComparison(
+                currency,
+                roundMoney(currentAmount),
+                roundMoney(previousAmount),
+                percentageChangeOrNull(currentAmount, previousAmount));
     }
 
-    private static java.util.List<ExecutiveKpiResponse.MoneyValue> moneyValues(
-            Map<String, BigDecimal> values, Collection<String> currencies) {
-        return currencies.stream()
-                .sorted()
-                .map(currency -> new ExecutiveKpiResponse.MoneyValue(
-                        currency, money(values.getOrDefault(currency, BigDecimal.ZERO))))
-                .toList();
+    private static List<ExecutiveKpiResponse.MoneyValue> moneyValues(Map<String, BigDecimal> values) {
+        return new TreeMap<>(values)
+                .entrySet().stream()
+                        .map(entry -> new ExecutiveKpiResponse.MoneyValue(entry.getKey(), roundMoney(entry.getValue())))
+                        .toList();
     }
 
     private static SortedSet<String> unionKeys(Map<String, BigDecimal> current, Map<String, BigDecimal> previous) {
@@ -182,18 +184,23 @@ public class ExecutiveKpiResponseMapper {
         return currencies;
     }
 
-    private static BigDecimal percentageChange(BigDecimal current, BigDecimal previous) {
+    private static BigDecimal percentageChangeOrNull(BigDecimal current, BigDecimal previous) {
+        if (current == null || previous == null) {
+            return null;
+        }
+        // A zero baseline has no meaningful relative change.
         if (previous.signum() == 0) {
             return null;
         }
-        return scale(current.subtract(previous).multiply(ONE_HUNDRED).divide(previous, 8, RoundingMode.HALF_UP));
+        return roundPercentage(
+                current.subtract(previous).multiply(ONE_HUNDRED).divide(previous, 8, RoundingMode.HALF_UP));
     }
 
-    private static BigDecimal scale(BigDecimal value) {
+    private static BigDecimal roundPercentage(BigDecimal value) {
         return value.setScale(2, RoundingMode.HALF_UP);
     }
 
-    private static BigDecimal money(BigDecimal value) {
+    private static BigDecimal roundMoney(BigDecimal value) {
         return value.setScale(2, RoundingMode.HALF_UP);
     }
 }
