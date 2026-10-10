@@ -6,7 +6,6 @@ import java.time.Instant;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.logistics.internal.model.*;
@@ -79,15 +78,11 @@ public class SalesOrderLogisticsListener {
     @ApplicationModuleListener
     public void on(SalesOrderCancelledEvent event) {
         shipmentRepository.findBySalesOrderId(event.salesOrderId()).ifPresent(shipment -> {
-            try {
-                shipment.ensureBeforeLoading();
-                Instant now = Instant.now(clock);
-                shipment.cancel(now);
-                trackingEventRepository.save(ShipmentTrackingEvent.create(
-                        shipment, ShipmentStatus.CANCELLED, now, null, "Sales order cancelled"));
-            } catch (IllegalStateException e) {
-                throw new ConflictException("Cannot cancel sales order after shipment loading.");
-            }
+            shipment.ensureBeforeLoading();
+            Instant now = Instant.now(clock);
+            shipment.cancel(now);
+            trackingEventRepository.save(ShipmentTrackingEvent.create(
+                    shipment, ShipmentStatus.CANCELLED, now, null, "Sales order cancelled"));
         });
     }
 }

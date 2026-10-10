@@ -5,6 +5,7 @@ import java.util.*;
 
 import jakarta.persistence.*;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 
 @Entity
@@ -113,7 +114,9 @@ public class Shipment extends AbstractBaseEntity {
     }
 
     public void assignRoute(String routeName, UUID originWarehouseId, String destinationDescription) {
-        requireStatus(ShipmentStatus.CREATED);
+        if (status != ShipmentStatus.CREATED) {
+            throw new ConflictException("Cannot assign route to shipment in status " + status);
+        }
         this.routeName = Objects.requireNonNull(routeName, "Route name is required");
         this.originWarehouseId = Objects.requireNonNull(originWarehouseId, "Origin warehouse is required");
         this.destinationDescription =
@@ -122,7 +125,7 @@ public class Shipment extends AbstractBaseEntity {
 
     public void assignDispatch(
             Driver driver, Vehicle vehicle, String routeName, UUID originWarehouseId, String destinationDescription) {
-        requireStatus(ShipmentStatus.CREATED, ShipmentStatus.DISPATCH_ASSIGNED);
+        status.requireTransitionTo(ShipmentStatus.DISPATCH_ASSIGNED);
         this.driver = Objects.requireNonNull(driver, "Driver is required");
         this.vehicle = Objects.requireNonNull(vehicle, "Vehicle is required");
 
@@ -150,37 +153,31 @@ public class Shipment extends AbstractBaseEntity {
     }
 
     public void load(Instant loadedAt) {
-        requireStatus(ShipmentStatus.DISPATCH_ASSIGNED);
+        status.requireTransitionTo(ShipmentStatus.LOADED);
         this.loadedAt = Objects.requireNonNull(loadedAt, "Loaded timestamp is required");
         this.status = ShipmentStatus.LOADED;
     }
 
     public void dispatch(Instant dispatchedAt) {
-        requireStatus(ShipmentStatus.LOADED);
+        status.requireTransitionTo(ShipmentStatus.IN_TRANSIT);
         this.dispatchedAt = Objects.requireNonNull(dispatchedAt, "Dispatched timestamp is required");
         this.status = ShipmentStatus.IN_TRANSIT;
     }
 
     public void deliver(Instant deliveredAt) {
-        requireStatus(ShipmentStatus.IN_TRANSIT);
+        status.requireTransitionTo(ShipmentStatus.DELIVERED);
         this.deliveredAt = Objects.requireNonNull(deliveredAt, "Delivered timestamp is required");
         this.status = ShipmentStatus.DELIVERED;
     }
 
     public void cancel(Instant cancelledAt) {
-        requireStatus(ShipmentStatus.CREATED, ShipmentStatus.DISPATCH_ASSIGNED);
+        status.requireTransitionTo(ShipmentStatus.CANCELLED);
         this.cancelledAt = Objects.requireNonNull(cancelledAt, "Cancelled timestamp is required");
         this.status = ShipmentStatus.CANCELLED;
     }
 
     public void ensureBeforeLoading() {
-        requireStatus(ShipmentStatus.CREATED, ShipmentStatus.DISPATCH_ASSIGNED);
-    }
-
-    private void requireStatus(ShipmentStatus... allowed) {
-        if (!Set.of(allowed).contains(status)) {
-            throw new IllegalStateException("Invalid shipment status transition from " + status);
-        }
+        status.requireTransitionTo(ShipmentStatus.CANCELLED);
     }
 
     public Long getShipmentNumber() {

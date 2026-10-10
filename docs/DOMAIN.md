@@ -123,7 +123,12 @@ stateDiagram-v2
 
 A route alone leaves the shipment in `CREATED`; dispatch assignment requires a
 driver, vehicle and route details before loading. A shipment cannot be cancelled
-after loading. The sales cancellation listener
+after loading. `ShipmentStatus` owns the allowed transition graph, while
+`Shipment` validates operation inputs and updates its fields. Invalid transitions
+throw `ConflictException`, which administrative and driver HTTP endpoints return
+as HTTP 409 Problem Details identifying the current and requested statuses.
+Route assignment outside `CREATED` also returns HTTP 409.
+The sales cancellation listener
 checks that condition after the sales transaction commits. Driver workflows
 restrict actions to the authenticated driver's assigned shipment.
 

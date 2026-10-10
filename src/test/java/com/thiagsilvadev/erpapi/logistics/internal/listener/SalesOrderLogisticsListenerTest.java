@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.listener;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 import java.time.Clock;
@@ -16,10 +17,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Shipment;
+import com.thiagsilvadev.erpapi.logistics.internal.model.ShipmentItem;
 import com.thiagsilvadev.erpapi.logistics.internal.model.ShipmentStatus;
+import com.thiagsilvadev.erpapi.logistics.internal.model.Vehicle;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentRepository;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.ShipmentTrackingEventRepository;
 import com.thiagsilvadev.erpapi.sales.api.*;
@@ -89,6 +94,37 @@ class SalesOrderLogisticsListenerTest {
 
         assertThat(shipment.getStatus()).isEqualTo(ShipmentStatus.CANCELLED);
         verify(trackingEventRepository).save(any());
+    }
+
+    @Test
+    void shouldRejectSalesCancellationAfterLoadingWithoutRecordingEvent() {
+        UUID companyId = UUID.randomUUID();
+        UUID salesOrderId = UUID.randomUUID();
+        Shipment shipment = Shipment.create(
+                1L,
+                salesOrderId,
+                companyId,
+                null,
+                UUID.randomUUID(),
+                List.of(ShipmentItem.create(UUID.randomUUID(), UUID.randomUUID(), "SKU-1", "Product", 1)));
+        shipment.assignDispatch(
+                Driver.create(companyId, UUID.randomUUID(), "CNH-1"),
+                Vehicle.create(companyId, "ABC1D23", "Truck", 1000),
+                "Route A",
+                UUID.randomUUID(),
+                "Customer HQ");
+        shipment.load(clock.instant());
+        when(shipmentRepository.findBySalesOrderId(salesOrderId)).thenReturn(Optional.of(shipment));
+        SalesOrderCancelledEvent event = new SalesOrderCancelledEvent(salesOrderId);
+        SalesOrderLogisticsListener listener = listener();
+
+        assertThatThrownBy(() -> listener.on(event))
+                .isInstanceOf(ConflictException.class)
+                .hasMessage("Invalid shipment status transition from LOADED to CANCELLED");
+
+        assertThat(shipment.getStatus()).isEqualTo(ShipmentStatus.LOADED);
+        assertThat(shipment.getCancelledAt()).isNull();
+        verify(trackingEventRepository, never()).save(any());
     }
 
     private SalesOrderLogisticsListener listener() {
