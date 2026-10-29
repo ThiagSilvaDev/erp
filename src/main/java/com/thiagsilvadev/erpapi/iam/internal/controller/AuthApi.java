@@ -43,6 +43,9 @@ public interface AuthApi {
     SelectCompanyResponse selectCompany(
             @Valid @RequestBody SelectCompanyRequest request, @AuthenticationPrincipal Jwt jwt);
 
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "401")
+    @ApiResponse(responseCode = "403")
     @PostMapping("/select-platform")
     SelectPlatformResponse selectPlatform(@AuthenticationPrincipal Jwt jwt);
 
@@ -50,5 +53,6 @@ public interface AuthApi {
     @Operation(operationId = "listUserCompanies")
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "401")
+    @ApiResponse(responseCode = "403")
     List<UserCompanyResponse> listCompanies(@AuthenticationPrincipal Jwt jwt);
 }

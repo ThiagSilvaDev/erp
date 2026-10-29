@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 
+import com.thiagsilvadev.erpapi.iam.accesscontrol.api.PlatformAuthorizationSnapshot;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
 import com.thiagsilvadev.erpapi.iam.internal.config.IamJwtProperties;
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
@@ -63,6 +64,21 @@ class JwtTokenServiceTest {
                 .containsEntry("authz_version", 7L);
         assertThat((Object) fixture.encoder.claims.get("roles")).asList().containsExactly("MANAGER");
         assertThat((Object) fixture.encoder.claims.get("authorities")).asList().containsExactly(UserPermissions.READ);
+    }
+
+    @Test
+    void shouldIssuePlatformToken() {
+        var fixture = fixture();
+        UUID userId = UUID.randomUUID();
+        UUID assignmentId = UUID.randomUUID();
+        fixture.service.issuePlatform(
+                new IamUserDetails(userId, "user@example.com", "hash", true),
+                new PlatformAuthorizationSnapshot(assignmentId, userId, 3L, "PLATFORM_ADMIN", Set.of("platform:read")));
+        assertThat(fixture.encoder.claims)
+                .containsEntry("token_use", "platform")
+                .containsEntry("platform_assignment_id", assignmentId.toString())
+                .containsEntry("authz_version", 3L)
+                .doesNotContainKeys("tenant_id", "membership_id");
     }
 
     private static Fixture fixture() {

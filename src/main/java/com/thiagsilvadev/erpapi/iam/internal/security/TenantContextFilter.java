@@ -25,6 +25,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        TenantContext.clear();
         try {
             resolveTenantId().ifPresent(TenantContext::setTenantId);
             filterChain.doFilter(request, response);
@@ -35,14 +36,13 @@ public class TenantContextFilter extends OncePerRequestFilter {
 
     private Optional<UUID> resolveTenantId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication instanceof JwtAuthenticationToken jwtAuthentication)) {
+        if (!(authentication instanceof JwtAuthenticationToken jwtAuthentication)
+                || !authentication.isAuthenticated()
+                || !"scoped".equals(jwtAuthentication.getToken().getClaimAsString("token_use"))) {
             return Optional.empty();
         }
 
         String tenantId = jwtAuthentication.getToken().getClaimAsString(TENANT_ID_CLAIM);
-        if (!StringUtils.hasText(tenantId)) {
-            tenantId = jwtAuthentication.getToken().getClaimAsString(COMPANY_ID_CLAIM);
-        }
         if (!StringUtils.hasText(tenantId)) {
             return Optional.empty();
         }

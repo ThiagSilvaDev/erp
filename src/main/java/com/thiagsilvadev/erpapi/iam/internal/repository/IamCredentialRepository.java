@@ -5,11 +5,14 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.thiagsilvadev.erpapi.iam.internal.model.CredentialStatus;
 import com.thiagsilvadev.erpapi.iam.internal.model.IamCredential;
 
 public interface IamCredentialRepository extends JpaRepository<IamCredential, UUID> {
 
     boolean existsByUserId(UUID userId);
+
+    boolean existsByUserIdAndStatus(UUID userId, CredentialStatus status);
 
     boolean existsByEmailValue(String email);
 

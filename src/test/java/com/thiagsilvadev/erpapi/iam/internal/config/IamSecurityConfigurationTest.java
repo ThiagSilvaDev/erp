@@ -2,6 +2,9 @@ package com.thiagsilvadev.erpapi.iam.internal.config;
 
 import static com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions.WRITE;
 import static com.thiagsilvadev.erpapi.iam.accesscontrol.api.AuthorizationStatus.ACTIVE;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -32,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.modulith.events.config.EventPublicationAutoConfiguration;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -52,6 +56,8 @@ import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.common.web.exception.ProblemDetailFactory;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AccessControlFacade;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
+import com.thiagsilvadev.erpapi.iam.internal.model.CredentialStatus;
+import com.thiagsilvadev.erpapi.iam.internal.repository.IamCredentialRepository;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAccessDeniedHandler;
 import com.thiagsilvadev.erpapi.iam.internal.security.CustomAuthenticationEntryPoint;
 
@@ -88,11 +94,16 @@ class IamSecurityConfigurationTest {
     @Autowired
     private AccessControlFacade accessControlFacade;
 
+    @Autowired
+    private IamCredentialRepository credentials;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        reset(accessControlFacade);
+        reset(accessControlFacade, credentials);
+        when(credentials.existsByUserIdAndStatus(any(), eq(CredentialStatus.ACTIVE)))
+                .thenReturn(true);
         mockMvc = MockMvcBuilders.webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
@@ -251,19 +262,82 @@ class IamSecurityConfigurationTest {
     }
 
     @Test
-    void shouldDenyScopedTokenWithMissingAuthorizationClaimsInsteadOfFailing() throws Exception {
+    void shouldRejectScopedTokenWithMissingAuthorizationClaims() throws Exception {
         String token = tokenWithAuthorizationClaimsMissing();
 
         mockMvc.perform(post("/api/v1/method-security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldRejectInactiveCredential() throws Exception {
+        String token = tokenWithUse("global");
+        when(credentials.existsByUserIdAndStatus(any(), eq(CredentialStatus.ACTIVE)))
+                .thenReturn(false);
+        mockMvc.perform(get("/api/v1/auth/companies").header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldRejectRevokedMembership() throws Exception {
+        String token = tokenWithRole("ADMIN");
+        when(accessControlFacade.validateScopedToken(any(), any(), any(), anyLong()))
+                .thenThrow(new AccessDeniedException("revoked"));
+        mockMvc.perform(get("/api/v1/security-test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldRejectInvalidSignedClaimsAtUrlBoundary() throws Exception {
+        for (String fault : List.of("issuer", "expired", "missing-exp", "future", "subject", "context")) {
+            Instant now = Instant.parse("2026-05-16T00:00:00Z");
+            var claims = JwtClaimsSet.builder()
+                    .issuer("issuer".equals(fault) ? "other" : "erp-api")
+                    .subject(
+                            "subject".equals(fault)
+                                    ? "invalid"
+                                    : UUID.randomUUID().toString())
+                    .id(UUID.randomUUID().toString())
+                    .issuedAt(now.minusSeconds(120))
+                    .notBefore("future".equals(fault) ? now.plusSeconds(120) : now.minusSeconds(120))
+                    .claim("token_use", "context".equals(fault) ? "unknown" : "global");
+            if (!"missing-exp".equals(fault))
+                claims.expiresAt("expired".equals(fault) ? now.minusSeconds(61) : now.plusSeconds(3600));
+            String token = jwtEncoder
+                    .encode(JwtEncoderParameters.from(
+                            JwsHeader.with(MacAlgorithm.HS256).build(), claims.build()))
+                    .getTokenValue();
+            mockMvc.perform(get("/api/v1/auth/companies").header("Authorization", "Bearer " + token))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Test
+    void shouldRejectTamperedSignature() throws Exception {
+        String token = tokenWithUse("global");
+        int signature = token.lastIndexOf('.') + 1;
+        String altered = token.substring(0, signature)
+                + (token.charAt(signature) == 'A' ? 'B' : 'A')
+                + token.substring(signature + 1);
+        mockMvc.perform(get("/api/v1/auth/companies").header("Authorization", "Bearer " + altered))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldRequireGlobalContextForSelection() throws Exception {
+        String token = tokenWithRole("ADMIN");
+        mockMvc.perform(get("/api/v1/auth/companies").header("Authorization", "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
 
     private String tokenWithAuthorizationClaimsMissing() {
-        Instant issuedAt = Instant.now();
+        Instant issuedAt = Instant.parse("2026-05-16T00:00:00Z");
         UUID tenantId = UUID.randomUUID();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("erp-api")
                 .issuedAt(issuedAt)
+                .notBefore(issuedAt)
+                .id(UUID.randomUUID().toString())
                 .expiresAt(issuedAt.plusSeconds(3600))
                 .subject(UUID.randomUUID().toString())
                 .claim("token_use", "scoped")
@@ -296,7 +370,7 @@ class IamSecurityConfigurationTest {
 
     private String tokenWithAuthorization(
             String role, UUID tenantId, List<String> claimedAuthorities, Set<String> permissions) {
-        Instant issuedAt = Instant.now();
+        Instant issuedAt = Instant.parse("2026-05-16T00:00:00Z");
         UUID userId = UUID.randomUUID();
         UUID membershipId = UUID.randomUUID();
         long authorizationVersion = 3L;
@@ -313,6 +387,8 @@ class IamSecurityConfigurationTest {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("erp-api")
                 .issuedAt(issuedAt)
+                .notBefore(issuedAt)
+                .id(UUID.randomUUID().toString())
                 .expiresAt(issuedAt.plusSeconds(3600))
                 .subject(userId.toString())
                 .claim("token_use", "scoped")
@@ -331,10 +407,12 @@ class IamSecurityConfigurationTest {
     }
 
     private String tokenWithUse(String tokenUse) {
-        Instant issuedAt = Instant.now();
+        Instant issuedAt = Instant.parse("2026-05-16T00:00:00Z");
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("erp-api")
                 .issuedAt(issuedAt)
+                .notBefore(issuedAt)
+                .id(UUID.randomUUID().toString())
                 .expiresAt(issuedAt.plusSeconds(3600))
                 .subject(UUID.randomUUID().toString())
                 .claim("token_use", tokenUse)
@@ -348,6 +426,11 @@ class IamSecurityConfigurationTest {
 
     @SpringBootApplication
     static class TestApplication {
+
+        @Bean
+        IamCredentialRepository credentials() {
+            return mock(IamCredentialRepository.class);
+        }
 
         @Bean
         Clock clock() {

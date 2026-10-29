@@ -22,8 +22,8 @@ available companies using a global token. `POST /api/v1/auth/select-platform`
 requires a global token and an active platform assignment. Platform access is
 separate from tenant roles; it does not implicitly grant tenant permissions.
 
-Although the authentication routes are permitted by the URL filter, their use
-cases enforce the token requirements for selection/listing. Health and the
+The URL filter requires global tokens for context selection and company listing;
+use cases retain their own token checks. Health and the
 OpenAPI document are publicly accessible. Protected workflows additionally use
 method-level permission checks.
 
@@ -68,15 +68,18 @@ Sources: [tenant authorization](../src/main/java/com/thiagsilvadev/erpapi/iam/ac
 The API uses bearer tokens and stateless HTTP security; it creates no server-side
 HTTP session for login. Tokens are signed with HS256 and expire after the
 configured duration, currently one hour. The issuer claim defaults to `erp-api`.
-The decoder is configured with the shared secret and HS256; it does not install
-an explicit validator for the configured issuer.
+The decoder validates HS256, the configured issuer, required claims and token context.
+Signature, timestamp, claim, credential and authorization-version failures return 401.
+A valid token with insufficient permissions or the wrong context returns 403.
 
 There is no refresh-token flow, logout API or per-token denylist. Clients obtain
 new tokens through login/context selection and can discard local tokens when
 signing out. Discarding a token does not invalidate another copy. Membership or
 platform assignment deactivation/version changes reject affected scoped or
 platform tokens, but do not constitute revocation of the user's global token.
-The global-token path does not revalidate credential status on every request.
+All token contexts revalidate credential status on every authenticated request.
+Inactive or missing credentials are rejected. Reactivating a credential permits
+reuse of tokens that remain otherwise valid.
 
 Sources: [token issuance](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/service/JwtTokenService.java),
 [authentication routes](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/controller/AuthController.java),

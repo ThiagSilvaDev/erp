@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             HttpServletResponse response,
             @NonNull AuthenticationException authException)
             throws IOException {
+        new BearerTokenAuthenticationEntryPoint().commence(request, response, authException);
         ProblemDetail problemDetail = problemDetailFactory.create(
                 HttpStatus.UNAUTHORIZED, "Authentication is required to access this resource.", request, null);
 
