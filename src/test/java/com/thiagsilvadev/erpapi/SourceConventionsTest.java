@@ -39,6 +39,30 @@ class SourceConventionsTest {
     }
 
     @Test
+    void apiResponsesMustUseIndividualAnnotationsAndSharedErrorReferences() {
+        Pattern mapping = Pattern.compile("@(?:Get|Post|Put|Patch|Delete|Request)Mapping\\b");
+        Pattern errorResponse = Pattern.compile("@ApiResponse\\(responseCode = \"[45][0-9]{2}\"[^)]*\\)");
+        sources()
+                .filter(path -> path.toString().contains("/internal/controller/"))
+                .filter(path -> path.getFileName().toString().endsWith("Api.java"))
+                .forEach(path -> {
+                    String source = read(path);
+                    assertThat(source).as("Individual responses in %s", path).doesNotContain("@ApiResponses");
+                    String declaration = source.substring(source.indexOf("interface "));
+                    for (String method : declaration.split(";")) {
+                        if (mapping.matcher(method).find()) {
+                            assertThat(method)
+                                    .as("Documented responses in %s", path)
+                                    .contains("@ApiResponse(");
+                        }
+                    }
+                    errorResponse.matcher(source).results().forEach(match -> assertThat(match.group())
+                            .as("Shared error reference in %s", path)
+                            .contains("ref = "));
+                });
+    }
+
+    @Test
     void entityModelsMustUseDomainAssertions() {
         List<String> violations = new ArrayList<>();
         sources()

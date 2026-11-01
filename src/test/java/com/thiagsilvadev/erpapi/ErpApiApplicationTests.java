@@ -1,9 +1,20 @@
 package com.thiagsilvadev.erpapi;
 
+import static com.thiagsilvadev.erpapi.common.web.openapi.ApiResponseRefs.BAD_REQUEST;
+import static com.thiagsilvadev.erpapi.common.web.openapi.ApiResponseRefs.CONFLICT;
+import static com.thiagsilvadev.erpapi.common.web.openapi.ApiResponseRefs.FORBIDDEN;
+import static com.thiagsilvadev.erpapi.common.web.openapi.ApiResponseRefs.NOT_FOUND;
+import static com.thiagsilvadev.erpapi.common.web.openapi.ApiResponseRefs.UNAUTHORIZED;
+import static com.thiagsilvadev.erpapi.common.web.openapi.ApiResponseRefs.UNPROCESSABLE_ENTITY;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +64,9 @@ import com.thiagsilvadev.erpapi.logistics.internal.repository.VehicleRepository;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
 @SpringBootTest(properties = {"erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes"})
 @EnableAutoConfiguration(
         exclude = {
@@ -86,6 +100,180 @@ class ErpApiApplicationTests {
                 .andExpect(jsonPath(path + "['responses']['404']").exists())
                 .andExpect(jsonPath(path + "['responses']['200']['content']['application/json']['schema']['$ref']")
                         .value("#/components/schemas/ShipmentResponse"));
+    }
+
+    @Test
+    void shouldDescribeEveryBusinessOperationWithReusableErrorsAndSecurity() throws Exception {
+        JsonNode document = openApi();
+        Map<String, String> errorRefs = Map.of(
+                "400",
+                BAD_REQUEST,
+                "401",
+                UNAUTHORIZED,
+                "403",
+                FORBIDDEN,
+                "404",
+                NOT_FOUND,
+                "409",
+                CONFLICT,
+                "422",
+                UNPROCESSABLE_ENTITY);
+        Set<String> operationIds = new HashSet<>();
+        Set<String> declaredTags = new HashSet<>();
+        Set<String> usedTags = new HashSet<>();
+        document.path("tags").forEach(tag -> {
+            assertThat(tag.path("description").asText()).isNotBlank();
+            assertThat(declaredTags.add(tag.path("name").asText())).isTrue();
+        });
+        int operations = 0;
+        for (var path : document.path("paths").properties()) {
+            if (!path.getKey().startsWith("/api/v1/")) {
+                continue;
+            }
+            for (var entry : path.getValue().properties()) {
+                if (!Set.of("get", "post", "put", "patch", "delete").contains(entry.getKey())) {
+                    continue;
+                }
+                operations++;
+                JsonNode operation = entry.getValue();
+                String id = operation.path("operationId").asText();
+                assertThat(id).isNotBlank();
+                assertThat(operationIds.add(id))
+                        .as("Unique operation ID: %s", id)
+                        .isTrue();
+                operation.path("tags").forEach(tag -> usedTags.add(tag.asText()));
+                boolean login = path.getKey().equals("/api/v1/auth/login");
+                if (login) {
+                    assertThat(operation.path("security").isMissingNode()
+                                    || operation.path("security").isEmpty())
+                            .isTrue();
+                } else {
+                    assertThat(operation.at("/security/0/bearerAuth").isArray())
+                            .as("Bearer requirement for %s", id)
+                            .isTrue();
+                    assertThat(operation.at("/responses/401/$ref").asText()).isEqualTo(UNAUTHORIZED);
+                    assertThat(operation.at("/responses/403/$ref").asText()).isEqualTo(FORBIDDEN);
+                }
+                boolean success = false;
+                for (var response : operation.path("responses").properties()) {
+                    String status = response.getKey();
+                    if (status.startsWith("2")) {
+                        success = true;
+                        assertThat(response.getValue().path("description").asText())
+                                .isNotBlank();
+                    }
+                    if (errorRefs.containsKey(status)) {
+                        assertThat(response.getValue().path("$ref").asText())
+                                .as("Reusable %s response for %s", status, id)
+                                .isEqualTo(errorRefs.get(status));
+                    }
+                    if (status.equals("204")) {
+                        assertThat(response.getValue().has("content")).isFalse();
+                    }
+                }
+                assertThat(success).as("Success response for %s", id).isTrue();
+            }
+        }
+        assertThat(operations).isEqualTo(97);
+        assertThat(usedTags).containsExactlyInAnyOrderElementsOf(declaredTags);
+        for (String ref : errorRefs.values()) {
+            JsonNode response = document.at(ref.substring(1));
+            assertThat(response.isMissingNode())
+                    .as("Resolvable response %s", ref)
+                    .isFalse();
+            assertThat(response.path("description").asText()).isNotBlank();
+            assertThat(response.at("/content/application~1problem+json/schema/$ref")
+                            .asText())
+                    .isEqualTo("#/components/schemas/ProblemDetail");
+            assertThat(response.path("content").size()).isEqualTo(1);
+        }
+        JsonNode problem = document.at("/components/schemas/ProblemDetail");
+        assertThat(problem.at("/properties/error_code/type").asText()).isEqualTo("string");
+        JsonNode invalidParam = problem.at("/properties/invalid_params/items/properties");
+        assertThat(invalidParam.path("name").path("type").asText()).isEqualTo("string");
+        assertThat(invalidParam.path("reason").path("type").asText()).isEqualTo("string");
+        assertThat(problem.path("required").isMissingNode()
+                        || problem.path("required").isEmpty())
+                .isTrue();
+        assertThat(problem.path("additionalProperties").asBoolean()).isTrue();
+    }
+
+    @Test
+    void shouldPreservePayloadSchemasAndDocumentApplicableFailures() throws Exception {
+        JsonNode document = openApi();
+        JsonNode product = operation(document, "/api/v1/catalog/products", "post");
+        assertThat(product.at("/responses/201/content/application~1json/schema/$ref")
+                        .asText())
+                .isEqualTo("#/components/schemas/ProductResponse");
+        assertThat(product.at("/responses/404/$ref").asText()).isEqualTo(NOT_FOUND);
+        assertThat(product.at("/responses/409/$ref").asText()).isEqualTo(CONFLICT);
+        assertThat(product.at("/responses/422/$ref").asText()).isEqualTo(UNPROCESSABLE_ENTITY);
+
+        JsonNode roleList = operation(document, "/api/v1/iam/roles", "get");
+        assertThat(roleList.at("/responses/200/content/application~1json/schema/type")
+                        .asText())
+                .isEqualTo("array");
+        assertThat(roleList.at("/responses/200/content/application~1json/schema/items/$ref")
+                        .asText())
+                .isEqualTo("#/components/schemas/TenantRoleResponse");
+        assertThat(roleList.path("responses").has("404")).isFalse();
+        assertThat(roleList.path("responses").has("409")).isFalse();
+        assertThat(roleList.path("responses").has("422")).isFalse();
+
+        JsonNode products = operation(document, "/api/v1/catalog/products", "get");
+        String pageRef = products.at("/responses/200/content/application~1json/schema/$ref")
+                .asText();
+        assertThat(pageRef).startsWith("#/components/schemas/");
+        JsonNode page = document.at(pageRef.substring(1));
+        assertThat(page.at("/properties/content/type").asText()).isEqualTo("array");
+        assertThat(page.at("/properties/content/items/$ref").asText())
+                .isEqualTo("#/components/schemas/ProductResponse");
+        Set<String> queryParameters = new HashSet<>();
+        products.path("parameters").forEach(parameter -> {
+            assertThat(parameter.path("in").asText()).isEqualTo("query");
+            queryParameters.add(parameter.path("name").asText());
+        });
+        assertThat(queryParameters).contains("page", "size", "sort", "name", "sku");
+
+        JsonNode companyDelete = operation(document, "/api/v1/platform/companies/{id}", "delete");
+        assertThat(companyDelete.at("/responses/204").has("content")).isFalse();
+        JsonNode roleDelete = operation(document, "/api/v1/iam/roles/{roleId}", "delete");
+        assertThat(roleDelete.at("/responses/204").has("content")).isFalse();
+    }
+
+    @Test
+    void shouldDescribeTokenSelectionWithoutExposingAuthenticationPrincipals() throws Exception {
+        JsonNode document = openApi();
+        JsonNode platform = operation(document, "/api/v1/auth/select-platform", "post");
+        assertThat(platform.path("operationId").asText()).isEqualTo("selectPlatform");
+        assertThat(platform.path("description").asText()).contains("token_use=global");
+        assertThat(platform.has("parameters")).isFalse();
+        assertThat(platform.has("requestBody")).isFalse();
+        JsonNode company = operation(document, "/api/v1/auth/select-company", "post");
+        assertThat(company.has("parameters")).isFalse();
+        assertThat(company.path("requestBody").path("required").asBoolean()).isTrue();
+        JsonNode driver = operation(document, "/api/v1/logistics/drivers/me/shipments/{id}", "get");
+        assertThat(driver.path("parameters").size()).isEqualTo(1);
+        assertThat(driver.at("/parameters/0/name").asText()).isEqualTo("id");
+        assertThat(driver.at("/parameters/0/in").asText()).isEqualTo("path");
+        String scheme = document.at("/components/securitySchemes/bearerAuth/description")
+                .asText();
+        assertThat(scheme).contains("token_use=global", "token_use=scoped", "token_use=platform");
+    }
+
+    private JsonNode openApi() throws Exception {
+        String json = mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        return JsonMapper.builder().build().readTree(json);
+    }
+
+    private JsonNode operation(JsonNode document, String path, String verb) {
+        JsonNode operation = document.path("paths").path(path).path(verb);
+        assertThat(operation.isMissingNode()).as("Documented %s %s", verb, path).isFalse();
+        return operation;
     }
 
     @TestConfiguration
