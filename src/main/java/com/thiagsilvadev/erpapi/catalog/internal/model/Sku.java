@@ -1,11 +1,13 @@
 package com.thiagsilvadev.erpapi.catalog.internal.model;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 import com.thiagsilvadev.erpapi.catalog.internal.exception.ProductErrorCode;
+import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 @Embeddable
@@ -25,8 +27,12 @@ public class Sku {
     }
 
     private static String normalize(String value) {
-        return DomainAssert.requireNonBlank(value, ProductErrorCode.SKU_REQUIRED)
-                .toUpperCase();
+        String normalized = DomainAssert.requireNonBlank(value, ProductErrorCode.SKU_REQUIRED)
+                .toUpperCase(Locale.ROOT);
+        if (normalized.length() > 80) {
+            throw new DomainValidationException(ProductErrorCode.SKU_TOO_LONG);
+        }
+        return normalized;
     }
 
     public String getValue() {

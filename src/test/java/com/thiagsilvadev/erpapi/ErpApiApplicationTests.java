@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
+import com.thiagsilvadev.erpapi.catalog.internal.repository.SkuSequenceRepository;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberSequenceRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyContactRepository;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyRepository;
@@ -103,6 +104,11 @@ class ErpApiApplicationTests {
         @Bean
         CategoryRepository categoryRepository() {
             return mock(CategoryRepository.class);
+        }
+
+        @Bean
+        SkuSequenceRepository skuSequenceRepository() {
+            return mock(SkuSequenceRepository.class);
         }
 
         @Bean

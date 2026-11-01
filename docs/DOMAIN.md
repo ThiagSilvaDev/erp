@@ -21,6 +21,16 @@ contact details. Customer documents are unique within the owning company.
 Product SKUs and category codes are unique within a company. Products and
 categories have active/inactive states.
 
+Product creation accepts an optional SKU: omission or null generates
+`CATEGORY-00000001`, using the category code at creation and one counter per
+company shared across categories. Supplied SKUs must be non-blank; all SKUs are
+trimmed, uppercased independently of locale, and limited to 80 characters.
+Generated codes skip occupied SKUs. Product creation holds a company counter lock
+until commit, and failed transactions roll back allocation. SKU numbering is not
+a gap-free business contract. Existing SKUs and historical snapshots remain unchanged
+when product details change. The catalog generation policy can be extended for
+future product-specific formatting without replacing allocation and validation.
+
 Sources: [Company](../src/main/java/com/thiagsilvadev/erpapi/company/internal/model/Company.java),
 [Customer](../src/main/java/com/thiagsilvadev/erpapi/customer/internal/model/Customer.java),
 [Product](../src/main/java/com/thiagsilvadev/erpapi/catalog/internal/model/Product.java),
