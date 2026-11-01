@@ -16,9 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyContactResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyContactRequest;
+import com.thiagsilvadev.erpapi.company.internal.usecase.CompanyContactQueryUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.CreateCompanyContactUseCase;
-import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyContactByIdUseCase;
-import com.thiagsilvadev.erpapi.company.internal.usecase.ListCompanyContactsUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.MarkCompanyContactPrimaryUseCase;
 
 @RestController
@@ -26,18 +25,15 @@ import com.thiagsilvadev.erpapi.company.internal.usecase.MarkCompanyContactPrima
 class CompanyContactController implements CompanyContactApi {
 
     private final CreateCompanyContactUseCase createCompanyContactUseCase;
-    private final GetCompanyContactByIdUseCase getCompanyContactByIdUseCase;
-    private final ListCompanyContactsUseCase listCompanyContactsUseCase;
+    private final CompanyContactQueryUseCase companyContactQueryUseCase;
     private final MarkCompanyContactPrimaryUseCase markCompanyContactPrimaryUseCase;
 
     CompanyContactController(
             CreateCompanyContactUseCase createCompanyContactUseCase,
-            GetCompanyContactByIdUseCase getCompanyContactByIdUseCase,
-            ListCompanyContactsUseCase listCompanyContactsUseCase,
+            CompanyContactQueryUseCase companyContactQueryUseCase,
             MarkCompanyContactPrimaryUseCase markCompanyContactPrimaryUseCase) {
         this.createCompanyContactUseCase = createCompanyContactUseCase;
-        this.getCompanyContactByIdUseCase = getCompanyContactByIdUseCase;
-        this.listCompanyContactsUseCase = listCompanyContactsUseCase;
+        this.companyContactQueryUseCase = companyContactQueryUseCase;
         this.markCompanyContactPrimaryUseCase = markCompanyContactPrimaryUseCase;
     }
 
@@ -50,13 +46,13 @@ class CompanyContactController implements CompanyContactApi {
 
     @Override
     public CompanyContactResponse getCompanyContactById(@PathVariable UUID id) {
-        return getCompanyContactByIdUseCase.execute(id);
+        return companyContactQueryUseCase.getById(id);
     }
 
     @Override
     public Page<CompanyContactResponse> listCompanyContacts(
             @RequestParam(required = false) Boolean primaryContact, Pageable pageable) {
-        return listCompanyContactsUseCase.execute(primaryContact, pageable);
+        return companyContactQueryUseCase.list(primaryContact, pageable);
     }
 
     @Override

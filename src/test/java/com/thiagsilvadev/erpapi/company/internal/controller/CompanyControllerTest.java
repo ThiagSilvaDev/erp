@@ -33,11 +33,10 @@ import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyRequest;
 import com.thiagsilvadev.erpapi.company.internal.dto.UpdateCompanyRequest;
+import com.thiagsilvadev.erpapi.company.internal.usecase.CompanyQueryUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.CreateCompanyUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.DeleteCompanyUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyAddressUseCase;
-import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyByIdUseCase;
-import com.thiagsilvadev.erpapi.company.internal.usecase.ListCompaniesUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.UpdateCompanyUseCase;
 
 class CompanyControllerTest {
@@ -45,9 +44,8 @@ class CompanyControllerTest {
     private CreateCompanyUseCase createCompanyUseCase;
     private UpdateCompanyUseCase updateCompanyUseCase;
     private DeleteCompanyUseCase deleteCompanyUseCase;
-    private GetCompanyByIdUseCase getCompanyByIdUseCase;
     private GetCompanyAddressUseCase getCompanyAddressUseCase;
-    private ListCompaniesUseCase listCompaniesUseCase;
+    private CompanyQueryUseCase companyQueryUseCase;
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -55,16 +53,14 @@ class CompanyControllerTest {
         createCompanyUseCase = mock(CreateCompanyUseCase.class);
         updateCompanyUseCase = mock(UpdateCompanyUseCase.class);
         deleteCompanyUseCase = mock(DeleteCompanyUseCase.class);
-        getCompanyByIdUseCase = mock(GetCompanyByIdUseCase.class);
         getCompanyAddressUseCase = mock(GetCompanyAddressUseCase.class);
-        listCompaniesUseCase = mock(ListCompaniesUseCase.class);
+        companyQueryUseCase = mock(CompanyQueryUseCase.class);
         mockMvc = standaloneSetup(new CompanyController(
                         createCompanyUseCase,
                         updateCompanyUseCase,
                         deleteCompanyUseCase,
-                        getCompanyByIdUseCase,
                         getCompanyAddressUseCase,
-                        listCompaniesUseCase))
+                        companyQueryUseCase))
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .build();
     }
@@ -122,7 +118,7 @@ class CompanyControllerTest {
     @Test
     void shouldGetCompanyById() throws Exception {
         UUID id = UUID.randomUUID();
-        when(getCompanyByIdUseCase.execute(id)).thenReturn(companyResponse(id));
+        when(companyQueryUseCase.getById(id)).thenReturn(companyResponse(id));
 
         mockMvc.perform(get("/api/v1/platform/companies/{id}", id))
                 .andExpect(status().isOk())
@@ -131,7 +127,7 @@ class CompanyControllerTest {
 
     @Test
     void shouldListCompanies() throws Exception {
-        when(listCompaniesUseCase.execute(any(CompanySearchCriteria.class), any(Pageable.class)))
+        when(companyQueryUseCase.list(any(CompanySearchCriteria.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
 
         mockMvc.perform(get("/api/v1/platform/companies")).andExpect(status().isOk());

@@ -16,11 +16,10 @@ import com.thiagsilvadev.erpapi.company.internal.dto.CompanyResponse;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;
 import com.thiagsilvadev.erpapi.company.internal.dto.CreateCompanyRequest;
 import com.thiagsilvadev.erpapi.company.internal.dto.UpdateCompanyRequest;
+import com.thiagsilvadev.erpapi.company.internal.usecase.CompanyQueryUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.CreateCompanyUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.DeleteCompanyUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyAddressUseCase;
-import com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyByIdUseCase;
-import com.thiagsilvadev.erpapi.company.internal.usecase.ListCompaniesUseCase;
 import com.thiagsilvadev.erpapi.company.internal.usecase.UpdateCompanyUseCase;
 
 @RestController
@@ -30,23 +29,20 @@ class CompanyController implements CompanyApi {
     private final CreateCompanyUseCase createCompanyUseCase;
     private final UpdateCompanyUseCase updateCompanyUseCase;
     private final DeleteCompanyUseCase deleteCompanyUseCase;
-    private final GetCompanyByIdUseCase getCompanyByIdUseCase;
     private final GetCompanyAddressUseCase getCompanyAddressUseCase;
-    private final ListCompaniesUseCase listCompaniesUseCase;
+    private final CompanyQueryUseCase companyQueryUseCase;
 
     CompanyController(
             CreateCompanyUseCase createCompanyUseCase,
             UpdateCompanyUseCase updateCompanyUseCase,
             DeleteCompanyUseCase deleteCompanyUseCase,
-            GetCompanyByIdUseCase getCompanyByIdUseCase,
             GetCompanyAddressUseCase getCompanyAddressUseCase,
-            ListCompaniesUseCase listCompaniesUseCase) {
+            CompanyQueryUseCase companyQueryUseCase) {
         this.createCompanyUseCase = createCompanyUseCase;
         this.updateCompanyUseCase = updateCompanyUseCase;
         this.deleteCompanyUseCase = deleteCompanyUseCase;
-        this.getCompanyByIdUseCase = getCompanyByIdUseCase;
         this.getCompanyAddressUseCase = getCompanyAddressUseCase;
-        this.listCompaniesUseCase = listCompaniesUseCase;
+        this.companyQueryUseCase = companyQueryUseCase;
     }
 
     @Override
@@ -68,7 +64,7 @@ class CompanyController implements CompanyApi {
 
     @Override
     public CompanyResponse getCompanyById(@PathVariable UUID id) {
-        return getCompanyByIdUseCase.execute(id);
+        return companyQueryUseCase.getById(id);
     }
 
     @Override
@@ -78,6 +74,6 @@ class CompanyController implements CompanyApi {
 
     @Override
     public Page<CompanyResponse> listCompanies(CompanySearchCriteria criteria, Pageable pageable) {
-        return listCompaniesUseCase.execute(criteria, pageable);
+        return companyQueryUseCase.list(criteria, pageable);
     }
 }

@@ -10,25 +10,35 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.internal.dto.CompanyContactResponse;
 import com.thiagsilvadev.erpapi.company.internal.mapper.CompanyMapper;
+import com.thiagsilvadev.erpapi.company.internal.model.CompanyContact;
 import com.thiagsilvadev.erpapi.company.internal.repository.CompanyContactRepository;
 
 @Component
-public class ListCompanyContactsUseCase {
+public class CompanyContactQueryUseCase {
 
     private final CompanyContactRepository companyContactRepository;
     private final CompanyMapper companyMapper;
 
-    public ListCompanyContactsUseCase(CompanyContactRepository companyContactRepository, CompanyMapper companyMapper) {
+    public CompanyContactQueryUseCase(CompanyContactRepository companyContactRepository, CompanyMapper companyMapper) {
         this.companyContactRepository = companyContactRepository;
         this.companyMapper = companyMapper;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('" + READ + "')")
-    public Page<CompanyContactResponse> execute(Boolean primaryContact, Pageable pageable) {
+    public CompanyContactResponse getById(UUID id) {
+        return companyMapper.toResponse(companyContactRepository
+                .findByIdAndCompanyId(id, TenantContext.requireTenantId())
+                .orElseThrow(() -> new ResourceNotFoundException(CompanyContact.class, id)));
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('" + READ + "')")
+    public Page<CompanyContactResponse> list(Boolean primaryContact, Pageable pageable) {
         UUID companyId = TenantContext.requireTenantId();
         if (primaryContact != null) {
             return companyContactRepository
