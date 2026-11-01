@@ -1,9 +1,8 @@
 package com.thiagsilvadev.erpapi.user.internal.event;
 
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import com.thiagsilvadev.erpapi.common.transaction.AfterCommit;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningFacade;
 import com.thiagsilvadev.erpapi.user.api.CredentialProvisioningRequest;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
@@ -17,24 +16,16 @@ public class UserCredentialProvisioningAfterCommitHandler {
         this.credentialProvisioningFacade = credentialProvisioningFacade;
     }
 
+    /**
+     * Provisions the credential only after the user row is committed, so a rollback never leaves an
+     * orphaned credential behind. The raw password is passed as an argument on purpose: it must never
+     * travel through the persistent event registry.
+     */
     public void provisionAfterCommit(User user, String rawPassword) {
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            provision(user, rawPassword);
-            return;
-        }
-
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                provision(user, rawPassword);
-            }
-        });
+        AfterCommit.run(() -> credentialProvisioningFacade.provision(toRequest(user, rawPassword)));
     }
 
-    private void provision(User user, String rawPassword) {
-        var request = new CredentialProvisioningRequest(
-                user.getId(), user.getContact().getEmail(), rawPassword);
-
-        credentialProvisioningFacade.provision(request);
+    private static CredentialProvisioningRequest toRequest(User user, String rawPassword) {
+        return new CredentialProvisioningRequest(user.getId(), user.getContact().getEmail(), rawPassword);
     }
 }

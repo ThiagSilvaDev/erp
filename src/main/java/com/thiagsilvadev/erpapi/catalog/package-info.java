@@ -4,6 +4,7 @@
             "common::model",
             "common::permission",
             "common::tenant",
+            "common::transaction",
             "common::validation",
             "common::web",
             "company::api"

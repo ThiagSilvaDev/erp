@@ -1,15 +1,12 @@
 package com.thiagsilvadev.erpapi.company.internal.event;
 
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.thiagsilvadev.erpapi.common.security.AuditActorResolver;
+import com.thiagsilvadev.erpapi.common.transaction.AfterCommit;
 import com.thiagsilvadev.erpapi.company.api.CompanyCreatedEvent;
 import com.thiagsilvadev.erpapi.company.internal.model.Company;
 
@@ -28,19 +25,9 @@ public class CompanyEventPublisher {
 
     public void companyCreated(Company company) {
         CompanyCreatedEvent event =
-                new CompanyCreatedEvent(company.getId(), company.getCnpj().getNumber(), currentUserId());
+                new CompanyCreatedEvent(company.getId(), company.getCnpj().getNumber(), actorResolver.userIdOrNull());
 
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            publish(event);
-            return;
-        }
-
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                publish(event);
-            }
-        });
+        AfterCommit.run(() -> publish(event));
     }
 
     private void publish(Object event) {
@@ -49,9 +36,5 @@ public class CompanyEventPublisher {
         } catch (RuntimeException exception) {
             logger.error("Failed to publish company event {}", event, exception);
         }
-    }
-
-    private UUID currentUserId() {
-        return actorResolver.userId().orElse(null);
     }
 }

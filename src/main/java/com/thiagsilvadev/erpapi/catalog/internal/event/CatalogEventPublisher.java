@@ -4,11 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.thiagsilvadev.erpapi.catalog.api.ProductCreatedEvent;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
+import com.thiagsilvadev.erpapi.common.transaction.AfterCommit;
 
 @Component
 public class CatalogEventPublisher {
@@ -24,17 +23,7 @@ public class CatalogEventPublisher {
     public void productCreated(Product product) {
         ProductCreatedEvent event = new ProductCreatedEvent(product.getId(), product.getSku());
 
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            publish(event);
-            return;
-        }
-
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                publish(event);
-            }
-        });
+        AfterCommit.run(() -> publish(event));
     }
 
     private void publish(Object event) {

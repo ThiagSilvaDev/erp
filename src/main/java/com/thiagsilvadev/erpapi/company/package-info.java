@@ -7,6 +7,7 @@
             "common::permission",
             "common::security",
             "common::tenant",
+            "common::transaction",
             "common::validation",
             "common::web"
         })

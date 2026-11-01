@@ -29,4 +29,9 @@ public class AuditActorResolver {
             return Optional.empty();
         }
     }
+
+    /** Actor id for audit payloads, where an unknown actor is reported as {@code null}. */
+    public UUID userIdOrNull() {
+        return userId().orElse(null);
+    }
 }
