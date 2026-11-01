@@ -13,23 +13,19 @@ import com.thiagsilvadev.erpapi.inventory.internal.usecase.item.*;
 @RestController
 class InventoryItemController implements InventoryItemApi {
 
-    private final ListInventoryItemsUseCase listInventoryItemsUseCase;
-    private final GetInventoryItemByIdUseCase getInventoryItemByIdUseCase;
+    private final InventoryItemQueryUseCase inventoryItemQueryUseCase;
 
-    InventoryItemController(
-            ListInventoryItemsUseCase listInventoryItemsUseCase,
-            GetInventoryItemByIdUseCase getInventoryItemByIdUseCase) {
-        this.listInventoryItemsUseCase = listInventoryItemsUseCase;
-        this.getInventoryItemByIdUseCase = getInventoryItemByIdUseCase;
+    InventoryItemController(InventoryItemQueryUseCase inventoryItemQueryUseCase) {
+        this.inventoryItemQueryUseCase = inventoryItemQueryUseCase;
     }
 
     @Override
     public Page<InventoryItemResponse> listItems(Pageable pageable) {
-        return listInventoryItemsUseCase.execute(pageable);
+        return inventoryItemQueryUseCase.list(pageable);
     }
 
     @Override
     public InventoryItemResponse getItem(@PathVariable UUID id) {
-        return getInventoryItemByIdUseCase.execute(id);
+        return inventoryItemQueryUseCase.getById(id);
     }
 }

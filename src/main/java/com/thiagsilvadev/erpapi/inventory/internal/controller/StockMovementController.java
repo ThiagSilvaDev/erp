@@ -19,16 +19,13 @@ import com.thiagsilvadev.erpapi.inventory.internal.usecase.stockmovement.*;
 class StockMovementController implements StockMovementApi {
 
     private final CreateStockMovementUseCase createStockMovementUseCase;
-    private final GetStockMovementByIdUseCase getStockMovementByIdUseCase;
-    private final ListStockMovementsUseCase listStockMovementsUseCase;
+    private final StockMovementQueryUseCase stockMovementQueryUseCase;
 
     StockMovementController(
             CreateStockMovementUseCase createStockMovementUseCase,
-            GetStockMovementByIdUseCase getStockMovementByIdUseCase,
-            ListStockMovementsUseCase listStockMovementsUseCase) {
+            StockMovementQueryUseCase stockMovementQueryUseCase) {
         this.createStockMovementUseCase = createStockMovementUseCase;
-        this.getStockMovementByIdUseCase = getStockMovementByIdUseCase;
-        this.listStockMovementsUseCase = listStockMovementsUseCase;
+        this.stockMovementQueryUseCase = stockMovementQueryUseCase;
     }
 
     @Override
@@ -40,11 +37,11 @@ class StockMovementController implements StockMovementApi {
 
     @Override
     public StockMovementResponse getMovement(@PathVariable UUID id) {
-        return getStockMovementByIdUseCase.execute(id);
+        return stockMovementQueryUseCase.getById(id);
     }
 
     @Override
     public Page<StockMovementResponse> listMovements(Pageable pageable) {
-        return listStockMovementsUseCase.execute(pageable);
+        return stockMovementQueryUseCase.list(pageable);
     }
 }

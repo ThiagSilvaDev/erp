@@ -19,16 +19,12 @@ import com.thiagsilvadev.erpapi.inventory.internal.usecase.reservation.*;
 class ReservationController implements ReservationApi {
 
     private final CreateReservationUseCase createReservationUseCase;
-    private final GetReservationByIdUseCase getReservationByIdUseCase;
-    private final ListReservationsUseCase listReservationsUseCase;
+    private final ReservationQueryUseCase reservationQueryUseCase;
 
     ReservationController(
-            CreateReservationUseCase createReservationUseCase,
-            GetReservationByIdUseCase getReservationByIdUseCase,
-            ListReservationsUseCase listReservationsUseCase) {
+            CreateReservationUseCase createReservationUseCase, ReservationQueryUseCase reservationQueryUseCase) {
         this.createReservationUseCase = createReservationUseCase;
-        this.getReservationByIdUseCase = getReservationByIdUseCase;
-        this.listReservationsUseCase = listReservationsUseCase;
+        this.reservationQueryUseCase = reservationQueryUseCase;
     }
 
     @Override
@@ -39,11 +35,11 @@ class ReservationController implements ReservationApi {
 
     @Override
     public ReservationResponse getReservation(@PathVariable UUID id) {
-        return getReservationByIdUseCase.execute(id);
+        return reservationQueryUseCase.getById(id);
     }
 
     @Override
     public Page<ReservationResponse> listReservations(Pageable pageable) {
-        return listReservationsUseCase.execute(pageable);
+        return reservationQueryUseCase.list(pageable);
     }
 }

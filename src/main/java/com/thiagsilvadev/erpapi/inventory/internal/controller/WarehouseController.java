@@ -19,16 +19,11 @@ import com.thiagsilvadev.erpapi.inventory.internal.usecase.warehouse.*;
 class WarehouseController implements WarehouseApi {
 
     private final CreateWarehouseUseCase createWarehouseUseCase;
-    private final GetWarehouseByIdUseCase getWarehouseByIdUseCase;
-    private final ListWarehousesUseCase listWarehousesUseCase;
+    private final WarehouseQueryUseCase warehouseQueryUseCase;
 
-    WarehouseController(
-            CreateWarehouseUseCase createWarehouseUseCase,
-            GetWarehouseByIdUseCase getWarehouseByIdUseCase,
-            ListWarehousesUseCase listWarehousesUseCase) {
+    WarehouseController(CreateWarehouseUseCase createWarehouseUseCase, WarehouseQueryUseCase warehouseQueryUseCase) {
         this.createWarehouseUseCase = createWarehouseUseCase;
-        this.getWarehouseByIdUseCase = getWarehouseByIdUseCase;
-        this.listWarehousesUseCase = listWarehousesUseCase;
+        this.warehouseQueryUseCase = warehouseQueryUseCase;
     }
 
     @Override
@@ -39,11 +34,11 @@ class WarehouseController implements WarehouseApi {
 
     @Override
     public WarehouseResponse getWarehouse(@PathVariable UUID id) {
-        return getWarehouseByIdUseCase.execute(id);
+        return warehouseQueryUseCase.getById(id);
     }
 
     @Override
     public Page<WarehouseResponse> listWarehouses(Pageable pageable) {
-        return listWarehousesUseCase.execute(pageable);
+        return warehouseQueryUseCase.list(pageable);
     }
 }
