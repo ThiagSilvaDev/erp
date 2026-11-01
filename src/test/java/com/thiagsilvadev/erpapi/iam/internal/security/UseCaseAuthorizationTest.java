@@ -12,12 +12,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 class UseCaseAuthorizationTest {
 
     private static final String[] SECURED_USE_CASES = {
+        "com.thiagsilvadev.erpapi.catalog.internal.usecase.category.CategoryQueryUseCase",
         "com.thiagsilvadev.erpapi.catalog.internal.usecase.category.CreateCategoryUseCase",
-        "com.thiagsilvadev.erpapi.catalog.internal.usecase.category.GetCategoryByIdUseCase",
-        "com.thiagsilvadev.erpapi.catalog.internal.usecase.category.ListCategoriesUseCase",
         "com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase",
-        "com.thiagsilvadev.erpapi.catalog.internal.usecase.product.GetProductByIdUseCase",
-        "com.thiagsilvadev.erpapi.catalog.internal.usecase.product.ListProductsUseCase",
+        "com.thiagsilvadev.erpapi.catalog.internal.usecase.product.ProductQueryUseCase",
         "com.thiagsilvadev.erpapi.company.internal.usecase.CreateCompanyContactUseCase",
         "com.thiagsilvadev.erpapi.company.internal.usecase.CreateCompanyUseCase",
         "com.thiagsilvadev.erpapi.company.internal.usecase.GetCompanyContactByIdUseCase",

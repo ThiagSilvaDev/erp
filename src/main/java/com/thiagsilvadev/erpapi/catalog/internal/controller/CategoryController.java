@@ -15,9 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategorySearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CreateCategoryRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.CategoryQueryUseCase;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.CreateCategoryUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.GetCategoryByIdUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.ListCategoriesUseCase;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 
 @RestController
@@ -25,16 +24,11 @@ import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 class CategoryController implements CategoryApi {
 
     private final CreateCategoryUseCase createCategoryUseCase;
-    private final GetCategoryByIdUseCase getCategoryByIdUseCase;
-    private final ListCategoriesUseCase listCategoriesUseCase;
+    private final CategoryQueryUseCase categoryQueryUseCase;
 
-    CategoryController(
-            CreateCategoryUseCase createCategoryUseCase,
-            GetCategoryByIdUseCase getCategoryByIdUseCase,
-            ListCategoriesUseCase listCategoriesUseCase) {
+    CategoryController(CreateCategoryUseCase createCategoryUseCase, CategoryQueryUseCase categoryQueryUseCase) {
         this.createCategoryUseCase = createCategoryUseCase;
-        this.getCategoryByIdUseCase = getCategoryByIdUseCase;
-        this.listCategoriesUseCase = listCategoriesUseCase;
+        this.categoryQueryUseCase = categoryQueryUseCase;
     }
 
     @Override
@@ -45,11 +39,11 @@ class CategoryController implements CategoryApi {
 
     @Override
     public CategoryResponse getCategoryById(@PathVariable UUID id) {
-        return getCategoryByIdUseCase.execute(id);
+        return categoryQueryUseCase.getById(id);
     }
 
     @Override
     public Page<CategoryResponse> listCategories(CategorySearchCriteria criteria, Pageable pageable) {
-        return listCategoriesUseCase.execute(criteria, pageable);
+        return categoryQueryUseCase.list(criteria, pageable);
     }
 }

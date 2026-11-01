@@ -29,23 +29,19 @@ import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductReques
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductSearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.GetProductByIdUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.ListProductsUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.ProductQueryUseCase;
 
 class ProductControllerTest {
 
     private CreateProductUseCase createProductUseCase;
-    private GetProductByIdUseCase getProductByIdUseCase;
-    private ListProductsUseCase listProductsUseCase;
+    private ProductQueryUseCase productQueryUseCase;
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         createProductUseCase = org.mockito.Mockito.mock(CreateProductUseCase.class);
-        getProductByIdUseCase = org.mockito.Mockito.mock(GetProductByIdUseCase.class);
-        listProductsUseCase = org.mockito.Mockito.mock(ListProductsUseCase.class);
-        mockMvc = standaloneSetup(
-                        new ProductController(createProductUseCase, getProductByIdUseCase, listProductsUseCase))
+        productQueryUseCase = org.mockito.Mockito.mock(ProductQueryUseCase.class);
+        mockMvc = standaloneSetup(new ProductController(createProductUseCase, productQueryUseCase))
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .build();
     }
@@ -87,7 +83,7 @@ class ProductControllerTest {
     void shouldGetProductById() throws Exception {
         UUID id = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
-        when(getProductByIdUseCase.execute(id)).thenReturn(productResponse(id, categoryId));
+        when(productQueryUseCase.getById(id)).thenReturn(productResponse(id, categoryId));
 
         mockMvc.perform(get("/api/v1/catalog/products/{id}", id))
                 .andExpect(status().isOk())
@@ -99,7 +95,7 @@ class ProductControllerTest {
     void shouldListProducts() throws Exception {
         UUID id = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
-        when(listProductsUseCase.execute(any(ProductSearchCriteria.class), any(Pageable.class)))
+        when(productQueryUseCase.list(any(ProductSearchCriteria.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(productResponse(id, categoryId)), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/api/v1/catalog/products"))

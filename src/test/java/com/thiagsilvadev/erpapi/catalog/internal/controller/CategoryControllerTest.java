@@ -25,24 +25,20 @@ import com.thiagsilvadev.erpapi.catalog.api.CategoryStatus;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategoryResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CategorySearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.category.CreateCategoryRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.CategoryQueryUseCase;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.CreateCategoryUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.GetCategoryByIdUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.category.ListCategoriesUseCase;
 
 class CategoryControllerTest {
 
     private CreateCategoryUseCase createCategoryUseCase;
-    private GetCategoryByIdUseCase getCategoryByIdUseCase;
-    private ListCategoriesUseCase listCategoriesUseCase;
+    private CategoryQueryUseCase categoryQueryUseCase;
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         createCategoryUseCase = org.mockito.Mockito.mock(CreateCategoryUseCase.class);
-        getCategoryByIdUseCase = org.mockito.Mockito.mock(GetCategoryByIdUseCase.class);
-        listCategoriesUseCase = org.mockito.Mockito.mock(ListCategoriesUseCase.class);
-        mockMvc = standaloneSetup(
-                        new CategoryController(createCategoryUseCase, getCategoryByIdUseCase, listCategoriesUseCase))
+        categoryQueryUseCase = org.mockito.Mockito.mock(CategoryQueryUseCase.class);
+        mockMvc = standaloneSetup(new CategoryController(createCategoryUseCase, categoryQueryUseCase))
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .build();
     }
@@ -65,7 +61,7 @@ class CategoryControllerTest {
     @Test
     void shouldGetCategoryById() throws Exception {
         UUID id = UUID.randomUUID();
-        when(getCategoryByIdUseCase.execute(id))
+        when(categoryQueryUseCase.getById(id))
                 .thenReturn(new CategoryResponse(id, "RAW", "Raw materials", null, CategoryStatus.ACTIVE));
 
         mockMvc.perform(get("/api/v1/catalog/categories/{id}", id))
@@ -77,7 +73,7 @@ class CategoryControllerTest {
     @Test
     void shouldListCategories() throws Exception {
         UUID id = UUID.randomUUID();
-        when(listCategoriesUseCase.execute(any(CategorySearchCriteria.class), any(Pageable.class)))
+        when(categoryQueryUseCase.list(any(CategorySearchCriteria.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(
                         List.of(new CategoryResponse(id, "RAW", "Raw materials", null, CategoryStatus.ACTIVE)),
                         PageRequest.of(0, 20),

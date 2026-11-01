@@ -16,8 +16,7 @@ import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductReques
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductResponse;
 import com.thiagsilvadev.erpapi.catalog.internal.dto.product.ProductSearchCriteria;
 import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.GetProductByIdUseCase;
-import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.ListProductsUseCase;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.ProductQueryUseCase;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 
 @RestController
@@ -25,16 +24,11 @@ import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 class ProductController implements ProductApi {
 
     private final CreateProductUseCase createProductUseCase;
-    private final GetProductByIdUseCase getProductByIdUseCase;
-    private final ListProductsUseCase listProductsUseCase;
+    private final ProductQueryUseCase productQueryUseCase;
 
-    ProductController(
-            CreateProductUseCase createProductUseCase,
-            GetProductByIdUseCase getProductByIdUseCase,
-            ListProductsUseCase listProductsUseCase) {
+    ProductController(CreateProductUseCase createProductUseCase, ProductQueryUseCase productQueryUseCase) {
         this.createProductUseCase = createProductUseCase;
-        this.getProductByIdUseCase = getProductByIdUseCase;
-        this.listProductsUseCase = listProductsUseCase;
+        this.productQueryUseCase = productQueryUseCase;
     }
 
     @Override
@@ -45,11 +39,11 @@ class ProductController implements ProductApi {
 
     @Override
     public ProductResponse getProductById(@PathVariable UUID id) {
-        return getProductByIdUseCase.execute(id);
+        return productQueryUseCase.getById(id);
     }
 
     @Override
     public Page<ProductResponse> listProducts(ProductSearchCriteria criteria, Pageable pageable) {
-        return listProductsUseCase.execute(criteria, pageable);
+        return productQueryUseCase.list(criteria, pageable);
     }
 }
