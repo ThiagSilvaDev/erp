@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
@@ -57,7 +58,7 @@ class FinancialKpiCalculator {
         return new FinancialKpiSnapshot.Receivables(open, overdue);
     }
 
-    private static Map<String, BigDecimal> values(Map<String, BigDecimal> source, java.util.Set<String> currencies) {
+    private static Map<String, BigDecimal> values(Map<String, BigDecimal> source, Set<String> currencies) {
         Map<String, BigDecimal> result = new HashMap<>();
         currencies.forEach(currency -> result.put(currency, source.getOrDefault(currency, BigDecimal.ZERO)));
         return result;

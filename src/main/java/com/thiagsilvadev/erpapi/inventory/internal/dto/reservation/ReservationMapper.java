@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.inventory.internal.dto.reservation;
 
+import java.util.UUID;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,12 +52,12 @@ public abstract class ReservationMapper {
 
     public abstract InventoryReservationSnapshot toSnapshot(InventoryReservation reservation);
 
-    protected ReservationProductDto mapProduct(java.util.UUID companyId, java.util.UUID productId) {
+    protected ReservationProductDto mapProduct(UUID companyId, UUID productId) {
         var product = catalogFacade.getProduct(companyId, productId);
         return new ReservationProductDto(product.id(), product.sku(), product.name(), product.basePrice());
     }
 
-    protected ReservationWarehouseSummaryResponse mapWarehouse(java.util.UUID warehouseId) {
+    protected ReservationWarehouseSummaryResponse mapWarehouse(UUID warehouseId) {
         if (warehouseId == null) {
             return null;
         }
@@ -65,8 +67,7 @@ public abstract class ReservationMapper {
                 .orElse(new ReservationWarehouseSummaryResponse(warehouseId, null));
     }
 
-    protected ReservationSalesOrderSummaryResponse mapSalesOrder(
-            java.util.UUID companyId, java.util.UUID salesOrderId) {
+    protected ReservationSalesOrderSummaryResponse mapSalesOrder(UUID companyId, UUID salesOrderId) {
         if (salesOrderId == null) {
             return null;
         }

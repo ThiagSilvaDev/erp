@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
@@ -25,8 +26,7 @@ class SalesKpiCalculator {
         return new SalesKpiSnapshot(current.snapshot(), previous.snapshot(), trend);
     }
 
-    private static SalesKpiSnapshot.Trend trend(
-            List<DailyRow> rows, DateRange range, java.util.Set<String> currencies) {
+    private static SalesKpiSnapshot.Trend trend(List<DailyRow> rows, DateRange range, Set<String> currencies) {
         Totals totals = totals(rows, range);
         Map<String, BigDecimal> revenue = new HashMap<>();
         currencies.forEach(currency -> revenue.put(currency, totals.revenue.getOrDefault(currency, BigDecimal.ZERO)));

@@ -2,6 +2,10 @@ package com.thiagsilvadev.erpapi.customer.internal.repository;
 
 import java.util.UUID;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerSearchCriteria;
@@ -62,10 +66,7 @@ public class CustomerSpecification {
         return (root, query, cb) -> companyId == null ? null : cb.equal(root.get("companyId"), companyId);
     }
 
-    private static jakarta.persistence.criteria.Predicate like(
-            String value,
-            jakarta.persistence.criteria.Path<String> path,
-            jakarta.persistence.criteria.CriteriaBuilder cb) {
+    private static Predicate like(String value, Path<String> path, CriteriaBuilder cb) {
         if (value == null || value.isBlank()) {
             return null;
         }

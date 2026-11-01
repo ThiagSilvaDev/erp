@@ -24,6 +24,7 @@ import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
 import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
+import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
 
@@ -90,12 +91,9 @@ public class CreateInvoiceUseCase {
         if (order.status() != OrderStatus.CONFIRMED) {
             throw new ConflictException("Only confirmed sales orders can be invoiced.");
         }
-        BillingPartyType expectedType = order.saleType() == com.thiagsilvadev.erpapi.sales.api.SaleType.B2B
-                ? BillingPartyType.COMPANY
-                : BillingPartyType.CUSTOMER;
-        UUID expectedId = order.saleType() == com.thiagsilvadev.erpapi.sales.api.SaleType.B2B
-                ? order.buyerCompanyId()
-                : order.customerId();
+        BillingPartyType expectedType =
+                order.saleType() == SaleType.B2B ? BillingPartyType.COMPANY : BillingPartyType.CUSTOMER;
+        UUID expectedId = order.saleType() == SaleType.B2B ? order.buyerCompanyId() : order.customerId();
         if (request.billingPartyType() != expectedType || !expectedId.equals(request.billingPartyId())) {
             throw new ConflictException("Invoice billing party must match the sales order billing party.");
         }

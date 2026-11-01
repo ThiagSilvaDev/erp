@@ -3,6 +3,8 @@ package com.thiagsilvadev.erpapi.financial.internal.usecase.payment;
 import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.WRITE;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -87,7 +89,7 @@ public class CreatePaymentUseCase {
                 request.dueDate()));
 
         if (request.status() == PaymentStatus.PAID) {
-            payment.markAsPaid(request.paidAt() != null ? request.paidAt() : java.time.LocalDate.now());
+            payment.markAsPaid(request.paidAt() != null ? request.paidAt() : LocalDate.now());
             createIncomeEntryIfAccountPresent(payment, invoice);
         }
 
@@ -101,7 +103,7 @@ public class CreatePaymentUseCase {
         return mapper.toResponse(payment);
     }
 
-    private void validateDestinationAccount(java.util.UUID companyId, CreatePaymentRequest request) {
+    private void validateDestinationAccount(UUID companyId, CreatePaymentRequest request) {
         if (request.status() == PaymentStatus.PAID && request.destinationAccountId() == null) {
             throw new ConflictException("Destination account is required for paid payments.");
         }

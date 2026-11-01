@@ -3,6 +3,7 @@ package com.thiagsilvadev.erpapi.catalog.internal.seed;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -94,7 +95,7 @@ class CatalogDevSeeder implements ApplicationRunner {
         }
     }
 
-    private Category seedCategory(java.util.UUID companyId, CategorySeed category) {
+    private Category seedCategory(UUID companyId, CategorySeed category) {
         return categoryRepository
                 .findByCompanyIdAndCode(companyId, Category.normalizeCode(category.code()))
                 .orElseGet(() -> categoryRepository.save(

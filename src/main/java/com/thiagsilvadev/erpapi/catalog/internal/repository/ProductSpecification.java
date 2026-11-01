@@ -41,7 +41,7 @@ public class ProductSpecification {
         return (root, query, cb) -> status == null ? null : cb.equal(root.get("status"), status);
     }
 
-    private static Specification<Product> hasCategory(java.util.UUID categoryId) {
+    private static Specification<Product> hasCategory(UUID categoryId) {
         return (root, query, cb) ->
                 categoryId == null ? null : cb.equal(root.get("category").get("id"), categoryId);
     }

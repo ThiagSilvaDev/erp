@@ -1,5 +1,8 @@
 package com.thiagsilvadev.erpapi.sales.internal.dto;
 
+import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -42,7 +45,7 @@ public interface SalesMapper {
                 order.currencyCode(),
                 order.getItems().stream()
                         .map(this::toItemSnapshot)
-                        .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new)));
+                        .collect(Collectors.toCollection(LinkedHashSet::new)));
     }
 
     default SalesOrderDeliveryRouteSnapshot toDeliveryRouteSnapshot(DeliveryRoute deliveryRoute) {

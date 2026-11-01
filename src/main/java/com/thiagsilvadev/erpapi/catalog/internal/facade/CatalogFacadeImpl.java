@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.facade;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +51,7 @@ public class CatalogFacadeImpl implements CatalogFacade {
         }
 
         List<Product> products = productRepository.findAllByCompanyIdAndIdIn(companyId, productIds);
-        Set<UUID> foundIds = products.stream().map(Product::getId).collect(java.util.stream.Collectors.toSet());
+        Set<UUID> foundIds = products.stream().map(Product::getId).collect(Collectors.toSet());
         Set<UUID> missingIds = new TreeSet<>(productIds);
         missingIds.removeAll(foundIds);
         if (!missingIds.isEmpty()) {

@@ -2,6 +2,8 @@ package com.thiagsilvadev.erpapi.kpi.internal.usecase;
 
 import static com.thiagsilvadev.erpapi.kpi.api.KpiPermissions.READ;
 
+import java.time.ZoneOffset;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +51,7 @@ public class GetExecutiveKpisUseCase {
         var financial = financialFacade.calculate(
                 companyId,
                 comparativePeriod,
-                period.generatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate());
+                period.generatedAt().atZone(ZoneOffset.UTC).toLocalDate());
         var inventory = inventoryFacade.calculate(companyId, comparativePeriod);
         var logistics = logisticsFacade.calculate(companyId, comparativePeriod);
         return responseMapper.toResponse(period, sales, financial, inventory, logistics);

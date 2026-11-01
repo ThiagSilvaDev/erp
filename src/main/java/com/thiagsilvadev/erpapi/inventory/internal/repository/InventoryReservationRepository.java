@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.inventory.internal.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -15,7 +16,7 @@ public interface InventoryReservationRepository extends JpaRepository<InventoryR
 
     List<InventoryReservation> findByCompanyIdAndSalesOrderId(UUID companyId, UUID salesOrderId);
 
-    java.util.Optional<InventoryReservation> findByIdAndCompanyId(UUID id, UUID companyId);
+    Optional<InventoryReservation> findByIdAndCompanyId(UUID id, UUID companyId);
 
     Page<InventoryReservation> findAllByCompanyId(UUID companyId, Pageable pageable);
 }

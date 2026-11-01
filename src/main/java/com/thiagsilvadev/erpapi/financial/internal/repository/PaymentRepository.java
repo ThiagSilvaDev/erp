@@ -1,6 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.repository;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -19,7 +20,7 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
     Page<Payment> findAllByCompanyId(UUID companyId, Pageable pageable);
 
-    java.util.Optional<Payment> findByIdAndCompanyId(UUID id, UUID companyId);
+    Optional<Payment> findByIdAndCompanyId(UUID id, UUID companyId);
 
     @Query("select coalesce(sum(payment.amount), 0) from Payment payment where payment.invoiceId = :invoiceId")
     BigDecimal sumAmountByInvoiceId(@Param("invoiceId") UUID invoiceId);

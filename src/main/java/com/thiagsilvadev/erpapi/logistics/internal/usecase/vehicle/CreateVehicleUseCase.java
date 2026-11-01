@@ -2,6 +2,8 @@ package com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle;
 
 import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.WRITE;
 
+import java.util.Map;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -33,14 +35,12 @@ public class CreateVehicleUseCase {
         var vehicle = Vehicle.create(companyId, request.plate(), request.description(), request.capacity());
         var plate = vehicle.getLicensePlate();
         if (vehicleRepository.existsByCompanyIdAndPlate(companyId, plate)) {
-            throw new ConflictException(
-                    "Vehicle with this plate already exists.", java.util.Map.of("plate", plate.getValue()));
+            throw new ConflictException("Vehicle with this plate already exists.", Map.of("plate", plate.getValue()));
         }
         try {
             return mapper.toResponse(vehicleRepository.saveAndFlush(vehicle));
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException(
-                    "Vehicle with this plate already exists.", java.util.Map.of("plate", plate.getValue()));
+            throw new ConflictException("Vehicle with this plate already exists.", Map.of("plate", plate.getValue()));
         }
     }
 }

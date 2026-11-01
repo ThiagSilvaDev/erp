@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.inventory.internal.dto.item;
 
+import java.util.UUID;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,7 @@ public abstract class InventoryItemMapper {
     @Mapping(target = "product", expression = "java(mapInventoryItemProduct(item.getCompanyId(), item.getProductId()))")
     public abstract InventoryItemResponse toResponse(InventoryItem item);
 
-    protected InventoryItemProductResponse mapInventoryItemProduct(java.util.UUID companyId, java.util.UUID productId) {
+    protected InventoryItemProductResponse mapInventoryItemProduct(UUID companyId, UUID productId) {
         return toInventoryItemProductResponse(catalogFacade.getProduct(companyId, productId));
     }
 

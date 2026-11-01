@@ -2,6 +2,7 @@ package com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment;
 
 import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.DISPATCH;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,7 +49,7 @@ public class AssignDispatchUseCase {
         shipment.assignDispatch(
                 driver, vehicle, request.routeName(), request.originWarehouseId(), request.destinationDescription());
         trackingEventRepository.save(ShipmentTrackingEvent.create(
-                shipment, ShipmentStatus.DISPATCH_ASSIGNED, java.time.Instant.now(), null, "Dispatch assigned"));
+                shipment, ShipmentStatus.DISPATCH_ASSIGNED, Instant.now(), null, "Dispatch assigned"));
         return shipmentReader.toResponse(shipment);
     }
 }

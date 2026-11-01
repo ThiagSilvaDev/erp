@@ -2,6 +2,8 @@ package com.thiagsilvadev.erpapi.inventory.internal.usecase.warehouse;
 
 import static com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions.WRITE;
 
+import java.util.Map;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -32,13 +34,13 @@ public class CreateWarehouseUseCase {
         var companyId = TenantContext.requireTenantId();
         String code = Warehouse.normalizeCode(request.code());
         if (warehouseRepository.existsByCompanyIdAndCode(companyId, code)) {
-            throw new ConflictException("Warehouse with this code already exists.", java.util.Map.of("code", code));
+            throw new ConflictException("Warehouse with this code already exists.", Map.of("code", code));
         }
         Warehouse savedWarehouse;
         try {
             savedWarehouse = warehouseRepository.saveAndFlush(Warehouse.create(companyId, code, request.name()));
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException("Warehouse with this code already exists.", java.util.Map.of("code", code));
+            throw new ConflictException("Warehouse with this code already exists.", Map.of("code", code));
         }
         return mapper.toResponse(savedWarehouse);
     }

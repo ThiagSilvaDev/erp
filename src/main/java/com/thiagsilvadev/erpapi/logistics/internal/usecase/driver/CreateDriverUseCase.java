@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.permission.ModulePermissionProvider;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverRequest;
@@ -60,7 +61,7 @@ public class CreateDriverUseCase {
             throw new ConflictException("User must be active.", Map.of("userId", user.id()));
         }
 
-        if (!tenantUserAccessFacade.hasRole(user.id(), companyId, "DRIVER")) {
+        if (!tenantUserAccessFacade.hasRole(user.id(), companyId, ModulePermissionProvider.ROLE_DRIVER)) {
             throw new ConflictException(
                     "User must have an active DRIVER membership in the current company.", Map.of("userId", user.id()));
         }
