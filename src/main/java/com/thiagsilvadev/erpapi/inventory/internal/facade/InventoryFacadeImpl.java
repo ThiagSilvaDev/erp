@@ -7,10 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.inventory.api.*;
-import com.thiagsilvadev.erpapi.inventory.internal.mapper.ReservationMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.mapper.WarehouseMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.model.*;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.*;
+import com.thiagsilvadev.erpapi.inventory.internal.service.ReservationResponseAssembler;
 
 @Service
 public class InventoryFacadeImpl implements InventoryFacade {
@@ -18,17 +18,17 @@ public class InventoryFacadeImpl implements InventoryFacade {
     private final InventoryItemRepository itemRepository;
     private final InventoryReservationRepository reservationRepository;
     private final WarehouseRepository warehouseRepository;
-    private final ReservationMapper reservationMapper;
+    private final ReservationResponseAssembler reservationAssembler;
 
     public InventoryFacadeImpl(
             InventoryItemRepository itemRepository,
             InventoryReservationRepository reservationRepository,
             WarehouseRepository warehouseRepository,
-            ReservationMapper reservationMapper) {
+            ReservationResponseAssembler reservationAssembler) {
         this.itemRepository = itemRepository;
         this.reservationRepository = reservationRepository;
         this.warehouseRepository = warehouseRepository;
-        this.reservationMapper = reservationMapper;
+        this.reservationAssembler = reservationAssembler;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class InventoryFacadeImpl implements InventoryFacade {
                 command.warehouseId(),
                 command.quantity(),
                 command.salesOrderId()));
-        return reservationMapper.toSnapshot(reservation);
+        return reservationAssembler.toSnapshot(reservation);
     }
 
     @Override

@@ -11,17 +11,17 @@ import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.ReserveStockCommand;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.CreateReservationRequest;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
-import com.thiagsilvadev.erpapi.inventory.internal.mapper.ReservationMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.service.ReservationResponseAssembler;
 
 @Component
 public class CreateReservationUseCase {
 
     private final InventoryFacade inventoryFacade;
-    private final ReservationMapper mapper;
+    private final ReservationResponseAssembler assembler;
 
-    public CreateReservationUseCase(InventoryFacade inventoryFacade, ReservationMapper mapper) {
+    public CreateReservationUseCase(InventoryFacade inventoryFacade, ReservationResponseAssembler assembler) {
         this.inventoryFacade = inventoryFacade;
-        this.mapper = mapper;
+        this.assembler = assembler;
     }
 
     @PreAuthorize("hasAuthority('" + WRITE + "')")
@@ -29,6 +29,6 @@ public class CreateReservationUseCase {
         var companyId = TenantContext.requireTenantId();
         InventoryReservationSnapshot reservation = inventoryFacade.reserveStock(new ReserveStockCommand(
                 companyId, request.productId(), request.warehouseId(), request.quantity(), request.salesOrderId()));
-        return mapper.toResponse(reservation);
+        return assembler.toResponse(reservation);
     }
 }

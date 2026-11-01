@@ -10,24 +10,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
-import com.thiagsilvadev.erpapi.inventory.internal.mapper.ReservationMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryReservationRepository;
+import com.thiagsilvadev.erpapi.inventory.internal.service.ReservationResponseAssembler;
 
 @Component
 public class ListReservationsUseCase {
 
     private final InventoryReservationRepository reservationRepository;
-    private final ReservationMapper mapper;
+    private final ReservationResponseAssembler assembler;
 
-    public ListReservationsUseCase(InventoryReservationRepository reservationRepository, ReservationMapper mapper) {
+    public ListReservationsUseCase(
+            InventoryReservationRepository reservationRepository, ReservationResponseAssembler assembler) {
         this.reservationRepository = reservationRepository;
-        this.mapper = mapper;
+        this.assembler = assembler;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<ReservationResponse> execute(Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
-        return reservationRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
+        return reservationRepository.findAllByCompanyId(companyId, pageable).map(assembler::toResponse);
     }
 }

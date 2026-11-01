@@ -10,24 +10,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
-import com.thiagsilvadev.erpapi.inventory.internal.mapper.InventoryItemMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
+import com.thiagsilvadev.erpapi.inventory.internal.service.InventoryItemResponseAssembler;
 
 @Component
 public class ListInventoryItemsUseCase {
 
     private final InventoryItemRepository itemRepository;
-    private final InventoryItemMapper mapper;
+    private final InventoryItemResponseAssembler assembler;
 
-    public ListInventoryItemsUseCase(InventoryItemRepository itemRepository, InventoryItemMapper mapper) {
+    public ListInventoryItemsUseCase(InventoryItemRepository itemRepository, InventoryItemResponseAssembler assembler) {
         this.itemRepository = itemRepository;
-        this.mapper = mapper;
+        this.assembler = assembler;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<InventoryItemResponse> execute(Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
-        return itemRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
+        return itemRepository.findAllByCompanyId(companyId, pageable).map(assembler::toResponse);
     }
 }
