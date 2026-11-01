@@ -170,6 +170,10 @@ Responsibilities:
 - invoke module APIs
 - publish events
 
+Read operations for one aggregate live in a single `<Aggregate>QueryUseCase` exposing `getById(...)` and
+`list(...)`; each method keeps its own `@Transactional(readOnly = true)` and `@PreAuthorize`. One class per
+aggregate — never one class per module; command workflows keep one class per operation.
+
 ---
 
 ## Repositories
