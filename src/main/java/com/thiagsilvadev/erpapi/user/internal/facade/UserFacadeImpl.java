@@ -17,11 +17,9 @@ import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 public class UserFacadeImpl implements UserFacade {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
 
-    public UserFacadeImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserFacadeImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
     }
 
     @Override
@@ -29,7 +27,7 @@ public class UserFacadeImpl implements UserFacade {
     public UserSnapshot getUser(UUID userId) {
         return userRepository
                 .findById(userId)
-                .map(userMapper::toSnapshot)
+                .map(UserMapper::toSnapshot)
                 .orElseThrow(() -> new ResourceNotFoundException(User.class, userId));
     }
 
@@ -37,9 +35,10 @@ public class UserFacadeImpl implements UserFacade {
     @Transactional(readOnly = true)
     public UserSnapshot resolveUser(String email) {
         Contact contact = Contact.create(email, null);
+
         return userRepository
                 .findByContactEmailValue(contact.getEmail())
-                .map(userMapper::toSnapshot)
+                .map(UserMapper::toSnapshot)
                 .orElseThrow(() -> new ResourceNotFoundException(User.class, email));
     }
 

@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.user.internal.repository;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -10,15 +11,16 @@ import com.thiagsilvadev.erpapi.user.api.UserStatus;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserSearchCriteria;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
 
-public class UserSpecification {
+public final class UserSpecification {
 
     private UserSpecification() {}
 
     public static Specification<User> withCriteria(UserSearchCriteria criteria, Set<UUID> allowedUserIds) {
-        return Specification.where(hasEmail(criteria.email()))
-                .and(hasNameLike(criteria.name()))
-                .and(hasStatus(criteria.status()))
-                .and(hasIdIn(allowedUserIds));
+        return Specification.allOf(List.of(
+                hasEmail(criteria.email()),
+                hasNameLike(criteria.name()),
+                hasStatus(criteria.status()),
+                hasIdIn(allowedUserIds)));
     }
 
     private static Specification<User> hasEmail(String email) {
@@ -26,7 +28,9 @@ public class UserSpecification {
             if (email == null || email.isBlank()) {
                 return null;
             }
-            return cb.equal(root.get("contact").get("email").get("value"), normalizeEmail(email));
+            return cb.equal(
+                    root.get("contact").get("email").get("value"),
+                    Email.create(email).getValue());
         };
     }
 
@@ -48,9 +52,5 @@ public class UserSpecification {
 
     private static Specification<User> hasIdIn(Set<UUID> ids) {
         return (root, query, cb) -> root.get("id").in(ids);
-    }
-
-    public static String normalizeEmail(String email) {
-        return Email.create(email).getValue();
     }
 }

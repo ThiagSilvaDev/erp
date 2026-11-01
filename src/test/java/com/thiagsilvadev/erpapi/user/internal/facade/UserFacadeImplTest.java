@@ -10,64 +10,68 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
-import com.thiagsilvadev.erpapi.user.internal.mapper.UserMapper;
+import com.thiagsilvadev.erpapi.user.api.UserStatus;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
 class UserFacadeImplTest {
 
+    private static final UUID USER_ID = UUID.randomUUID();
+
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final UserMapper userMapper = mock(UserMapper.class);
-    private final UserFacadeImpl facade = new UserFacadeImpl(userRepository, userMapper);
+    private final UserFacadeImpl facade = new UserFacadeImpl(userRepository);
 
     @Test
     void shouldGetRequiredUser() {
-        UUID userId = UUID.randomUUID();
-        User user = mock(User.class);
-        UserSnapshot snapshot = mock(UserSnapshot.class);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userMapper.toSnapshot(user)).thenReturn(snapshot);
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user()));
 
-        assertThat(facade.getUser(userId)).isSameAs(snapshot);
+        UserSnapshot snapshot = facade.getUser(USER_ID);
+
+        assertThat(snapshot.id()).isEqualTo(USER_ID);
+        assertThat(snapshot.displayName()).isEqualTo("User Example");
+        assertThat(snapshot.email()).isEqualTo("user@example.com");
+        assertThat(snapshot.status()).isEqualTo(UserStatus.ACTIVE);
     }
 
     @Test
     void shouldNormalizeEmailWhenResolvingUser() {
-        User user = mock(User.class);
-        UserSnapshot snapshot = mock(UserSnapshot.class);
-        when(userRepository.findByContactEmailValue("user@example.com")).thenReturn(Optional.of(user));
-        when(userMapper.toSnapshot(user)).thenReturn(snapshot);
+        when(userRepository.findByContactEmailValue("user@example.com")).thenReturn(Optional.of(user()));
 
-        assertThat(facade.resolveUser(" User@Example.COM ")).isSameAs(snapshot);
+        assertThat(facade.resolveUser(" User@Example.COM ").email()).isEqualTo("user@example.com");
         verify(userRepository).findByContactEmailValue("user@example.com");
     }
 
     @Test
     void shouldRejectMissingUser() {
-        UUID userId = UUID.randomUUID();
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> facade.getUser(userId)).isInstanceOf(ResourceNotFoundException.class);
+        assertThatThrownBy(() -> facade.getUser(USER_ID)).isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
     void shouldNotThrowWhenUserExists() {
-        UUID userId = UUID.randomUUID();
-        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userRepository.existsById(USER_ID)).thenReturn(true);
 
-        facade.requireUser(userId);
+        facade.requireUser(USER_ID);
 
-        verify(userRepository).existsById(userId);
+        verify(userRepository).existsById(USER_ID);
     }
 
     @Test
     void shouldRejectMissingUserWhenRequiring() {
-        UUID userId = UUID.randomUUID();
-        when(userRepository.existsById(userId)).thenReturn(false);
+        when(userRepository.existsById(USER_ID)).thenReturn(false);
 
-        assertThatThrownBy(() -> facade.requireUser(userId)).isInstanceOf(ResourceNotFoundException.class);
+        assertThatThrownBy(() -> facade.requireUser(USER_ID)).isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    private static User user() {
+        User user = User.create("User", "Example", Contact.create("user@example.com", "11912345678"), null);
+        ReflectionTestUtils.setField(user, "id", USER_ID);
+        return user;
     }
 }

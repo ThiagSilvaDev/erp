@@ -3,6 +3,7 @@ package com.thiagsilvadev.erpapi.iam.internal.security;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -59,16 +60,20 @@ class UseCaseAuthorizationTest {
         "com.thiagsilvadev.erpapi.sales.internal.usecase.GetSalesOrderByIdUseCase",
         "com.thiagsilvadev.erpapi.sales.internal.usecase.ListSalesOrdersUseCase",
         "com.thiagsilvadev.erpapi.user.internal.usecase.CreateUserUseCase",
-        "com.thiagsilvadev.erpapi.user.internal.usecase.GetUserByIdUseCase",
-        "com.thiagsilvadev.erpapi.user.internal.usecase.ListUsersUseCase"
+        "com.thiagsilvadev.erpapi.user.internal.usecase.UserQueryUseCase"
     };
 
     @Test
-    void shouldProtectHttpFacingUseCaseExecuteMethods() {
+    void shouldProtectEveryPublicUseCaseMethod() {
         assertThat(Stream.of(SECURED_USE_CASES)
-                        .map(UseCaseAuthorizationTest::executeMethod)
-                        .map(method -> method.getAnnotation(PreAuthorize.class)))
-                .allSatisfy(annotation -> assertThat(annotation).isNotNull());
+                        .flatMap(className -> Stream.of(type(className).getDeclaredMethods()))
+                        .filter(method -> Modifier.isPublic(method.getModifiers()))
+                        .toList())
+                .allSatisfy(method -> assertThat(method.getAnnotation(PreAuthorize.class))
+                        .as(
+                                "%s#%s must be guarded by @PreAuthorize",
+                                method.getDeclaringClass().getSimpleName(), method.getName())
+                        .isNotNull());
     }
 
     @Test
@@ -77,13 +82,6 @@ class UseCaseAuthorizationTest {
                 .getDeclaredMethod("execute", Class.forName("com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest"));
 
         assertThat(execute.getAnnotation(PreAuthorize.class)).isNull();
-    }
-
-    private static Method executeMethod(String className) {
-        return Stream.of(type(className).getDeclaredMethods())
-                .filter(method -> method.getName().equals("execute"))
-                .findFirst()
-                .orElseThrow();
     }
 
     private static Class<?> type(String className) {

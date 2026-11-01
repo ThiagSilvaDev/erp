@@ -23,27 +23,24 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
-import com.thiagsilvadev.erpapi.user.internal.dto.UserResponse;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserSearchCriteria;
 import com.thiagsilvadev.erpapi.user.internal.usecase.CreateUserUseCase;
-import com.thiagsilvadev.erpapi.user.internal.usecase.GetUserByIdUseCase;
-import com.thiagsilvadev.erpapi.user.internal.usecase.ListUsersUseCase;
+import com.thiagsilvadev.erpapi.user.internal.usecase.UserQueryUseCase;
 
 class UserControllerTest {
 
     private CreateUserUseCase createUserUseCase;
-    private GetUserByIdUseCase getUserByIdUseCase;
-    private ListUsersUseCase listUsersUseCase;
+    private UserQueryUseCase userQueryUseCase;
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         createUserUseCase = mock(CreateUserUseCase.class);
-        getUserByIdUseCase = mock(GetUserByIdUseCase.class);
-        listUsersUseCase = mock(ListUsersUseCase.class);
-        mockMvc = standaloneSetup(new UserController(createUserUseCase, getUserByIdUseCase, listUsersUseCase))
+        userQueryUseCase = mock(UserQueryUseCase.class);
+        mockMvc = standaloneSetup(new UserController(createUserUseCase, userQueryUseCase))
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .build();
     }
@@ -52,7 +49,7 @@ class UserControllerTest {
     void shouldCreateUser() throws Exception {
         UUID id = UUID.randomUUID();
         UUID roleId = UUID.randomUUID();
-        when(createUserUseCase.execute(any(CreateUserRequest.class))).thenReturn(userResponse(id));
+        when(createUserUseCase.execute(any(CreateUserRequest.class))).thenReturn(userSnapshot(id));
 
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -78,7 +75,7 @@ class UserControllerTest {
     @Test
     void shouldGetUserById() throws Exception {
         UUID id = UUID.randomUUID();
-        when(getUserByIdUseCase.execute(id)).thenReturn(userResponse(id));
+        when(userQueryUseCase.getById(id)).thenReturn(userSnapshot(id));
 
         mockMvc.perform(get("/api/v1/users/{id}", id))
                 .andExpect(status().isOk())
@@ -88,16 +85,16 @@ class UserControllerTest {
     @Test
     void shouldListUsers() throws Exception {
         UUID id = UUID.randomUUID();
-        when(listUsersUseCase.execute(any(UserSearchCriteria.class), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(userResponse(id)), PageRequest.of(0, 20), 1));
+        when(userQueryUseCase.list(any(UserSearchCriteria.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(userSnapshot(id)), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/api/v1/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].displayName").value("User Example"));
     }
 
-    private static UserResponse userResponse(UUID id) {
-        return new UserResponse(
+    private static UserSnapshot userSnapshot(UUID id) {
+        return new UserSnapshot(
                 id,
                 "User Example",
                 "User",

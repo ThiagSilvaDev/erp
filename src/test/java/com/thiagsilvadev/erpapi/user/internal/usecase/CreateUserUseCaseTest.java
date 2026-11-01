@@ -23,11 +23,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.user.api.TenantAccessProvisioningFacade;
+import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
 import com.thiagsilvadev.erpapi.user.internal.event.UserCredentialProvisioningAfterCommitHandler;
 import com.thiagsilvadev.erpapi.user.internal.event.UserEventPublisher;
 import com.thiagsilvadev.erpapi.user.internal.exception.EmailAlreadyExistsException;
-import com.thiagsilvadev.erpapi.user.internal.mapper.UserMapper;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
 import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 
@@ -39,9 +39,6 @@ class CreateUserUseCaseTest {
 
     @Mock
     UserRepository userRepository;
-
-    @Mock
-    UserMapper userMapper;
 
     @Mock
     UserEventPublisher eventPublisher;
@@ -68,7 +65,9 @@ class CreateUserUseCaseTest {
     @Test
     void shouldRejectDuplicatedEmail() {
         when(userRepository.existsByContactEmailValue("user@example.com")).thenReturn(true);
+
         assertThatThrownBy(() -> useCase.execute(request())).isInstanceOf(EmailAlreadyExistsException.class);
+
         verify(userRepository, never()).saveAndFlush(any());
     }
 
@@ -81,11 +80,13 @@ class CreateUserUseCaseTest {
             return user;
         });
 
-        useCase.execute(request());
+        UserSnapshot user = useCase.execute(request());
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).saveAndFlush(userCaptor.capture());
         assertThat(userCaptor.getValue().getContact().getEmail()).isEqualTo("user@example.com");
+        assertThat(user.id()).isEqualTo(userId);
+        assertThat(user.displayName()).isEqualTo("User Example");
         verify(accessProvisioningFacade).provision(userId, COMPANY_ID, Set.of(ROLE_ID));
         verify(credentialHandler).provisionAfterCommit(userCaptor.getValue(), "secret123");
         verify(eventPublisher).userCreated(userCaptor.getValue());
@@ -95,7 +96,9 @@ class CreateUserUseCaseTest {
     void shouldTranslateDuplicateEmailRace() {
         when(userRepository.saveAndFlush(any(User.class)))
                 .thenThrow(new DataIntegrityViolationException("uk_user_email"));
+
         assertThatThrownBy(() -> useCase.execute(request())).isInstanceOf(EmailAlreadyExistsException.class);
+
         verify(accessProvisioningFacade, never()).provision(any(), any(), any());
     }
 

@@ -70,22 +70,18 @@ class UserDevSeeder implements ApplicationRunner {
             String email,
             LocalDate birthDate,
             String roleCode,
-            CompanySnapshot primaryCompany,
-            CompanySnapshot... otherCompanies) {
+            CompanySnapshot... companies) {
         if (userRepository.existsByContactEmailValue(email)) {
-            User user = userRepository
+            User existing = userRepository
                     .findByContactEmailValue(email)
                     .orElseThrow(() -> new IllegalStateException("Seed user lookup failed after existence check"));
-            seedMemberships(user, roleCode, primaryCompany);
-            seedMemberships(user, roleCode, otherCompanies);
+            seedMemberships(existing, roleCode, companies);
             return;
         }
 
         Contact contact = Contact.create(email, "11987654321");
-        User user = User.create(firstName, lastName, contact, birthDate);
-        User savedUser = userRepository.saveAndFlush(user);
-        seedMemberships(savedUser, roleCode, primaryCompany);
-        seedMemberships(savedUser, roleCode, otherCompanies);
+        User savedUser = userRepository.saveAndFlush(User.create(firstName, lastName, contact, birthDate));
+        seedMemberships(savedUser, roleCode, companies);
         credentialProvisioningAfterCommitHandler.provisionAfterCommit(savedUser, SEED_PASSWORD);
         eventPublisher.userCreated(savedUser);
     }

@@ -13,6 +13,7 @@ import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 import com.thiagsilvadev.erpapi.user.api.UserStatus;
 
@@ -44,7 +45,7 @@ public class User extends AbstractBaseEntity {
     private User(String firstName, String lastName, Contact contact, LocalDate birthDate) {
         this.firstName = Strings.required(firstName, "User first name");
         this.lastName = Strings.required(lastName, "User last name");
-        this.contact = requireContact(contact);
+        this.contact = DomainAssert.requireNotNull(contact, "User contact");
         this.birthDate = birthDate;
     }
 
@@ -74,12 +75,5 @@ public class User extends AbstractBaseEntity {
 
     public UserStatus getStatus() {
         return status;
-    }
-
-    private static Contact requireContact(Contact contact) {
-        if (contact == null) {
-            throw new IllegalArgumentException("User contact cannot be null");
-        }
-        return contact;
     }
 }

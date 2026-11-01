@@ -1,20 +1,21 @@
 package com.thiagsilvadev.erpapi.user.internal.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
 import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
-import com.thiagsilvadev.erpapi.user.internal.dto.UserResponse;
 import com.thiagsilvadev.erpapi.user.internal.model.User;
 
-@Mapper(componentModel = "spring")
-public interface UserMapper {
+public final class UserMapper {
 
-    @Mapping(target = "email", source = "contact.email")
-    @Mapping(target = "phone", source = "contact.phone")
-    UserResponse toResponse(User user);
+    private UserMapper() {}
 
-    @Mapping(target = "email", source = "contact.email")
-    @Mapping(target = "phone", source = "contact.phone")
-    UserSnapshot toSnapshot(User user);
+    public static UserSnapshot toSnapshot(User user) {
+        return new UserSnapshot(
+                user.getId(),
+                user.getDisplayName(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getContact().getEmail(),
+                user.getContact().getPhone(),
+                user.getBirthDate(),
+                user.getStatus());
+    }
 }

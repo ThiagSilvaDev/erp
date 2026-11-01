@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.thiagsilvadev.erpapi.user.api.UserSnapshot;
 import com.thiagsilvadev.erpapi.user.internal.dto.CreateUserRequest;
-import com.thiagsilvadev.erpapi.user.internal.dto.UserResponse;
 import com.thiagsilvadev.erpapi.user.internal.dto.UserSearchCriteria;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,16 +32,16 @@ public interface UserApi {
     @ApiResponse(responseCode = "201")
     @ApiResponse(responseCode = "400")
     @ApiResponse(responseCode = "422")
-    ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request);
+    ResponseEntity<UserSnapshot> createUser(@Valid @RequestBody CreateUserRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getUserById")
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "404")
-    UserResponse getUserById(@PathVariable UUID id);
+    UserSnapshot getUserById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listUsers")
     @ApiResponse(responseCode = "200")
-    Page<UserResponse> listUsers(@ParameterObject UserSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<UserSnapshot> listUsers(@ParameterObject UserSearchCriteria criteria, @ParameterObject Pageable pageable);
 }
