@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.catalog.internal.service;
 
+import static com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions.WRITE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -14,21 +15,29 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.thiagsilvadev.erpapi.catalog.internal.dto.MoneyRequest;
+import com.thiagsilvadev.erpapi.catalog.internal.dto.product.CreateProductRequest;
 import com.thiagsilvadev.erpapi.catalog.internal.exception.SkuAlreadyExistsException;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Category;
 import com.thiagsilvadev.erpapi.catalog.internal.model.Product;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.CategoryRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.ProductRepository;
 import com.thiagsilvadev.erpapi.catalog.internal.repository.SkuSequenceRepository;
+import com.thiagsilvadev.erpapi.catalog.internal.usecase.product.CreateProductUseCase;
 import com.thiagsilvadev.erpapi.common.domain.model.Money;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 
 @SpringBootTest
 @ActiveProfiles("dbtest")
 class SkuAssignmentPersistenceTest {
+    @Autowired
+    CreateProductUseCase useCase;
+
     @Autowired
     SkuAssignmentService assignment;
 
@@ -117,6 +126,27 @@ class SkuAssignmentPersistenceTest {
             }
             assertThat(List.of(first.get(15, TimeUnit.SECONDS), second.get(15, TimeUnit.SECONDS)))
                     .containsExactlyInAnyOrder("OFFICE-00000001", "OFFICE-00000002");
+        }
+    }
+
+    @Test
+    @WithMockUser(authorities = WRITE)
+    void shouldCreateThroughUseCaseAndRollBackAllocationOnFailure() {
+        Category office = category(company, "OFFICE");
+        TenantContext.setTenantId(company);
+        try {
+            var request = new CreateProductRequest(
+                    null, "Test", null, new MoneyRequest(BigDecimal.TEN, "BRL"), office.getId());
+            tx().executeWithoutResult(status -> {
+                useCase.execute(request);
+                status.setRollbackOnly();
+            });
+            assertThat(useCase.execute(request).sku()).isEqualTo("OFFICE-00000001");
+            var manual = new CreateProductRequest(
+                    " custom ", "Test", null, new MoneyRequest(BigDecimal.TEN, "BRL"), office.getId());
+            assertThat(useCase.execute(manual).sku()).isEqualTo("CUSTOM");
+        } finally {
+            TenantContext.clear();
         }
     }
 

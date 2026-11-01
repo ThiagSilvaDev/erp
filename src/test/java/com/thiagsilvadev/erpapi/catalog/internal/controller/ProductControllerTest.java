@@ -1,6 +1,8 @@
 package com.thiagsilvadev.erpapi.catalog.internal.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -15,6 +17,9 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -77,6 +82,22 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.category.name").value("Raw materials"))
                 .andExpect(jsonPath("$.category.description").doesNotExist())
                 .andExpect(jsonPath("$.category.status").doesNotExist());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "\"sku\":null,"})
+    void shouldAcceptAutomaticAssignment(String skuField) throws Exception {
+        UUID categoryId = UUID.randomUUID();
+        when(createProductUseCase.execute(any())).thenReturn(productResponse(UUID.randomUUID(), categoryId));
+        mockMvc.perform(post("/api/v1/catalog/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                "{ %s \"name\":\"Product\",\"basePrice\":{\"amount\":10,\"currencyCode\":\"BRL\"},\"categoryId\":\"%s\"}"
+                                        .formatted(skuField, categoryId)))
+                .andExpect(status().isCreated());
+        var captor = ArgumentCaptor.forClass(CreateProductRequest.class);
+        verify(createProductUseCase).execute(captor.capture());
+        assertThat(captor.getValue().sku()).isNull();
     }
 
     @Test
