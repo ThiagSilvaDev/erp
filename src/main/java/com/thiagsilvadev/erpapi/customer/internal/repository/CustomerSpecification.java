@@ -18,23 +18,25 @@ public class CustomerSpecification {
     private CustomerSpecification() {}
 
     public static Specification<Customer> customers(CustomerSearchCriteria criteria) {
-        return Specification.where(customerName(criteria.name()))
-                .and(customerDocument(criteria.document()))
-                .and(customerOwnerCompany(criteria.ownerCompanyId()));
+        return Specification.allOf(
+                customerName(criteria.name()),
+                customerDocument(criteria.document()),
+                customerOwnerCompany(criteria.ownerCompanyId()));
     }
 
     public static Specification<Customer> customersForCompany(CustomerSearchCriteria criteria, UUID ownerCompanyId) {
-        return Specification.where(customerOwnerCompany(ownerCompanyId)).and(customers(criteria));
+        return Specification.allOf(customerOwnerCompany(ownerCompanyId), customers(criteria));
     }
 
     public static Specification<Supplier> suppliers(SupplierSearchCriteria criteria) {
-        return Specification.where(supplierName(criteria.name()))
-                .and(supplierDocument(criteria.document()))
-                .and(supplierCompany(criteria.companyId()));
+        return Specification.allOf(
+                supplierName(criteria.name()),
+                supplierDocument(criteria.document()),
+                supplierCompany(criteria.companyId()));
     }
 
     public static Specification<Supplier> suppliersForCompany(SupplierSearchCriteria criteria, UUID companyId) {
-        return Specification.where(supplierCompany(companyId)).and(suppliers(criteria));
+        return Specification.allOf(supplierCompany(companyId), suppliers(criteria));
     }
 
     private static Specification<Customer> customerName(String name) {

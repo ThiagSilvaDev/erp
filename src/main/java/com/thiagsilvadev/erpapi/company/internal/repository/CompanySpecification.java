@@ -12,10 +12,11 @@ public class CompanySpecification {
     private CompanySpecification() {}
 
     public static Specification<Company> withCriteria(CompanySearchCriteria criteria) {
-        return Specification.where(hasType(criteria.type()))
-                .and(hasStatus(criteria.status()))
-                .and(hasCnpj(criteria.cnpj()))
-                .and(hasNameLike(criteria.name()));
+        return Specification.allOf(
+                hasType(criteria.type()),
+                hasStatus(criteria.status()),
+                hasCnpj(criteria.cnpj()),
+                hasNameLike(criteria.name()));
     }
 
     private static Specification<Company> hasType(CompanyType type) {

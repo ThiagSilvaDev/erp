@@ -14,14 +14,15 @@ public class ProductSpecification {
     private ProductSpecification() {}
 
     public static Specification<Product> withCriteria(ProductSearchCriteria criteria) {
-        return Specification.where(hasSku(criteria.sku()))
-                .and(hasStatus(criteria.status()))
-                .and(hasCategory(criteria.categoryId()))
-                .and(hasNameLike(criteria.name()));
+        return Specification.allOf(
+                hasSku(criteria.sku()),
+                hasStatus(criteria.status()),
+                hasCategory(criteria.categoryId()),
+                hasNameLike(criteria.name()));
     }
 
     public static Specification<Product> withCriteriaForCompany(ProductSearchCriteria criteria, UUID companyId) {
-        return Specification.where(hasCompany(companyId)).and(withCriteria(criteria));
+        return Specification.allOf(hasCompany(companyId), withCriteria(criteria));
     }
 
     private static Specification<Product> hasCompany(UUID companyId) {

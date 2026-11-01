@@ -13,13 +13,12 @@ public class CategorySpecification {
     private CategorySpecification() {}
 
     public static Specification<Category> withCriteria(CategorySearchCriteria criteria) {
-        return Specification.where(hasCode(criteria.code()))
-                .and(hasStatus(criteria.status()))
-                .and(hasNameLike(criteria.name()));
+        return Specification.allOf(
+                hasCode(criteria.code()), hasStatus(criteria.status()), hasNameLike(criteria.name()));
     }
 
     public static Specification<Category> withCriteriaForCompany(CategorySearchCriteria criteria, UUID companyId) {
-        return Specification.where(hasCompany(companyId)).and(withCriteria(criteria));
+        return Specification.allOf(hasCompany(companyId), withCriteria(criteria));
     }
 
     private static Specification<Category> hasCompany(UUID companyId) {
