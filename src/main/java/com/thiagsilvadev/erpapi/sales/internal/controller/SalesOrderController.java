@@ -19,20 +19,17 @@ import com.thiagsilvadev.erpapi.sales.internal.usecase.*;
 class SalesOrderController implements SalesOrderApi {
 
     private final CreateSalesOrderUseCase createSalesOrderUseCase;
-    private final GetSalesOrderByIdUseCase getSalesOrderByIdUseCase;
-    private final ListSalesOrdersUseCase listSalesOrdersUseCase;
+    private final SalesOrderQueryUseCase salesOrderQueryUseCase;
     private final ConfirmSalesOrderUseCase confirmSalesOrderUseCase;
     private final CancelSalesOrderUseCase cancelSalesOrderUseCase;
 
     SalesOrderController(
             CreateSalesOrderUseCase createSalesOrderUseCase,
-            GetSalesOrderByIdUseCase getSalesOrderByIdUseCase,
-            ListSalesOrdersUseCase listSalesOrdersUseCase,
+            SalesOrderQueryUseCase salesOrderQueryUseCase,
             ConfirmSalesOrderUseCase confirmSalesOrderUseCase,
             CancelSalesOrderUseCase cancelSalesOrderUseCase) {
         this.createSalesOrderUseCase = createSalesOrderUseCase;
-        this.getSalesOrderByIdUseCase = getSalesOrderByIdUseCase;
-        this.listSalesOrdersUseCase = listSalesOrdersUseCase;
+        this.salesOrderQueryUseCase = salesOrderQueryUseCase;
         this.confirmSalesOrderUseCase = confirmSalesOrderUseCase;
         this.cancelSalesOrderUseCase = cancelSalesOrderUseCase;
     }
@@ -45,12 +42,12 @@ class SalesOrderController implements SalesOrderApi {
 
     @Override
     public SalesOrderResponse getOrder(@PathVariable UUID id) {
-        return getSalesOrderByIdUseCase.execute(id);
+        return salesOrderQueryUseCase.getById(id);
     }
 
     @Override
     public Page<SalesOrderResponse> listOrders(SalesOrderSearchCriteria criteria, Pageable pageable) {
-        return listSalesOrdersUseCase.execute(criteria, pageable);
+        return salesOrderQueryUseCase.list(criteria, pageable);
     }
 
     @Override

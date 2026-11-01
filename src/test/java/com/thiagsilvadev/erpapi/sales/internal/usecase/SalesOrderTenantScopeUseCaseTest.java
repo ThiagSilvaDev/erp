@@ -59,8 +59,8 @@ class SalesOrderTenantScopeUseCaseTest {
         when(orderRepository.findAll(any(Specification.class), org.mockito.ArgumentMatchers.eq(pageable)))
                 .thenReturn(new PageImpl<>(java.util.List.of()));
 
-        new ListSalesOrdersUseCase(orderRepository, responseAssembler)
-                .execute(new SalesOrderSearchCriteria(null, null, null, null, null), pageable);
+        new SalesOrderQueryUseCase(orderRepository, responseAssembler)
+                .list(new SalesOrderSearchCriteria(null, null, null, null, null), pageable);
 
         verify(orderRepository).findAll(any(Specification.class), org.mockito.ArgumentMatchers.eq(pageable));
     }
@@ -72,7 +72,7 @@ class SalesOrderTenantScopeUseCaseTest {
         TenantContext.setTenantId(tenantId);
         when(orderRepository.findByIdAndSellerCompanyId(orderId, tenantId)).thenReturn(Optional.of(order(tenantId)));
 
-        new GetSalesOrderByIdUseCase(orderRepository, responseAssembler).execute(orderId);
+        new SalesOrderQueryUseCase(orderRepository, responseAssembler).getById(orderId);
 
         verify(orderRepository).findByIdAndSellerCompanyId(orderId, tenantId);
     }
@@ -84,7 +84,7 @@ class SalesOrderTenantScopeUseCaseTest {
         TenantContext.setTenantId(tenantId);
         when(orderRepository.findByIdAndSellerCompanyId(orderId, tenantId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> new GetSalesOrderByIdUseCase(orderRepository, responseAssembler).execute(orderId))
+        assertThatThrownBy(() -> new SalesOrderQueryUseCase(orderRepository, responseAssembler).getById(orderId))
                 .isInstanceOf(ResourceNotFoundException.class);
 
         verify(orderRepository, never()).findById(orderId);

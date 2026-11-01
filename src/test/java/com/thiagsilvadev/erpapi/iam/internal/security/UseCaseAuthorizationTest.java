@@ -43,8 +43,7 @@ class UseCaseAuthorizationTest {
         "com.thiagsilvadev.erpapi.sales.internal.usecase.CancelSalesOrderUseCase",
         "com.thiagsilvadev.erpapi.sales.internal.usecase.ConfirmSalesOrderUseCase",
         "com.thiagsilvadev.erpapi.sales.internal.usecase.CreateSalesOrderUseCase",
-        "com.thiagsilvadev.erpapi.sales.internal.usecase.GetSalesOrderByIdUseCase",
-        "com.thiagsilvadev.erpapi.sales.internal.usecase.ListSalesOrdersUseCase",
+        "com.thiagsilvadev.erpapi.sales.internal.usecase.SalesOrderQueryUseCase",
         "com.thiagsilvadev.erpapi.user.internal.usecase.CreateUserUseCase",
         "com.thiagsilvadev.erpapi.user.internal.usecase.UserQueryUseCase"
     };
