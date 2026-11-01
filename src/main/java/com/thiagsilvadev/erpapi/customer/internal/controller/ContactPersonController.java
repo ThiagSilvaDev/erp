@@ -17,16 +17,13 @@ import com.thiagsilvadev.erpapi.customer.internal.usecase.*;
 class ContactPersonController implements ContactPersonApi {
 
     private final CreateContactPersonUseCase createContactPersonUseCase;
-    private final GetContactPersonByIdUseCase getContactPersonByIdUseCase;
-    private final ListContactPersonsUseCase listContactPersonsUseCase;
+    private final ContactPersonQueryUseCase contactPersonQueryUseCase;
 
     ContactPersonController(
             CreateContactPersonUseCase createContactPersonUseCase,
-            GetContactPersonByIdUseCase getContactPersonByIdUseCase,
-            ListContactPersonsUseCase listContactPersonsUseCase) {
+            ContactPersonQueryUseCase contactPersonQueryUseCase) {
         this.createContactPersonUseCase = createContactPersonUseCase;
-        this.getContactPersonByIdUseCase = getContactPersonByIdUseCase;
-        this.listContactPersonsUseCase = listContactPersonsUseCase;
+        this.contactPersonQueryUseCase = contactPersonQueryUseCase;
     }
 
     @Override
@@ -37,11 +34,11 @@ class ContactPersonController implements ContactPersonApi {
 
     @Override
     public ContactPersonResponse getContactPersonById(UUID id) {
-        return getContactPersonByIdUseCase.execute(id);
+        return contactPersonQueryUseCase.getById(id);
     }
 
     @Override
     public Page<ContactPersonResponse> listContactPersons(Pageable pageable) {
-        return listContactPersonsUseCase.execute(pageable);
+        return contactPersonQueryUseCase.list(pageable);
     }
 }

@@ -17,16 +17,11 @@ import com.thiagsilvadev.erpapi.customer.internal.usecase.*;
 class CustomerController implements CustomerApi {
 
     private final CreateCustomerUseCase createCustomerUseCase;
-    private final GetCustomerByIdUseCase getCustomerByIdUseCase;
-    private final ListCustomersUseCase listCustomersUseCase;
+    private final CustomerQueryUseCase customerQueryUseCase;
 
-    CustomerController(
-            CreateCustomerUseCase createCustomerUseCase,
-            GetCustomerByIdUseCase getCustomerByIdUseCase,
-            ListCustomersUseCase listCustomersUseCase) {
+    CustomerController(CreateCustomerUseCase createCustomerUseCase, CustomerQueryUseCase customerQueryUseCase) {
         this.createCustomerUseCase = createCustomerUseCase;
-        this.getCustomerByIdUseCase = getCustomerByIdUseCase;
-        this.listCustomersUseCase = listCustomersUseCase;
+        this.customerQueryUseCase = customerQueryUseCase;
     }
 
     @Override
@@ -37,11 +32,11 @@ class CustomerController implements CustomerApi {
 
     @Override
     public CustomerResponse getCustomerById(UUID id) {
-        return getCustomerByIdUseCase.execute(id);
+        return customerQueryUseCase.getById(id);
     }
 
     @Override
     public Page<CustomerResponse> listCustomers(CustomerSearchCriteria criteria, Pageable pageable) {
-        return listCustomersUseCase.execute(criteria, pageable);
+        return customerQueryUseCase.list(criteria, pageable);
     }
 }

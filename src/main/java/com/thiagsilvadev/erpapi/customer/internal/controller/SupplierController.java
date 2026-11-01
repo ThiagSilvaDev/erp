@@ -17,16 +17,11 @@ import com.thiagsilvadev.erpapi.customer.internal.usecase.*;
 class SupplierController implements SupplierApi {
 
     private final CreateSupplierUseCase createSupplierUseCase;
-    private final GetSupplierByIdUseCase getSupplierByIdUseCase;
-    private final ListSuppliersUseCase listSuppliersUseCase;
+    private final SupplierQueryUseCase supplierQueryUseCase;
 
-    SupplierController(
-            CreateSupplierUseCase createSupplierUseCase,
-            GetSupplierByIdUseCase getSupplierByIdUseCase,
-            ListSuppliersUseCase listSuppliersUseCase) {
+    SupplierController(CreateSupplierUseCase createSupplierUseCase, SupplierQueryUseCase supplierQueryUseCase) {
         this.createSupplierUseCase = createSupplierUseCase;
-        this.getSupplierByIdUseCase = getSupplierByIdUseCase;
-        this.listSuppliersUseCase = listSuppliersUseCase;
+        this.supplierQueryUseCase = supplierQueryUseCase;
     }
 
     @Override
@@ -37,11 +32,11 @@ class SupplierController implements SupplierApi {
 
     @Override
     public SupplierResponse getSupplierById(UUID id) {
-        return getSupplierByIdUseCase.execute(id);
+        return supplierQueryUseCase.getById(id);
     }
 
     @Override
     public Page<SupplierResponse> listSuppliers(SupplierSearchCriteria criteria, Pageable pageable) {
-        return listSuppliersUseCase.execute(criteria, pageable);
+        return supplierQueryUseCase.list(criteria, pageable);
     }
 }
