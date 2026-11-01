@@ -14,26 +14,22 @@ import com.thiagsilvadev.erpapi.financial.internal.dto.account.CreateFinancialAc
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.entry.FinancialEntryResponse;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.account.CreateFinancialAccountUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.account.GetFinancialAccountByIdUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.account.ListFinancialAccountsUseCase;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.account.FinancialAccountQueryUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.entry.ListFinancialEntriesUseCase;
 
 @RestController
 class FinancialAccountController implements FinancialAccountApi {
 
     private final CreateFinancialAccountUseCase createFinancialAccountUseCase;
-    private final GetFinancialAccountByIdUseCase getFinancialAccountByIdUseCase;
-    private final ListFinancialAccountsUseCase listFinancialAccountsUseCase;
+    private final FinancialAccountQueryUseCase financialAccountQueryUseCase;
     private final ListFinancialEntriesUseCase listFinancialEntriesUseCase;
 
     FinancialAccountController(
             CreateFinancialAccountUseCase createFinancialAccountUseCase,
-            GetFinancialAccountByIdUseCase getFinancialAccountByIdUseCase,
-            ListFinancialAccountsUseCase listFinancialAccountsUseCase,
+            FinancialAccountQueryUseCase financialAccountQueryUseCase,
             ListFinancialEntriesUseCase listFinancialEntriesUseCase) {
         this.createFinancialAccountUseCase = createFinancialAccountUseCase;
-        this.getFinancialAccountByIdUseCase = getFinancialAccountByIdUseCase;
-        this.listFinancialAccountsUseCase = listFinancialAccountsUseCase;
+        this.financialAccountQueryUseCase = financialAccountQueryUseCase;
         this.listFinancialEntriesUseCase = listFinancialEntriesUseCase;
     }
 
@@ -46,12 +42,12 @@ class FinancialAccountController implements FinancialAccountApi {
 
     @Override
     public FinancialAccountResponse getAccount(@PathVariable UUID id) {
-        return getFinancialAccountByIdUseCase.execute(id);
+        return financialAccountQueryUseCase.getById(id);
     }
 
     @Override
     public Page<FinancialAccountResponse> listAccounts(Pageable pageable) {
-        return listFinancialAccountsUseCase.execute(pageable);
+        return financialAccountQueryUseCase.list(pageable);
     }
 
     @Override

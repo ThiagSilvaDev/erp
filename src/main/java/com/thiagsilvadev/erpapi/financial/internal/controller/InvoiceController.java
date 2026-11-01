@@ -14,23 +14,17 @@ import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.CreateInvoiceRequ
 import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceSearchCriteria;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.CreateInvoiceUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.GetInvoiceByIdUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.ListInvoicesUseCase;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.InvoiceQueryUseCase;
 
 @RestController
 class InvoiceController implements InvoiceApi {
 
     private final CreateInvoiceUseCase createInvoiceUseCase;
-    private final GetInvoiceByIdUseCase getInvoiceByIdUseCase;
-    private final ListInvoicesUseCase listInvoicesUseCase;
+    private final InvoiceQueryUseCase invoiceQueryUseCase;
 
-    InvoiceController(
-            CreateInvoiceUseCase createInvoiceUseCase,
-            GetInvoiceByIdUseCase getInvoiceByIdUseCase,
-            ListInvoicesUseCase listInvoicesUseCase) {
+    InvoiceController(CreateInvoiceUseCase createInvoiceUseCase, InvoiceQueryUseCase invoiceQueryUseCase) {
         this.createInvoiceUseCase = createInvoiceUseCase;
-        this.getInvoiceByIdUseCase = getInvoiceByIdUseCase;
-        this.listInvoicesUseCase = listInvoicesUseCase;
+        this.invoiceQueryUseCase = invoiceQueryUseCase;
     }
 
     @Override
@@ -41,11 +35,11 @@ class InvoiceController implements InvoiceApi {
 
     @Override
     public InvoiceResponse getInvoice(@PathVariable UUID id) {
-        return getInvoiceByIdUseCase.execute(id);
+        return invoiceQueryUseCase.getById(id);
     }
 
     @Override
     public Page<InvoiceResponse> listInvoices(InvoiceSearchCriteria criteria, Pageable pageable) {
-        return listInvoicesUseCase.execute(criteria, pageable);
+        return invoiceQueryUseCase.list(criteria, pageable);
     }
 }

@@ -14,24 +14,20 @@ import org.springframework.web.bind.annotation.RestController;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.financial.internal.dto.accountingaccount.AccountingAccountResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.accountingaccount.CreateAccountingAccountRequest;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.accountingaccount.AccountingAccountQueryUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.accountingaccount.CreateAccountingAccountUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.accountingaccount.GetAccountingAccountByIdUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.accountingaccount.ListAccountingAccountsUseCase;
 
 @RestController
 class AccountingAccountController implements AccountingAccountApi {
 
     private final CreateAccountingAccountUseCase createAccountingAccountUseCase;
-    private final GetAccountingAccountByIdUseCase getAccountingAccountByIdUseCase;
-    private final ListAccountingAccountsUseCase listAccountingAccountsUseCase;
+    private final AccountingAccountQueryUseCase accountingAccountQueryUseCase;
 
     AccountingAccountController(
             CreateAccountingAccountUseCase createAccountingAccountUseCase,
-            GetAccountingAccountByIdUseCase getAccountingAccountByIdUseCase,
-            ListAccountingAccountsUseCase listAccountingAccountsUseCase) {
+            AccountingAccountQueryUseCase accountingAccountQueryUseCase) {
         this.createAccountingAccountUseCase = createAccountingAccountUseCase;
-        this.getAccountingAccountByIdUseCase = getAccountingAccountByIdUseCase;
-        this.listAccountingAccountsUseCase = listAccountingAccountsUseCase;
+        this.accountingAccountQueryUseCase = accountingAccountQueryUseCase;
     }
 
     @Override
@@ -43,11 +39,11 @@ class AccountingAccountController implements AccountingAccountApi {
 
     @Override
     public AccountingAccountResponse getAccount(@PathVariable UUID id) {
-        return getAccountingAccountByIdUseCase.execute(id);
+        return accountingAccountQueryUseCase.getById(id);
     }
 
     @Override
     public Page<AccountingAccountResponse> listAccounts(Pageable pageable) {
-        return listAccountingAccountsUseCase.execute(pageable);
+        return accountingAccountQueryUseCase.list(pageable);
     }
 }

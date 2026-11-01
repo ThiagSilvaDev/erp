@@ -7,28 +7,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.financial.internal.dto.ledgerentry.LedgerEntryResponse;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.ledgerentry.GetLedgerEntryByIdUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.ledgerentry.ListLedgerEntriesUseCase;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.ledgerentry.LedgerEntryQueryUseCase;
 
 @RestController
 class LedgerEntryController implements LedgerEntryApi {
 
-    private final GetLedgerEntryByIdUseCase getLedgerEntryByIdUseCase;
-    private final ListLedgerEntriesUseCase listLedgerEntriesUseCase;
+    private final LedgerEntryQueryUseCase ledgerEntryQueryUseCase;
 
-    LedgerEntryController(
-            GetLedgerEntryByIdUseCase getLedgerEntryByIdUseCase, ListLedgerEntriesUseCase listLedgerEntriesUseCase) {
-        this.getLedgerEntryByIdUseCase = getLedgerEntryByIdUseCase;
-        this.listLedgerEntriesUseCase = listLedgerEntriesUseCase;
+    LedgerEntryController(LedgerEntryQueryUseCase ledgerEntryQueryUseCase) {
+        this.ledgerEntryQueryUseCase = ledgerEntryQueryUseCase;
     }
 
     @Override
     public LedgerEntryResponse getLedgerEntry(@PathVariable UUID id) {
-        return getLedgerEntryByIdUseCase.execute(id);
+        return ledgerEntryQueryUseCase.getById(id);
     }
 
     @Override
     public Page<LedgerEntryResponse> listLedgerEntries(Pageable pageable) {
-        return listLedgerEntriesUseCase.execute(pageable);
+        return ledgerEntryQueryUseCase.list(pageable);
     }
 }

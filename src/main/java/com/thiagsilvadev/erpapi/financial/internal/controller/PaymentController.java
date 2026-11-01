@@ -13,23 +13,17 @@ import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.CreatePaymentRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.CreatePaymentUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.GetPaymentByIdUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.ListPaymentsUseCase;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.payment.PaymentQueryUseCase;
 
 @RestController
 class PaymentController implements PaymentApi {
 
     private final CreatePaymentUseCase createPaymentUseCase;
-    private final GetPaymentByIdUseCase getPaymentByIdUseCase;
-    private final ListPaymentsUseCase listPaymentsUseCase;
+    private final PaymentQueryUseCase paymentQueryUseCase;
 
-    PaymentController(
-            CreatePaymentUseCase createPaymentUseCase,
-            GetPaymentByIdUseCase getPaymentByIdUseCase,
-            ListPaymentsUseCase listPaymentsUseCase) {
+    PaymentController(CreatePaymentUseCase createPaymentUseCase, PaymentQueryUseCase paymentQueryUseCase) {
         this.createPaymentUseCase = createPaymentUseCase;
-        this.getPaymentByIdUseCase = getPaymentByIdUseCase;
-        this.listPaymentsUseCase = listPaymentsUseCase;
+        this.paymentQueryUseCase = paymentQueryUseCase;
     }
 
     @Override
@@ -40,11 +34,11 @@ class PaymentController implements PaymentApi {
 
     @Override
     public PaymentResponse getPayment(@PathVariable UUID id) {
-        return getPaymentByIdUseCase.execute(id);
+        return paymentQueryUseCase.getById(id);
     }
 
     @Override
     public Page<PaymentResponse> listPayments(Pageable pageable) {
-        return listPaymentsUseCase.execute(pageable);
+        return paymentQueryUseCase.list(pageable);
     }
 }
