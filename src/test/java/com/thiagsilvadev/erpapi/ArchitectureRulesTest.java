@@ -3,12 +3,15 @@ package com.thiagsilvadev.erpapi;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.mapstruct.Mapper;
 
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 
@@ -17,9 +20,49 @@ class ArchitectureRulesTest {
     private static final String BASE_PACKAGE = "com.thiagsilvadev.erpapi";
     private static final Set<String> REPOSITORY_VERBS = Set.of("find", "exists", "save", "delete", "count");
 
-    private final com.tngtech.archunit.core.domain.JavaClasses classes = new ClassFileImporter()
+    private final JavaClasses classes = new ClassFileImporter()
             .withImportOption(new ImportOption.DoNotIncludeTests())
             .importPackages(BASE_PACKAGE);
+
+    @Test
+    void afterCommitSideEffectsMustUseTheSharedHelper() {
+        List<String> violations = classes.stream()
+                .filter(javaClass -> !javaClass.getPackageName().startsWith(BASE_PACKAGE + ".common.transaction"))
+                .flatMap(javaClass -> javaClass.getDirectDependenciesFromSelf().stream())
+                .filter(dependency -> dependency
+                        .getTargetClass()
+                        .getName()
+                        .startsWith("org.springframework.transaction.support.TransactionSynchronization"))
+                .map(dependency -> dependency.getOriginClass().getName() + " -> "
+                        + dependency.getTargetClass().getName())
+                .toList();
+
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    void useCasesMustNotDependOnFacadeImplementations() {
+        List<String> violations = classes.stream()
+                .filter(javaClass -> javaClass.getPackageName().contains(".internal.usecase"))
+                .flatMap(javaClass -> javaClass.getDirectDependenciesFromSelf().stream())
+                .filter(dependency ->
+                        dependency.getTargetClass().getSimpleName().endsWith("FacadeImpl"))
+                .map(dependency -> dependency.getOriginClass().getName() + " -> "
+                        + dependency.getTargetClass().getName())
+                .toList();
+
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    void mapstructMappersLiveInTheMapperPackage() {
+        noClasses()
+                .that()
+                .areAnnotatedWith(Mapper.class)
+                .should()
+                .resideOutsideOfPackages("..internal.mapper..")
+                .check(classes);
+    }
 
     @Test
     void controllersMustNotAccessPersistence() {
