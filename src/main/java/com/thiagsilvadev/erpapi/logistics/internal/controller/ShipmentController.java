@@ -14,8 +14,7 @@ import com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment.*;
 @RestController
 class ShipmentController implements ShipmentApi {
 
-    private final ListShipmentsUseCase listShipmentsUseCase;
-    private final GetShipmentByIdUseCase getShipmentByIdUseCase;
+    private final ShipmentQueryUseCase shipmentQueryUseCase;
     private final AssignDispatchUseCase assignDispatchUseCase;
     private final LoadShipmentUseCase loadShipmentUseCase;
     private final DispatchShipmentUseCase dispatchShipmentUseCase;
@@ -24,16 +23,14 @@ class ShipmentController implements ShipmentApi {
     private final CancelShipmentUseCase cancelShipmentUseCase;
 
     ShipmentController(
-            ListShipmentsUseCase listShipmentsUseCase,
-            GetShipmentByIdUseCase getShipmentByIdUseCase,
+            ShipmentQueryUseCase shipmentQueryUseCase,
             AssignDispatchUseCase assignDispatchUseCase,
             LoadShipmentUseCase loadShipmentUseCase,
             DispatchShipmentUseCase dispatchShipmentUseCase,
             AddShipmentTrackingEventUseCase addShipmentTrackingEventUseCase,
             DeliverShipmentUseCase deliverShipmentUseCase,
             CancelShipmentUseCase cancelShipmentUseCase) {
-        this.listShipmentsUseCase = listShipmentsUseCase;
-        this.getShipmentByIdUseCase = getShipmentByIdUseCase;
+        this.shipmentQueryUseCase = shipmentQueryUseCase;
         this.assignDispatchUseCase = assignDispatchUseCase;
         this.loadShipmentUseCase = loadShipmentUseCase;
         this.dispatchShipmentUseCase = dispatchShipmentUseCase;
@@ -44,12 +41,12 @@ class ShipmentController implements ShipmentApi {
 
     @Override
     public Page<ShipmentResponse> listShipments(ShipmentSearchCriteria criteria, Pageable pageable) {
-        return listShipmentsUseCase.execute(criteria, pageable);
+        return shipmentQueryUseCase.list(criteria, pageable);
     }
 
     @Override
     public ShipmentResponse getShipment(@PathVariable UUID id) {
-        return getShipmentByIdUseCase.execute(id);
+        return shipmentQueryUseCase.getById(id);
     }
 
     @Override

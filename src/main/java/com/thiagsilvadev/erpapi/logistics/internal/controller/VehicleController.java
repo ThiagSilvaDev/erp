@@ -13,23 +13,17 @@ import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.vehicle.CreateVehicleRequest;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.vehicle.VehicleResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle.CreateVehicleUseCase;
-import com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle.GetVehicleByIdUseCase;
-import com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle.ListVehiclesUseCase;
+import com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle.VehicleQueryUseCase;
 
 @RestController
 class VehicleController implements VehicleApi {
 
     private final CreateVehicleUseCase createVehicleUseCase;
-    private final GetVehicleByIdUseCase getVehicleByIdUseCase;
-    private final ListVehiclesUseCase listVehiclesUseCase;
+    private final VehicleQueryUseCase vehicleQueryUseCase;
 
-    VehicleController(
-            CreateVehicleUseCase createVehicleUseCase,
-            GetVehicleByIdUseCase getVehicleByIdUseCase,
-            ListVehiclesUseCase listVehiclesUseCase) {
+    VehicleController(CreateVehicleUseCase createVehicleUseCase, VehicleQueryUseCase vehicleQueryUseCase) {
         this.createVehicleUseCase = createVehicleUseCase;
-        this.getVehicleByIdUseCase = getVehicleByIdUseCase;
-        this.listVehiclesUseCase = listVehiclesUseCase;
+        this.vehicleQueryUseCase = vehicleQueryUseCase;
     }
 
     @Override
@@ -40,11 +34,11 @@ class VehicleController implements VehicleApi {
 
     @Override
     public VehicleResponse getVehicle(@PathVariable UUID id) {
-        return getVehicleByIdUseCase.execute(id);
+        return vehicleQueryUseCase.getById(id);
     }
 
     @Override
     public Page<VehicleResponse> listVehicles(Pageable pageable) {
-        return listVehiclesUseCase.execute(pageable);
+        return vehicleQueryUseCase.list(pageable);
     }
 }

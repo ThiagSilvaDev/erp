@@ -41,8 +41,7 @@ class ShipmentControllerTest {
             return null;
         });
         ShipmentController controller = new ShipmentController(
-                mock(ListShipmentsUseCase.class),
-                mock(GetShipmentByIdUseCase.class),
+                mock(ShipmentQueryUseCase.class),
                 mock(AssignDispatchUseCase.class),
                 mock(LoadShipmentUseCase.class),
                 dispatch,

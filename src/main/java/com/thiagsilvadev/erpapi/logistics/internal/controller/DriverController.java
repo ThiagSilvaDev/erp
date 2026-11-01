@@ -13,23 +13,17 @@ import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverRequest;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
 import com.thiagsilvadev.erpapi.logistics.internal.usecase.driver.CreateDriverUseCase;
-import com.thiagsilvadev.erpapi.logistics.internal.usecase.driver.GetDriverByIdUseCase;
-import com.thiagsilvadev.erpapi.logistics.internal.usecase.driver.ListDriversUseCase;
+import com.thiagsilvadev.erpapi.logistics.internal.usecase.driver.DriverQueryUseCase;
 
 @RestController
 class DriverController implements DriverApi {
 
     private final CreateDriverUseCase createDriverUseCase;
-    private final GetDriverByIdUseCase getDriverByIdUseCase;
-    private final ListDriversUseCase listDriversUseCase;
+    private final DriverQueryUseCase driverQueryUseCase;
 
-    DriverController(
-            CreateDriverUseCase createDriverUseCase,
-            GetDriverByIdUseCase getDriverByIdUseCase,
-            ListDriversUseCase listDriversUseCase) {
+    DriverController(CreateDriverUseCase createDriverUseCase, DriverQueryUseCase driverQueryUseCase) {
         this.createDriverUseCase = createDriverUseCase;
-        this.getDriverByIdUseCase = getDriverByIdUseCase;
-        this.listDriversUseCase = listDriversUseCase;
+        this.driverQueryUseCase = driverQueryUseCase;
     }
 
     @Override
@@ -40,11 +34,11 @@ class DriverController implements DriverApi {
 
     @Override
     public DriverResponse getDriver(@PathVariable UUID id) {
-        return getDriverByIdUseCase.execute(id);
+        return driverQueryUseCase.getById(id);
     }
 
     @Override
     public Page<DriverResponse> listDrivers(Pageable pageable) {
-        return listDriversUseCase.execute(pageable);
+        return driverQueryUseCase.list(pageable);
     }
 }
