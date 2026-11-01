@@ -17,17 +17,15 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepos
 public class ListStockMovementsUseCase {
 
     private final StockMovementRepository movementRepository;
-    private final StockMovementMapper mapper;
 
-    public ListStockMovementsUseCase(StockMovementRepository movementRepository, StockMovementMapper mapper) {
+    public ListStockMovementsUseCase(StockMovementRepository movementRepository) {
         this.movementRepository = movementRepository;
-        this.mapper = mapper;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<StockMovementResponse> execute(Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
-        return movementRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
+        return movementRepository.findAllByCompanyId(companyId, pageable).map(StockMovementMapper::toResponse);
     }
 }

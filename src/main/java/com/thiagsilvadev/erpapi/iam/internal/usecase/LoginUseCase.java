@@ -35,19 +35,16 @@ public class LoginUseCase {
     private final AuthenticationManager authenticationManager;
     private final AccessControlFacade accessControlFacade;
     private final CompanyFacade companyFacade;
-    private final AuthMapper authMapper;
 
     public LoginUseCase(
             JwtTokenService jwtTokenService,
             AuthenticationManager authenticationManager,
             AccessControlFacade accessControlFacade,
-            CompanyFacade companyFacade,
-            AuthMapper authMapper) {
+            CompanyFacade companyFacade) {
         this.jwtTokenService = jwtTokenService;
         this.authenticationManager = authenticationManager;
         this.accessControlFacade = accessControlFacade;
         this.companyFacade = companyFacade;
-        this.authMapper = authMapper;
     }
 
     @Transactional(readOnly = true)
@@ -69,7 +66,7 @@ public class LoginUseCase {
         return LoginResponse.bearer(
                 token.value(),
                 token.expiresIn(),
-                authMapper.toAuthUserResponse(principal),
+                AuthMapper.toAuthUserResponse(principal),
                 memberships.stream().map(this::toAuthCompanyResponse).toList(),
                 scopedToken);
     }

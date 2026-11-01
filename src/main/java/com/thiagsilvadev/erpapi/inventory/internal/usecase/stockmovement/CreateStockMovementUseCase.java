@@ -22,17 +22,14 @@ public class CreateStockMovementUseCase {
 
     private final StockMovementRepository movementRepository;
     private final InventoryBalanceService inventoryBalanceService;
-    private final StockMovementMapper mapper;
     private final BusinessNumberService businessNumberService;
 
     public CreateStockMovementUseCase(
             StockMovementRepository movementRepository,
             InventoryBalanceService inventoryBalanceService,
-            StockMovementMapper mapper,
             BusinessNumberService businessNumberService) {
         this.movementRepository = movementRepository;
         this.inventoryBalanceService = inventoryBalanceService;
-        this.mapper = mapper;
         this.businessNumberService = businessNumberService;
     }
 
@@ -50,6 +47,6 @@ public class CreateStockMovementUseCase {
                 request.quantity(),
                 request.type(),
                 request.reason()));
-        return mapper.toResponse(movement);
+        return StockMovementMapper.toResponse(movement);
     }
 }

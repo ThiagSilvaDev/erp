@@ -17,17 +17,15 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepositor
 public class ListWarehousesUseCase {
 
     private final WarehouseRepository warehouseRepository;
-    private final WarehouseMapper mapper;
 
-    public ListWarehousesUseCase(WarehouseRepository warehouseRepository, WarehouseMapper mapper) {
+    public ListWarehousesUseCase(WarehouseRepository warehouseRepository) {
         this.warehouseRepository = warehouseRepository;
-        this.mapper = mapper;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<WarehouseResponse> execute(Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
-        return warehouseRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
+        return warehouseRepository.findAllByCompanyId(companyId, pageable).map(WarehouseMapper::toResponse);
     }
 }

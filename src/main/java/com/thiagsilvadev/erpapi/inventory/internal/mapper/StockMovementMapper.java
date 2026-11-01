@@ -1,12 +1,20 @@
 package com.thiagsilvadev.erpapi.inventory.internal.mapper;
 
-import org.mapstruct.Mapper;
-
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovement;
 
-@Mapper(componentModel = "spring")
-public interface StockMovementMapper {
+public final class StockMovementMapper {
 
-    StockMovementResponse toResponse(StockMovement movement);
+    private StockMovementMapper() {}
+
+    public static StockMovementResponse toResponse(StockMovement movement) {
+        return new StockMovementResponse(
+                movement.getId(),
+                movement.getMovementNumber(),
+                movement.getProductId(),
+                movement.getWarehouseId(),
+                movement.getQuantity(),
+                movement.getType(),
+                movement.getReason());
+    }
 }

@@ -21,11 +21,9 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepositor
 public class CreateWarehouseUseCase {
 
     private final WarehouseRepository warehouseRepository;
-    private final WarehouseMapper mapper;
 
-    public CreateWarehouseUseCase(WarehouseRepository warehouseRepository, WarehouseMapper mapper) {
+    public CreateWarehouseUseCase(WarehouseRepository warehouseRepository) {
         this.warehouseRepository = warehouseRepository;
-        this.mapper = mapper;
     }
 
     @Transactional
@@ -42,6 +40,6 @@ public class CreateWarehouseUseCase {
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("Warehouse with this code already exists.", Map.of("code", code));
         }
-        return mapper.toResponse(savedWarehouse);
+        return WarehouseMapper.toResponse(savedWarehouse);
     }
 }

@@ -19,18 +19,16 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepos
 public class GetStockMovementByIdUseCase {
 
     private final StockMovementRepository movementRepository;
-    private final StockMovementMapper mapper;
 
-    public GetStockMovementByIdUseCase(StockMovementRepository movementRepository, StockMovementMapper mapper) {
+    public GetStockMovementByIdUseCase(StockMovementRepository movementRepository) {
         this.movementRepository = movementRepository;
-        this.mapper = mapper;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('" + READ + "')")
     public StockMovementResponse execute(UUID id) {
         var companyId = TenantContext.requireTenantId();
-        return mapper.toResponse(movementRepository
+        return StockMovementMapper.toResponse(movementRepository
                 .findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(StockMovement.class, id)));
     }

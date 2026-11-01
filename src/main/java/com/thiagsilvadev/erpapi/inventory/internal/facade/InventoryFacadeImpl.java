@@ -19,19 +19,16 @@ public class InventoryFacadeImpl implements InventoryFacade {
     private final InventoryReservationRepository reservationRepository;
     private final WarehouseRepository warehouseRepository;
     private final ReservationMapper reservationMapper;
-    private final WarehouseMapper warehouseMapper;
 
     public InventoryFacadeImpl(
             InventoryItemRepository itemRepository,
             InventoryReservationRepository reservationRepository,
             WarehouseRepository warehouseRepository,
-            ReservationMapper reservationMapper,
-            WarehouseMapper warehouseMapper) {
+            ReservationMapper reservationMapper) {
         this.itemRepository = itemRepository;
         this.reservationRepository = reservationRepository;
         this.warehouseRepository = warehouseRepository;
         this.reservationMapper = reservationMapper;
-        this.warehouseMapper = warehouseMapper;
     }
 
     @Override
@@ -39,7 +36,7 @@ public class InventoryFacadeImpl implements InventoryFacade {
     public WarehouseSnapshot resolveWarehouse(UUID companyId, String code) {
         return warehouseRepository
                 .findByCompanyIdAndCode(companyId, Warehouse.normalizeCode(code))
-                .map(warehouseMapper::toSnapshot)
+                .map(WarehouseMapper::toSnapshot)
                 .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, code));
     }
 

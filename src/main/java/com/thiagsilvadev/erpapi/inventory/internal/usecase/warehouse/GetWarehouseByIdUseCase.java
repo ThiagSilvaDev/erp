@@ -19,18 +19,16 @@ import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepositor
 public class GetWarehouseByIdUseCase {
 
     private final WarehouseRepository warehouseRepository;
-    private final WarehouseMapper mapper;
 
-    public GetWarehouseByIdUseCase(WarehouseRepository warehouseRepository, WarehouseMapper mapper) {
+    public GetWarehouseByIdUseCase(WarehouseRepository warehouseRepository) {
         this.warehouseRepository = warehouseRepository;
-        this.mapper = mapper;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('" + READ + "')")
     public WarehouseResponse execute(UUID id) {
         var companyId = TenantContext.requireTenantId();
-        return mapper.toResponse(warehouseRepository
+        return WarehouseMapper.toResponse(warehouseRepository
                 .findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(Warehouse.class, id)));
     }

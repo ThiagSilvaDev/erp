@@ -27,11 +27,9 @@ import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
 import com.thiagsilvadev.erpapi.company.api.CompanyType;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AccessControlFacade;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapshot;
-import com.thiagsilvadev.erpapi.iam.internal.dto.AuthUserResponse;
 import com.thiagsilvadev.erpapi.iam.internal.dto.LoginRequest;
 import com.thiagsilvadev.erpapi.iam.internal.exception.InvalidCredentialsException;
 import com.thiagsilvadev.erpapi.iam.internal.exception.NoActiveMembershipException;
-import com.thiagsilvadev.erpapi.iam.internal.mapper.AuthMapper;
 import com.thiagsilvadev.erpapi.iam.internal.security.IamUserDetails;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService;
 import com.thiagsilvadev.erpapi.iam.internal.service.JwtTokenService.IssuedToken;
@@ -51,15 +49,11 @@ class LoginUseCaseTest {
     @Mock
     CompanyFacade companyFacade;
 
-    @Mock
-    AuthMapper authMapper;
-
     private LoginUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new LoginUseCase(
-                jwtTokenService, authenticationManager, authorizationService, companyFacade, authMapper);
+        useCase = new LoginUseCase(jwtTokenService, authenticationManager, authorizationService, companyFacade);
     }
 
     @Test
@@ -73,7 +67,7 @@ class LoginUseCaseTest {
         when(companyFacade.getCompany(companyId)).thenReturn(company(companyId));
         when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global", 3600));
         when(jwtTokenService.issueScoped(principal, membership)).thenReturn(new IssuedToken("scoped", 3600));
-        when(authMapper.toAuthUserResponse(principal)).thenReturn(new AuthUserResponse(userId, "user@example.com"));
+        // new AuthUserResponse(userId, "user@example.com"));
 
         var response = useCase.execute(new LoginRequest("user@example.com", "secret123"));
 
@@ -95,7 +89,7 @@ class LoginUseCaseTest {
         when(companyFacade.getCompany(first.companyId())).thenReturn(company(first.companyId()));
         when(companyFacade.getCompany(second.companyId())).thenReturn(company(second.companyId()));
         when(jwtTokenService.issueGlobal(principal)).thenReturn(new IssuedToken("global", 3600));
-        when(authMapper.toAuthUserResponse(principal)).thenReturn(new AuthUserResponse(userId, "user@example.com"));
+        // new AuthUserResponse(userId, "user@example.com"));
 
         assertThat(useCase.execute(new LoginRequest("user@example.com", "secret123"))
                         .scopedToken())
