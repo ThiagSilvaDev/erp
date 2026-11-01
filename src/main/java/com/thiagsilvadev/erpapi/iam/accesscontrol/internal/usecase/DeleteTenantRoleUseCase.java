@@ -54,7 +54,7 @@ public class DeleteTenantRoleUseCase {
         }
         role.deactivate();
         eventPublisher.publishEvent(new TenantRoleDeletedEvent(
-                companyId, roleId, role.getCode(), permissionKeys(roleId), currentActorUserId()));
+                companyId, roleId, role.getCode(), permissionKeys(roleId), actorResolver.userIdOrNull()));
     }
 
     private TenantRole requireRole(UUID companyId, UUID roleId) {
@@ -67,9 +67,5 @@ public class DeleteTenantRoleUseCase {
         return permissionRepository.findByRoleId(roleId).stream()
                 .map(RolePermission::getPermissionKey)
                 .collect(Collectors.toUnmodifiableSet());
-    }
-
-    private UUID currentActorUserId() {
-        return actorResolver.userId().orElse(null);
     }
 }

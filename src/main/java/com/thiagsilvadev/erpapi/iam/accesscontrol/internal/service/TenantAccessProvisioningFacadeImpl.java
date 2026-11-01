@@ -77,12 +77,12 @@ public class TenantAccessProvisioningFacadeImpl implements TenantAccessProvision
                     membership.getId(),
                     membership.getUserId(),
                     tenantAssignmentRoleIds(membership),
-                    currentActorUserId()));
+                    actorResolver.userIdOrNull()));
         }
         replaceRoles(membership, roleIds, false);
         if (created) {
             eventPublisher.publishEvent(new TenantMembershipProvisionedEvent(
-                    companyId, membership.getId(), userId, roleIds, currentActorUserId()));
+                    companyId, membership.getId(), userId, roleIds, actorResolver.userIdOrNull()));
         }
     }
 
@@ -114,7 +114,11 @@ public class TenantAccessProvisioningFacadeImpl implements TenantAccessProvision
         if (membership.getStatus() == AuthorizationStatus.INACTIVE) {
             membership.activate();
             eventPublisher.publishEvent(new TenantMembershipActivatedEvent(
-                    companyId, membershipId, membership.getUserId(), roleIdsOf(assignments), currentActorUserId()));
+                    companyId,
+                    membershipId,
+                    membership.getUserId(),
+                    roleIdsOf(assignments),
+                    actorResolver.userIdOrNull()));
         }
     }
 
@@ -130,7 +134,7 @@ public class TenantAccessProvisioningFacadeImpl implements TenantAccessProvision
         }
         membership.deactivate();
         eventPublisher.publishEvent(new TenantMembershipDeactivatedEvent(
-                companyId, membershipId, membership.getUserId(), roleIds, currentActorUserId()));
+                companyId, membershipId, membership.getUserId(), roleIds, actorResolver.userIdOrNull()));
     }
 
     private TenantMembership requireMembership(UUID membershipId, UUID companyId) {
@@ -180,7 +184,11 @@ public class TenantAccessProvisioningFacadeImpl implements TenantAccessProvision
         membership.touchAuthorization();
         if (hadAssignments) {
             eventPublisher.publishEvent(new TenantMembershipRolesReplacedEvent(
-                    membership.getCompanyId(), membership.getId(), existingRoleIds, roleIds, currentActorUserId()));
+                    membership.getCompanyId(),
+                    membership.getId(),
+                    existingRoleIds,
+                    roleIds,
+                    actorResolver.userIdOrNull()));
         }
     }
 
@@ -208,9 +216,5 @@ public class TenantAccessProvisioningFacadeImpl implements TenantAccessProvision
 
     private static Set<UUID> roleIdsOf(List<TenantRoleAssignment> assignments) {
         return assignments.stream().map(TenantRoleAssignment::getRoleId).collect(Collectors.toSet());
-    }
-
-    private UUID currentActorUserId() {
-        return actorResolver.userId().orElse(null);
     }
 }

@@ -92,11 +92,7 @@ public class RoleTemplateService {
                 .map(key -> RolePermission.create(role.getId(), key))
                 .toList());
         eventPublisher.publishEvent(new TenantRoleCreatedEvent(
-                companyId,
-                role.getId(),
-                role.getCode(),
-                permissions,
-                actorResolver.userId().orElse(null)));
+                companyId, role.getId(), role.getCode(), permissions, actorResolver.userIdOrNull()));
         return role;
     }
 

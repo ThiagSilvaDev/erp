@@ -62,13 +62,13 @@ public class PlatformAuthorizationService {
         if (assignment == null) {
             assignment = repository.save(PlatformRoleAssignment.create(userId, PlatformRole.PLATFORM_ADMIN));
             eventPublisher.publishEvent(new PlatformRoleAssignedEvent(
-                    assignment.getId(), userId, PlatformRole.PLATFORM_ADMIN.name(), currentActorUserId()));
+                    assignment.getId(), userId, PlatformRole.PLATFORM_ADMIN.name(), actorResolver.userIdOrNull()));
             return;
         }
         if (assignment.getStatus() == AuthorizationStatus.INACTIVE) {
             assignment.activate();
             eventPublisher.publishEvent(new PlatformRoleActivatedEvent(
-                    assignment.getId(), userId, assignment.getRole().name(), currentActorUserId()));
+                    assignment.getId(), userId, assignment.getRole().name(), actorResolver.userIdOrNull()));
         }
     }
 
@@ -79,9 +79,5 @@ public class PlatformAuthorizationService {
                 assignment.getAuthorizationVersion(),
                 assignment.getRole().name(),
                 permissionCatalog.platformPermissions());
-    }
-
-    private UUID currentActorUserId() {
-        return actorResolver.userId().orElse(null);
     }
 }

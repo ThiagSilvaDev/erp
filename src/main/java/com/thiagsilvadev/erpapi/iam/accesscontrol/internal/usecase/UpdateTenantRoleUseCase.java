@@ -76,7 +76,7 @@ public class UpdateTenantRoleUseCase {
                 .flatMap(Optional::stream)
                 .forEach(membership -> membership.touchAuthorization());
         eventPublisher.publishEvent(new TenantRoleUpdatedEvent(
-                companyId, roleId, role.getCode(), before, request.permissions(), currentActorUserId()));
+                companyId, roleId, role.getCode(), before, request.permissions(), actorResolver.userIdOrNull()));
         return roleMapper.toResponse(role);
     }
 
@@ -90,9 +90,5 @@ public class UpdateTenantRoleUseCase {
         return permissionRepository.findByRoleId(roleId).stream()
                 .map(RolePermission::getPermissionKey)
                 .collect(Collectors.toUnmodifiableSet());
-    }
-
-    private UUID currentActorUserId() {
-        return actorResolver.userId().orElse(null);
     }
 }

@@ -2,8 +2,6 @@ package com.thiagsilvadev.erpapi.iam.accesscontrol.internal.usecase;
 
 import static com.thiagsilvadev.erpapi.iam.accesscontrol.api.IamPermissions.ROLE_WRITE;
 
-import java.util.UUID;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -57,11 +55,7 @@ public class CreateTenantRoleUseCase {
                 .map(key -> RolePermission.create(role.getId(), key))
                 .toList());
         eventPublisher.publishEvent(new TenantRoleCreatedEvent(
-                companyId, role.getId(), role.getCode(), request.permissions(), currentActorUserId()));
+                companyId, role.getId(), role.getCode(), request.permissions(), actorResolver.userIdOrNull()));
         return roleMapper.toResponse(role);
-    }
-
-    private UUID currentActorUserId() {
-        return actorResolver.userId().orElse(null);
     }
 }
