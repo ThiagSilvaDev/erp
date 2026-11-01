@@ -16,13 +16,26 @@ paths; add integration coverage when persistence or module interactions matter.
 | HTTP | MockMvc request/response and security assertions | [AuthControllerTest](../src/test/java/com/thiagsilvadev/erpapi/iam/internal/controller/AuthControllerTest.java) |
 | Persistence | Spring Data JPA tests against PostgreSQL | [AuthorizationAuditJpaTest](../src/test/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/model/AuthorizationAuditJpaTest.java) |
 | Transactional integration | Spring Boot tests for audit persistence and failure | [AuthorizationAuditListenerPersistenceTest](../src/test/java/com/thiagsilvadev/erpapi/iam/accesscontrol/AuthorizationAuditListenerPersistenceTest.java) |
+| Constraint and commit semantics | `@SpringBootTest` with `dbtest` and `TransactionTemplate` against real PostgreSQL | [UserEmailUniquenessPersistenceTest](../src/test/java/com/thiagsilvadev/erpapi/user/internal/repository/UserEmailUniquenessPersistenceTest.java) |
 | Architecture | Spring Modulith verification and ArchUnit rules | [ApplicationModularityTests](../src/test/java/com/thiagsilvadev/erpapi/ApplicationModularityTests.java), [ArchitectureRulesTest](../src/test/java/com/thiagsilvadev/erpapi/ArchitectureRulesTest.java) |
+| Source conventions | File scan of `src/main/java` for rules invisible in bytecode | [SourceConventionsTest](../src/test/java/com/thiagsilvadev/erpapi/SourceConventionsTest.java) |
 
 Modularity verification checks the module dependency structure. Additional
 architecture rules prohibit controller persistence access, controllers
-implementing module facades, and facade contracts exposing repository-style
-method names or `Optional` results. This does not mean every coding guideline
-in AGENTS.md has an automated architecture rule.
+implementing module facades, use cases depending on `XFacadeImpl` classes,
+MapStruct mappers outside `internal/mapper`, side effects registered directly
+with the transaction synchronization API, and facade contracts exposing
+repository-style method names or `Optional` results.
+
+`SourceConventionsTest` covers the conventions that leave no trace in compiled
+bytecode: no fully qualified names inline, no `T(...)` SpEL type references in
+`@PreAuthorize`, no `Objects.requireNonNull` in `internal/model`, and no mappers
+outside `internal/mapper` or mappers that inject facades/repositories.
+
+When a workflow depends on transaction boundaries (unique constraints, after-commit
+side effects), assert it against PostgreSQL with an explicit `TransactionTemplate`
+instead of mocking the repository; a mocked repository cannot show that the commit
+fails with `UnexpectedRollbackException`.
 
 The application smoke/OpenAPI test uses mocked repositories with database
 infrastructure excluded. It does not replace tests against real PostgreSQL.

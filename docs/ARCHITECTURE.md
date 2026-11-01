@@ -81,6 +81,26 @@ the active tenant, checks permissions, coordinates module contracts and invokes
 domain behavior. Repositories persist local entities; mappers return DTOs or
 snapshots. Entities and value objects hold business invariants.
 
+Mappers live in `internal/mapper`. Mappers that need to resolve other data (product
+snapshots, warehouse codes, sales order references) are named `XResponseAssembler`
+and live in `internal/service`, because they perform lookups rather than field
+mapping. Entities and value objects validate required attributes through
+`Strings`/`DomainAssert`, not `Objects.requireNonNull`; tests in
+[SourceConventionsTest](../src/test/java/com/thiagsilvadev/erpapi/SourceConventionsTest.java)
+enforce the resulting conventions.
+
+Use cases are guarded with `@PreAuthorize` expressions built from static-imported
+permission constants, for example `hasAuthority('" + WRITE + "')`. SpEL type
+references such as `T(com.example.Permissions).WRITE` are not used: they survive
+no rename, cannot be found by the IDE and embed fully qualified names.
+
+Side effects that must run after commit (credential provisioning, domain event
+publication) go through
+[AfterCommit](../src/main/java/com/thiagsilvadev/erpapi/common/transaction/AfterCommit.java),
+which falls back to immediate execution outside a transaction. Raw passwords never
+travel through the event bus, because the Modulith event registry can persist events
+that have transactional listeners.
+
 JPA entities remain internal, with IDs used for references across modules.
 The shared base entity provides identity, timestamps and optimistic versioning;
 selected workflows also use pessimistic locks, such as invoice payment creation.
@@ -137,6 +157,14 @@ later listener failure. See [ADR 0004](adr/0004-module-integration.md).
 Sources: [confirmation use case](../src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/ConfirmSalesOrderUseCase.java),
 [financial listener](../src/main/java/com/thiagsilvadev/erpapi/financial/internal/listener/SalesOrderFinancialListener.java),
 [logistics listener](../src/main/java/com/thiagsilvadev/erpapi/logistics/internal/listener/SalesOrderLogisticsListener.java).
+
+## Reserved integration events
+
+[UserCreatedEvent](../src/main/java/com/thiagsilvadev/erpapi/user/api/UserCreatedEvent.java) and
+[ProductCreatedEvent](../src/main/java/com/thiagsilvadev/erpapi/catalog/api/ProductCreatedEvent.java)
+are public module contracts that are published deliberately without in-process subscribers. They are
+the reserved integration points for future consumers such as notifications or outbound webhooks, so
+they must not be deleted as unused code.
 
 ## Deployment and schema lifecycle
 
