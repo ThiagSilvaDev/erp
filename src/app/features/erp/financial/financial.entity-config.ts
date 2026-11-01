@@ -157,12 +157,12 @@ export function paymentsEntityConfig(): EntityConfig {
   };
 }
 
-export function financialEntriesEntityConfig(): EntityConfig {
+export function financialObligationsEntityConfig(): EntityConfig {
   const financial = inject(FinancialService);
   return {
-    key: 'financial-entries',
-    title: 'Financial entries',
-    description: 'Receivable and payable ledger entries.',
+    key: 'financial-obligations',
+    title: 'Financial obligations',
+    description: 'Receivable and payable financial obligations.',
     readonly: true,
     columns: [
       { key: 'type', label: 'Type' },
@@ -183,8 +183,8 @@ export function financialEntriesEntityConfig(): EntityConfig {
     searchFields: [],
     createFields: [],
     list: (_criteria, page, size) =>
-      financial.listLedgerEntries({ page, size }).pipe(map(pageData)),
-    getById: (id) => financial.getLedgerEntryById(id),
+      financial.listFinancialObligations({ page, size }).pipe(map(pageData)),
+    getById: (id) => financial.getFinancialObligationById(id),
   };
 }
 
@@ -374,8 +374,8 @@ export const providePaymentsEntityConfig = () =>
     optionLoaders: [CustomersOptionLoader, InvoicesOptionLoader, SalesOrdersOptionLoader],
   });
 
-export const provideFinancialEntriesEntityConfig = () =>
-  provideEntityFeature({ config: financialEntriesEntityConfig, optionLoaders: [] });
+export const provideFinancialObligationsEntityConfig = () =>
+  provideEntityFeature({ config: financialObligationsEntityConfig, optionLoaders: [] });
 
 export const provideAccountingAccountsEntityConfig = () =>
   provideEntityFeature({

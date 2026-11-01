@@ -11,7 +11,7 @@ const CATEGORIES_SEGMENT = 'categories';
 const COMPANIES_SEGMENT = 'companies';
 const CONTACT_PERSONS_SEGMENT = 'contact-persons';
 const CUSTOMERS_SEGMENT = 'customers';
-const FINANCIAL_ENTRIES_SEGMENT = 'financial-entries';
+const FINANCIAL_OBLIGATIONS_SEGMENT = 'financial-obligations';
 const INVENTORY_ITEMS_SEGMENT = 'inventory-items';
 const INVOICES_SEGMENT = 'invoices';
 const PAYMENTS_SEGMENT = 'payments';
@@ -39,7 +39,7 @@ export const appRoutePaths = {
   companies: COMPANIES_SEGMENT,
   contactPersons: CONTACT_PERSONS_SEGMENT,
   customers: CUSTOMERS_SEGMENT,
-  financialEntries: FINANCIAL_ENTRIES_SEGMENT,
+  financialObligations: FINANCIAL_OBLIGATIONS_SEGMENT,
   inventoryItems: INVENTORY_ITEMS_SEGMENT,
   invoices: INVOICES_SEGMENT,
   payments: PAYMENTS_SEGMENT,
@@ -66,7 +66,7 @@ export const appPaths = {
   companies: `/${COMPANIES_SEGMENT}`,
   contactPersons: `/${CONTACT_PERSONS_SEGMENT}`,
   customers: `/${CUSTOMERS_SEGMENT}`,
-  financialEntries: `/${FINANCIAL_ENTRIES_SEGMENT}`,
+  financialObligations: `/${FINANCIAL_OBLIGATIONS_SEGMENT}`,
   inventoryItems: `/${INVENTORY_ITEMS_SEGMENT}`,
   invoices: `/${INVOICES_SEGMENT}`,
   payments: `/${PAYMENTS_SEGMENT}`,

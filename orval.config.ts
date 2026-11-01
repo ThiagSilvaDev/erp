@@ -60,7 +60,8 @@ export default defineConfig({
 
   financial: moduleConfig(
     [
-      'ledger entries',
+      'financial obligations',
+      'financial accounts',
       'financial invoices',
       'financial payments',
       'financial accounting accounts',

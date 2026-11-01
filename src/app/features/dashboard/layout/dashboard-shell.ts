@@ -114,7 +114,7 @@ export class DashboardShell {
         items: [
           { label: 'Invoices', path: '/invoices', icon: 'wallet' },
           { label: 'Payments', path: '/payments', icon: 'dollar' },
-          { label: 'Ledger entries', path: '/financial-entries', icon: 'file-text' },
+          { label: 'Financial obligations', path: '/financial-obligations', icon: 'file-text' },
           {
             label: 'Chart of accounts',
             path: appPaths.accountingAccounts,

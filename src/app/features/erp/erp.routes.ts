@@ -12,7 +12,7 @@ import { provideCustomersEntityConfig } from './customers/customers.entity-confi
 import {
   provideAccountingAccountsEntityConfig,
   provideAccountingEntriesEntityConfig,
-  provideFinancialEntriesEntityConfig,
+  provideFinancialObligationsEntityConfig,
   provideInvoicesEntityConfig,
   providePaymentsEntityConfig,
 } from './financial/financial.entity-config';
@@ -168,7 +168,7 @@ export const ERP_ROUTES: Routes = [
   entityRoute('reservations', provideReservationsEntityConfig()),
   entityRoute('invoices', provideInvoicesEntityConfig()),
   entityRoute('payments', providePaymentsEntityConfig()),
-  entityRoute('financial-entries', provideFinancialEntriesEntityConfig()),
+  entityRoute('financial-obligations', provideFinancialObligationsEntityConfig()),
   entityRoute('accounting-accounts', provideAccountingAccountsEntityConfig()),
   entityRoute('accounting-entries', provideAccountingEntriesEntityConfig()),
   {

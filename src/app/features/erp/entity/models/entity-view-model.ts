@@ -10,7 +10,7 @@ export type EntityKey =
   | 'company-contacts'
   | 'contact-persons'
   | 'customers'
-  | 'financial-entries'
+  | 'financial-obligations'
   | 'inventory-items'
   | 'invoices'
   | 'payments'

@@ -68,7 +68,7 @@ describe('EntityCreatePage', () => {
     listCustomers: vi.fn(() => paged()),
   };
   const financial = {
-    listLedgerEntries: vi.fn(() => paged()),
+    listFinancialObligations: vi.fn(() => paged()),
     listInvoices: vi.fn(() => paged()),
     listPayments: vi.fn(() => paged()),
   };
@@ -135,15 +135,13 @@ describe('EntityCreatePage', () => {
   it.each(['', '   '])('requests automatic SKU assignment for an empty entry (%j)', async (sku) => {
     const fixture = createComponent('products');
     const component = fixture.componentInstance;
-    component
-      .createForm()
-      .patchValue({
-        sku,
-        name: 'Product',
-        amount: 10,
-        currencyCode: 'BRL',
-        categoryId: 'category-1',
-      });
+    component.createForm().patchValue({
+      sku,
+      name: 'Product',
+      amount: 10,
+      currencyCode: 'BRL',
+      categoryId: 'category-1',
+    });
     await fixture.whenStable();
     expect(component.createForm().valid).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Leave blank to generate a SKU');
@@ -159,15 +157,13 @@ describe('EntityCreatePage', () => {
 
   it('keeps manual SKUs and prevents overlong values', () => {
     const component = createComponent('products').componentInstance;
-    component
-      .createForm()
-      .patchValue({
-        sku: ' custom-1 ',
-        name: 'Product',
-        amount: 10,
-        currencyCode: 'BRL',
-        categoryId: 'category-1',
-      });
+    component.createForm().patchValue({
+      sku: ' custom-1 ',
+      name: 'Product',
+      amount: 10,
+      currencyCode: 'BRL',
+      categoryId: 'category-1',
+    });
     component.submitCreate();
     expect(catalog.createProduct).toHaveBeenCalledWith(
       expect.objectContaining({ sku: 'custom-1' }),

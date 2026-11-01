@@ -53,7 +53,7 @@ describe('EntityPage', () => {
   const contactPersons = { listContactPersons: vi.fn(() => paged()) };
   const customers = { listCustomers: vi.fn(() => paged()) };
   const financial = {
-    listLedgerEntries: vi.fn(() => paged()),
+    listFinancialObligations: vi.fn(() => paged()),
     listInvoices: vi.fn(() => paged()),
     listPayments: vi.fn(() => paged()),
   };
