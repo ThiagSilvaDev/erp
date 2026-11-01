@@ -37,7 +37,7 @@ public interface SalesOrderApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<SalesOrderResponse> createOrder(@Valid @RequestBody CreateSalesOrderRequest request);
+    ResponseEntity<SalesOrderResponse> create(@Valid @RequestBody CreateSalesOrderRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getSalesOrderById")
@@ -46,7 +46,7 @@ public interface SalesOrderApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    SalesOrderResponse getOrder(@PathVariable UUID id);
+    SalesOrderResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listSalesOrders")
@@ -54,7 +54,7 @@ public interface SalesOrderApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<SalesOrderResponse> listOrders(
+    Page<SalesOrderResponse> list(
             @ParameterObject SalesOrderSearchCriteria criteria, @ParameterObject Pageable pageable);
 
     @PostMapping("/{id}/confirm")
@@ -65,7 +65,7 @@ public interface SalesOrderApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    SalesOrderResponse confirmOrder(@PathVariable UUID id);
+    SalesOrderResponse confirm(@PathVariable UUID id);
 
     @PostMapping("/{id}/cancel")
     @Operation(operationId = "cancelSalesOrder")
@@ -75,5 +75,5 @@ public interface SalesOrderApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    SalesOrderResponse cancelOrder(@PathVariable UUID id);
+    SalesOrderResponse cancel(@PathVariable UUID id);
 }

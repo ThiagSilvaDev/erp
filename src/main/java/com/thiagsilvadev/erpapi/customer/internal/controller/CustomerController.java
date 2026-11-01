@@ -25,18 +25,18 @@ class CustomerController implements CustomerApi {
     }
 
     @Override
-    public ResponseEntity<CustomerResponse> createCustomer(@Valid CreateCustomerRequest request) {
+    public ResponseEntity<CustomerResponse> create(@Valid CreateCustomerRequest request) {
         CustomerResponse response = createCustomerUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public CustomerResponse getCustomerById(UUID id) {
+    public CustomerResponse getById(UUID id) {
         return customerQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<CustomerResponse> listCustomers(CustomerSearchCriteria criteria, Pageable pageable) {
+    public Page<CustomerResponse> list(CustomerSearchCriteria criteria, Pageable pageable) {
         return customerQueryUseCase.list(criteria, pageable);
     }
 }

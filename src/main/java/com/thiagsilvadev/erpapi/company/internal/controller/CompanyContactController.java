@@ -38,25 +38,24 @@ class CompanyContactController implements CompanyContactApi {
     }
 
     @Override
-    public ResponseEntity<CompanyContactResponse> createCompanyContact(
-            @Valid @RequestBody CreateCompanyContactRequest request) {
+    public ResponseEntity<CompanyContactResponse> create(@Valid @RequestBody CreateCompanyContactRequest request) {
         CompanyContactResponse response = createCompanyContactUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public CompanyContactResponse getCompanyContactById(@PathVariable UUID id) {
+    public CompanyContactResponse getById(@PathVariable UUID id) {
         return companyContactQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<CompanyContactResponse> listCompanyContacts(
+    public Page<CompanyContactResponse> list(
             @RequestParam(required = false) Boolean primaryContact, Pageable pageable) {
         return companyContactQueryUseCase.list(primaryContact, pageable);
     }
 
     @Override
-    public CompanyContactResponse markCompanyContactPrimary(@PathVariable UUID id) {
+    public CompanyContactResponse markPrimary(@PathVariable UUID id) {
         return markCompanyContactPrimaryUseCase.execute(id);
     }
 }

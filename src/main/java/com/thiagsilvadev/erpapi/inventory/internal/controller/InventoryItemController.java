@@ -20,12 +20,12 @@ class InventoryItemController implements InventoryItemApi {
     }
 
     @Override
-    public Page<InventoryItemResponse> listItems(Pageable pageable) {
+    public Page<InventoryItemResponse> list(Pageable pageable) {
         return inventoryItemQueryUseCase.list(pageable);
     }
 
     @Override
-    public InventoryItemResponse getItem(@PathVariable UUID id) {
+    public InventoryItemResponse getById(@PathVariable UUID id) {
         return inventoryItemQueryUseCase.getById(id);
     }
 }

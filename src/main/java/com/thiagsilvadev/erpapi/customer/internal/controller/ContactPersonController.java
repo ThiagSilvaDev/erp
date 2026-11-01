@@ -27,18 +27,18 @@ class ContactPersonController implements ContactPersonApi {
     }
 
     @Override
-    public ResponseEntity<ContactPersonResponse> createContactPerson(@Valid CreateContactPersonRequest request) {
+    public ResponseEntity<ContactPersonResponse> create(@Valid CreateContactPersonRequest request) {
         ContactPersonResponse response = createContactPersonUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public ContactPersonResponse getContactPersonById(UUID id) {
+    public ContactPersonResponse getById(UUID id) {
         return contactPersonQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<ContactPersonResponse> listContactPersons(Pageable pageable) {
+    public Page<ContactPersonResponse> list(Pageable pageable) {
         return contactPersonQueryUseCase.list(pageable);
     }
 }

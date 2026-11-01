@@ -37,7 +37,7 @@ public interface ContactPersonApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<ContactPersonResponse> createContactPerson(@Valid @RequestBody CreateContactPersonRequest request);
+    ResponseEntity<ContactPersonResponse> create(@Valid @RequestBody CreateContactPersonRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getContactPersonById")
@@ -46,7 +46,7 @@ public interface ContactPersonApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    ContactPersonResponse getContactPersonById(@PathVariable UUID id);
+    ContactPersonResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listContactPersons")
@@ -54,5 +54,5 @@ public interface ContactPersonApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<ContactPersonResponse> listContactPersons(@ParameterObject Pageable pageable);
+    Page<ContactPersonResponse> list(@ParameterObject Pageable pageable);
 }

@@ -37,14 +37,13 @@ class AccountingEntryController implements AccountingEntryApi {
     }
 
     @Override
-    public ResponseEntity<AccountingEntryResponse> createEntry(
-            @Valid @RequestBody CreateAccountingEntryRequest request) {
+    public ResponseEntity<AccountingEntryResponse> create(@Valid @RequestBody CreateAccountingEntryRequest request) {
         AccountingEntryResponse response = createAccountingEntryUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public Page<AccountingEntryResponse> listEntries(AccountingEntrySearchCriteria criteria, Pageable pageable) {
+    public Page<AccountingEntryResponse> list(AccountingEntrySearchCriteria criteria, Pageable pageable) {
         return listAccountingEntriesUseCase.execute(criteria, pageable);
     }
 

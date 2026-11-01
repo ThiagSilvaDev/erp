@@ -27,18 +27,18 @@ class DriverController implements DriverApi {
     }
 
     @Override
-    public ResponseEntity<DriverResponse> createDriver(@Valid @RequestBody CreateDriverRequest request) {
+    public ResponseEntity<DriverResponse> create(@Valid @RequestBody CreateDriverRequest request) {
         DriverResponse response = createDriverUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public DriverResponse getDriver(@PathVariable UUID id) {
+    public DriverResponse getById(@PathVariable UUID id) {
         return driverQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<DriverResponse> listDrivers(Pageable pageable) {
+    public Page<DriverResponse> list(Pageable pageable) {
         return driverQueryUseCase.list(pageable);
     }
 }

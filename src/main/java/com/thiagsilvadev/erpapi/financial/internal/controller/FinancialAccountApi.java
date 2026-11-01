@@ -38,7 +38,7 @@ interface FinancialAccountApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
-    ResponseEntity<FinancialAccountResponse> createAccount(@Valid @RequestBody CreateFinancialAccountRequest request);
+    ResponseEntity<FinancialAccountResponse> create(@Valid @RequestBody CreateFinancialAccountRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getFinancialAccountById")
@@ -47,7 +47,7 @@ interface FinancialAccountApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    FinancialAccountResponse getAccount(@PathVariable UUID id);
+    FinancialAccountResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listFinancialAccounts")
@@ -55,7 +55,7 @@ interface FinancialAccountApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<FinancialAccountResponse> listAccounts(@ParameterObject Pageable pageable);
+    Page<FinancialAccountResponse> list(@ParameterObject Pageable pageable);
 
     @GetMapping("/{accountId}/cash-movements")
     @Operation(operationId = "listCashMovements")

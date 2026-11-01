@@ -28,18 +28,18 @@ class InvoiceController implements InvoiceApi {
     }
 
     @Override
-    public ResponseEntity<InvoiceResponse> createInvoice(@Valid @RequestBody CreateInvoiceRequest request) {
+    public ResponseEntity<InvoiceResponse> create(@Valid @RequestBody CreateInvoiceRequest request) {
         InvoiceResponse response = createInvoiceUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public InvoiceResponse getInvoice(@PathVariable UUID id) {
+    public InvoiceResponse getById(@PathVariable UUID id) {
         return invoiceQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<InvoiceResponse> listInvoices(InvoiceSearchCriteria criteria, Pageable pageable) {
+    public Page<InvoiceResponse> list(InvoiceSearchCriteria criteria, Pageable pageable) {
         return invoiceQueryUseCase.list(criteria, pageable);
     }
 }

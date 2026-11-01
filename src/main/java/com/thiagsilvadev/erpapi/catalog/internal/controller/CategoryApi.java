@@ -44,7 +44,7 @@ public interface CategoryApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request);
+    ResponseEntity<CategoryResponse> create(@Valid @RequestBody CreateCategoryRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getCategoryById")
@@ -53,7 +53,7 @@ public interface CategoryApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    CategoryResponse getCategoryById(@PathVariable UUID id);
+    CategoryResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listCategories")
@@ -61,6 +61,5 @@ public interface CategoryApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<CategoryResponse> listCategories(
-            @ParameterObject CategorySearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<CategoryResponse> list(@ParameterObject CategorySearchCriteria criteria, @ParameterObject Pageable pageable);
 }

@@ -27,18 +27,18 @@ class WarehouseController implements WarehouseApi {
     }
 
     @Override
-    public ResponseEntity<WarehouseResponse> createWarehouse(@Valid @RequestBody CreateWarehouseRequest request) {
+    public ResponseEntity<WarehouseResponse> create(@Valid @RequestBody CreateWarehouseRequest request) {
         WarehouseResponse response = createWarehouseUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public WarehouseResponse getWarehouse(@PathVariable UUID id) {
+    public WarehouseResponse getById(@PathVariable UUID id) {
         return warehouseQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<WarehouseResponse> listWarehouses(Pageable pageable) {
+    public Page<WarehouseResponse> list(Pageable pageable) {
         return warehouseQueryUseCase.list(pageable);
     }
 }

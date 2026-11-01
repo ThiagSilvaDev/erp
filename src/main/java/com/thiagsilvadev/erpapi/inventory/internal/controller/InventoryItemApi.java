@@ -31,7 +31,7 @@ public interface InventoryItemApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<InventoryItemResponse> listItems(@ParameterObject Pageable pageable);
+    Page<InventoryItemResponse> list(@ParameterObject Pageable pageable);
 
     @GetMapping("/items/{id}")
     @Operation(operationId = "getInventoryItemById")
@@ -40,5 +40,5 @@ public interface InventoryItemApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    InventoryItemResponse getItem(@PathVariable UUID id);
+    InventoryItemResponse getById(@PathVariable UUID id);
 }

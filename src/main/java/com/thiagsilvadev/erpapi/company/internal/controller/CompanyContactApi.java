@@ -43,8 +43,7 @@ public interface CompanyContactApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<CompanyContactResponse> createCompanyContact(
-            @Valid @RequestBody CreateCompanyContactRequest request);
+    ResponseEntity<CompanyContactResponse> create(@Valid @RequestBody CreateCompanyContactRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getCompanyContactById")
@@ -53,7 +52,7 @@ public interface CompanyContactApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    CompanyContactResponse getCompanyContactById(@PathVariable UUID id);
+    CompanyContactResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listCompanyContacts")
@@ -61,7 +60,7 @@ public interface CompanyContactApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<CompanyContactResponse> listCompanyContacts(
+    Page<CompanyContactResponse> list(
             @RequestParam(required = false) Boolean primaryContact, @ParameterObject Pageable pageable);
 
     @PostMapping("/{id}/primary")
@@ -71,5 +70,5 @@ public interface CompanyContactApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    CompanyContactResponse markCompanyContactPrimary(@PathVariable UUID id);
+    CompanyContactResponse markPrimary(@PathVariable UUID id);
 }

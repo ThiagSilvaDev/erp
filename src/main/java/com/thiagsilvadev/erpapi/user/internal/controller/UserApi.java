@@ -44,7 +44,7 @@ public interface UserApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<UserSnapshot> createUser(@Valid @RequestBody CreateUserRequest request);
+    ResponseEntity<UserSnapshot> create(@Valid @RequestBody CreateUserRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getUserById")
@@ -53,7 +53,7 @@ public interface UserApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    UserSnapshot getUserById(@PathVariable UUID id);
+    UserSnapshot getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listUsers")
@@ -61,5 +61,5 @@ public interface UserApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<UserSnapshot> listUsers(@ParameterObject UserSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<UserSnapshot> list(@ParameterObject UserSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

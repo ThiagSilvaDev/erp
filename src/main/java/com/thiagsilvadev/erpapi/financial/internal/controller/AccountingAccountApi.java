@@ -38,7 +38,7 @@ interface AccountingAccountApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
-    ResponseEntity<AccountingAccountResponse> createAccount(@Valid @RequestBody CreateAccountingAccountRequest request);
+    ResponseEntity<AccountingAccountResponse> create(@Valid @RequestBody CreateAccountingAccountRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getAccountingAccountById")
@@ -47,7 +47,7 @@ interface AccountingAccountApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    AccountingAccountResponse getAccount(@PathVariable UUID id);
+    AccountingAccountResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listAccountingAccounts")
@@ -55,5 +55,5 @@ interface AccountingAccountApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<AccountingAccountResponse> listAccounts(@ParameterObject Pageable pageable);
+    Page<AccountingAccountResponse> list(@ParameterObject Pageable pageable);
 }

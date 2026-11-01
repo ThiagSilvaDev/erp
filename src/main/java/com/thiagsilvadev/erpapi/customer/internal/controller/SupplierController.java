@@ -25,18 +25,18 @@ class SupplierController implements SupplierApi {
     }
 
     @Override
-    public ResponseEntity<SupplierResponse> createSupplier(@Valid CreateSupplierRequest request) {
+    public ResponseEntity<SupplierResponse> create(@Valid CreateSupplierRequest request) {
         SupplierResponse response = createSupplierUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public SupplierResponse getSupplierById(UUID id) {
+    public SupplierResponse getById(UUID id) {
         return supplierQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<SupplierResponse> listSuppliers(SupplierSearchCriteria criteria, Pageable pageable) {
+    public Page<SupplierResponse> list(SupplierSearchCriteria criteria, Pageable pageable) {
         return supplierQueryUseCase.list(criteria, pageable);
     }
 }

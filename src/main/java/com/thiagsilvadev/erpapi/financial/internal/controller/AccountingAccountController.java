@@ -31,19 +31,19 @@ class AccountingAccountController implements AccountingAccountApi {
     }
 
     @Override
-    public ResponseEntity<AccountingAccountResponse> createAccount(
+    public ResponseEntity<AccountingAccountResponse> create(
             @Valid @RequestBody CreateAccountingAccountRequest request) {
         AccountingAccountResponse response = createAccountingAccountUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public AccountingAccountResponse getAccount(@PathVariable UUID id) {
+    public AccountingAccountResponse getById(@PathVariable UUID id) {
         return accountingAccountQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<AccountingAccountResponse> listAccounts(Pageable pageable) {
+    public Page<AccountingAccountResponse> list(Pageable pageable) {
         return accountingAccountQueryUseCase.list(pageable);
     }
 }

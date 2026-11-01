@@ -35,28 +35,28 @@ class SalesOrderController implements SalesOrderApi {
     }
 
     @Override
-    public ResponseEntity<SalesOrderResponse> createOrder(@Valid @RequestBody CreateSalesOrderRequest request) {
+    public ResponseEntity<SalesOrderResponse> create(@Valid @RequestBody CreateSalesOrderRequest request) {
         SalesOrderResponse response = createSalesOrderUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public SalesOrderResponse getOrder(@PathVariable UUID id) {
+    public SalesOrderResponse getById(@PathVariable UUID id) {
         return salesOrderQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<SalesOrderResponse> listOrders(SalesOrderSearchCriteria criteria, Pageable pageable) {
+    public Page<SalesOrderResponse> list(SalesOrderSearchCriteria criteria, Pageable pageable) {
         return salesOrderQueryUseCase.list(criteria, pageable);
     }
 
     @Override
-    public SalesOrderResponse confirmOrder(@PathVariable UUID id) {
+    public SalesOrderResponse confirm(@PathVariable UUID id) {
         return confirmSalesOrderUseCase.execute(id);
     }
 
     @Override
-    public SalesOrderResponse cancelOrder(@PathVariable UUID id) {
+    public SalesOrderResponse cancel(@PathVariable UUID id) {
         return cancelSalesOrderUseCase.execute(id);
     }
 }

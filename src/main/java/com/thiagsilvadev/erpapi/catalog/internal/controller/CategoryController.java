@@ -32,18 +32,18 @@ class CategoryController implements CategoryApi {
     }
 
     @Override
-    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
+    public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CreateCategoryRequest request) {
         CategoryResponse response = createCategoryUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public CategoryResponse getCategoryById(@PathVariable UUID id) {
+    public CategoryResponse getById(@PathVariable UUID id) {
         return categoryQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<CategoryResponse> listCategories(CategorySearchCriteria criteria, Pageable pageable) {
+    public Page<CategoryResponse> list(CategorySearchCriteria criteria, Pageable pageable) {
         return categoryQueryUseCase.list(criteria, pageable);
     }
 }

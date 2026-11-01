@@ -45,7 +45,7 @@ public interface ProductApi {
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest request);
+    ResponseEntity<ProductResponse> create(@Valid @RequestBody CreateProductRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getProductById")
@@ -54,7 +54,7 @@ public interface ProductApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    ProductResponse getProductById(@PathVariable UUID id);
+    ProductResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listProducts")
@@ -62,6 +62,5 @@ public interface ProductApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<ProductResponse> listProducts(
-            @ParameterObject ProductSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<ProductResponse> list(@ParameterObject ProductSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

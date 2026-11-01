@@ -32,18 +32,18 @@ class ProductController implements ProductApi {
     }
 
     @Override
-    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest request) {
+    public ResponseEntity<ProductResponse> create(@Valid @RequestBody CreateProductRequest request) {
         ProductResponse response = createProductUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public ProductResponse getProductById(@PathVariable UUID id) {
+    public ProductResponse getById(@PathVariable UUID id) {
         return productQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<ProductResponse> listProducts(ProductSearchCriteria criteria, Pageable pageable) {
+    public Page<ProductResponse> list(ProductSearchCriteria criteria, Pageable pageable) {
         return productQueryUseCase.list(criteria, pageable);
     }
 }

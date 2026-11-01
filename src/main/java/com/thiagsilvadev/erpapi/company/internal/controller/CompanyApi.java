@@ -49,7 +49,7 @@ public interface CompanyApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<CompanyResponse> createCompany(@Valid @RequestBody CreateCompanyRequest request);
+    ResponseEntity<CompanyResponse> create(@Valid @RequestBody CreateCompanyRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getCompanyById")
@@ -58,7 +58,7 @@ public interface CompanyApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    CompanyResponse getCompanyById(@PathVariable UUID id);
+    CompanyResponse getById(@PathVariable UUID id);
 
     @PutMapping(value = "/{id}", consumes = "application/json")
     @Operation(operationId = "updateCompany")
@@ -68,7 +68,7 @@ public interface CompanyApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    CompanyResponse updateCompany(@PathVariable UUID id, @Valid @RequestBody UpdateCompanyRequest request);
+    CompanyResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateCompanyRequest request);
 
     @DeleteMapping("/{id}")
     @Operation(operationId = "deleteCompany")
@@ -77,7 +77,7 @@ public interface CompanyApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    ResponseEntity<Void> deleteCompany(@PathVariable UUID id);
+    ResponseEntity<Void> delete(@PathVariable UUID id);
 
     @GetMapping("/{id}/address")
     @Operation(operationId = "getCompanyAddress")
@@ -86,7 +86,7 @@ public interface CompanyApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    CompanyAddressResponse getCompanyAddress(@PathVariable UUID id);
+    CompanyAddressResponse getAddress(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listCompanies")
@@ -94,6 +94,5 @@ public interface CompanyApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<CompanyResponse> listCompanies(
-            @ParameterObject CompanySearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<CompanyResponse> list(@ParameterObject CompanySearchCriteria criteria, @ParameterObject Pageable pageable);
 }

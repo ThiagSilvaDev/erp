@@ -30,5 +30,5 @@ interface KpiApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    ExecutiveKpiResponse getExecutiveKpis(@Valid @ParameterObject KpiCriteria criteria);
+    ExecutiveKpiResponse getExecutive(@Valid @ParameterObject KpiCriteria criteria);
 }

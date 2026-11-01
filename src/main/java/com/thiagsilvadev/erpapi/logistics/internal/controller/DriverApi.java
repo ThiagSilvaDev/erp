@@ -38,7 +38,7 @@ public interface DriverApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
-    ResponseEntity<DriverResponse> createDriver(@Valid @RequestBody CreateDriverRequest request);
+    ResponseEntity<DriverResponse> create(@Valid @RequestBody CreateDriverRequest request);
 
     @GetMapping("/drivers/{id}")
     @Operation(operationId = "getDriverById")
@@ -47,7 +47,7 @@ public interface DriverApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    DriverResponse getDriver(@PathVariable UUID id);
+    DriverResponse getById(@PathVariable UUID id);
 
     @GetMapping("/drivers")
     @Operation(operationId = "listDrivers")
@@ -55,5 +55,5 @@ public interface DriverApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<DriverResponse> listDrivers(@ParameterObject Pageable pageable);
+    Page<DriverResponse> list(@ParameterObject Pageable pageable);
 }

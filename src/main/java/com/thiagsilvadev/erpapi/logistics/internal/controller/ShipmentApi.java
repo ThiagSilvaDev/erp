@@ -35,8 +35,7 @@ public interface ShipmentApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<ShipmentResponse> listShipments(
-            @ParameterObject ShipmentSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<ShipmentResponse> list(@ParameterObject ShipmentSearchCriteria criteria, @ParameterObject Pageable pageable);
 
     @GetMapping("/shipments/{id}")
     @Operation(operationId = "getShipmentById")
@@ -45,7 +44,7 @@ public interface ShipmentApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    ShipmentResponse getShipment(@PathVariable UUID id);
+    ShipmentResponse getById(@PathVariable UUID id);
 
     @PostMapping(value = "/shipments/{id}/dispatch-assignment", consumes = "application/json")
     @Operation(operationId = "assignShipmentDispatch")

@@ -39,7 +39,7 @@ interface InvoiceApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
-    ResponseEntity<InvoiceResponse> createInvoice(@Valid @RequestBody CreateInvoiceRequest request);
+    ResponseEntity<InvoiceResponse> create(@Valid @RequestBody CreateInvoiceRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getInvoiceById")
@@ -48,7 +48,7 @@ interface InvoiceApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    InvoiceResponse getInvoice(@PathVariable UUID id);
+    InvoiceResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listInvoices")
@@ -56,6 +56,5 @@ interface InvoiceApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<InvoiceResponse> listInvoices(
-            @ParameterObject InvoiceSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<InvoiceResponse> list(@ParameterObject InvoiceSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

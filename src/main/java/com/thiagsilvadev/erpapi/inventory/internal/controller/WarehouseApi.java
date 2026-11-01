@@ -36,7 +36,7 @@ public interface WarehouseApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
-    ResponseEntity<WarehouseResponse> createWarehouse(@Valid @RequestBody CreateWarehouseRequest request);
+    ResponseEntity<WarehouseResponse> create(@Valid @RequestBody CreateWarehouseRequest request);
 
     @GetMapping("/warehouses/{id}")
     @Operation(operationId = "getWarehouseById")
@@ -45,7 +45,7 @@ public interface WarehouseApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    WarehouseResponse getWarehouse(@PathVariable UUID id);
+    WarehouseResponse getById(@PathVariable UUID id);
 
     @GetMapping("/warehouses")
     @Operation(operationId = "listWarehouses")
@@ -53,5 +53,5 @@ public interface WarehouseApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<WarehouseResponse> listWarehouses(@ParameterObject Pageable pageable);
+    Page<WarehouseResponse> list(@ParameterObject Pageable pageable);
 }

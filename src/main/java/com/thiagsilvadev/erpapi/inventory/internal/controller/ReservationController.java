@@ -28,18 +28,18 @@ class ReservationController implements ReservationApi {
     }
 
     @Override
-    public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody CreateReservationRequest request) {
+    public ResponseEntity<ReservationResponse> create(@Valid @RequestBody CreateReservationRequest request) {
         ReservationResponse response = createReservationUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public ReservationResponse getReservation(@PathVariable UUID id) {
+    public ReservationResponse getById(@PathVariable UUID id) {
         return reservationQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<ReservationResponse> listReservations(Pageable pageable) {
+    public Page<ReservationResponse> list(Pageable pageable) {
         return reservationQueryUseCase.list(pageable);
     }
 }

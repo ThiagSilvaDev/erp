@@ -34,19 +34,18 @@ class FinancialAccountController implements FinancialAccountApi {
     }
 
     @Override
-    public ResponseEntity<FinancialAccountResponse> createAccount(
-            @Valid @RequestBody CreateFinancialAccountRequest request) {
+    public ResponseEntity<FinancialAccountResponse> create(@Valid @RequestBody CreateFinancialAccountRequest request) {
         FinancialAccountResponse response = createFinancialAccountUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public FinancialAccountResponse getAccount(@PathVariable UUID id) {
+    public FinancialAccountResponse getById(@PathVariable UUID id) {
         return financialAccountQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<FinancialAccountResponse> listAccounts(Pageable pageable) {
+    public Page<FinancialAccountResponse> list(Pageable pageable) {
         return financialAccountQueryUseCase.list(pageable);
     }
 

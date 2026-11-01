@@ -32,18 +32,18 @@ class UserController implements UserApi {
     }
 
     @Override
-    public ResponseEntity<UserSnapshot> createUser(@Valid @RequestBody CreateUserRequest request) {
+    public ResponseEntity<UserSnapshot> create(@Valid @RequestBody CreateUserRequest request) {
         UserSnapshot user = createUserUseCase.execute(request);
         return ResponseEntities.created(user.id(), user);
     }
 
     @Override
-    public UserSnapshot getUserById(@PathVariable UUID id) {
+    public UserSnapshot getById(@PathVariable UUID id) {
         return userQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<UserSnapshot> listUsers(UserSearchCriteria criteria, Pageable pageable) {
+    public Page<UserSnapshot> list(UserSearchCriteria criteria, Pageable pageable) {
         return userQueryUseCase.list(criteria, pageable);
     }
 }

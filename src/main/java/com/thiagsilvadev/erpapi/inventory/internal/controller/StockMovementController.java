@@ -29,19 +29,18 @@ class StockMovementController implements StockMovementApi {
     }
 
     @Override
-    public ResponseEntity<StockMovementResponse> createMovement(
-            @Valid @RequestBody CreateStockMovementRequest request) {
+    public ResponseEntity<StockMovementResponse> create(@Valid @RequestBody CreateStockMovementRequest request) {
         StockMovementResponse response = createStockMovementUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public StockMovementResponse getMovement(@PathVariable UUID id) {
+    public StockMovementResponse getById(@PathVariable UUID id) {
         return stockMovementQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<StockMovementResponse> listMovements(Pageable pageable) {
+    public Page<StockMovementResponse> list(Pageable pageable) {
         return stockMovementQueryUseCase.list(pageable);
     }
 }

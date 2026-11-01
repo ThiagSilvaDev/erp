@@ -37,7 +37,7 @@ public interface ReservationApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody CreateReservationRequest request);
+    ResponseEntity<ReservationResponse> create(@Valid @RequestBody CreateReservationRequest request);
 
     @GetMapping("/reservations/{id}")
     @Operation(operationId = "getInventoryReservationById")
@@ -46,7 +46,7 @@ public interface ReservationApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    ReservationResponse getReservation(@PathVariable UUID id);
+    ReservationResponse getById(@PathVariable UUID id);
 
     @GetMapping("/reservations")
     @Operation(operationId = "listInventoryReservations")
@@ -54,5 +54,5 @@ public interface ReservationApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<ReservationResponse> listReservations(@ParameterObject Pageable pageable);
+    Page<ReservationResponse> list(@ParameterObject Pageable pageable);
 }

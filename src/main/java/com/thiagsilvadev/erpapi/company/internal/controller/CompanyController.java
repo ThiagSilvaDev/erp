@@ -46,34 +46,34 @@ class CompanyController implements CompanyApi {
     }
 
     @Override
-    public ResponseEntity<CompanyResponse> createCompany(@Valid @RequestBody CreateCompanyRequest request) {
+    public ResponseEntity<CompanyResponse> create(@Valid @RequestBody CreateCompanyRequest request) {
         CompanyResponse response = createCompanyUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public CompanyResponse updateCompany(@PathVariable UUID id, @Valid @RequestBody UpdateCompanyRequest request) {
+    public CompanyResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateCompanyRequest request) {
         return updateCompanyUseCase.execute(id, request);
     }
 
     @Override
-    public ResponseEntity<Void> deleteCompany(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         deleteCompanyUseCase.execute(id);
         return ResponseEntity.noContent().build();
     }
 
     @Override
-    public CompanyResponse getCompanyById(@PathVariable UUID id) {
+    public CompanyResponse getById(@PathVariable UUID id) {
         return companyQueryUseCase.getById(id);
     }
 
     @Override
-    public CompanyAddressResponse getCompanyAddress(@PathVariable UUID id) {
+    public CompanyAddressResponse getAddress(@PathVariable UUID id) {
         return getCompanyAddressUseCase.execute(id);
     }
 
     @Override
-    public Page<CompanyResponse> listCompanies(CompanySearchCriteria criteria, Pageable pageable) {
+    public Page<CompanyResponse> list(CompanySearchCriteria criteria, Pageable pageable) {
         return companyQueryUseCase.list(criteria, pageable);
     }
 }

@@ -37,7 +37,7 @@ public interface VehicleApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
-    ResponseEntity<VehicleResponse> createVehicle(@Valid @RequestBody CreateVehicleRequest request);
+    ResponseEntity<VehicleResponse> create(@Valid @RequestBody CreateVehicleRequest request);
 
     @GetMapping("/vehicles/{id}")
     @Operation(operationId = "getVehicleById")
@@ -46,7 +46,7 @@ public interface VehicleApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    VehicleResponse getVehicle(@PathVariable UUID id);
+    VehicleResponse getById(@PathVariable UUID id);
 
     @GetMapping("/vehicles")
     @Operation(operationId = "listVehicles")
@@ -54,5 +54,5 @@ public interface VehicleApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<VehicleResponse> listVehicles(@ParameterObject Pageable pageable);
+    Page<VehicleResponse> list(@ParameterObject Pageable pageable);
 }

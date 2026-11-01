@@ -39,7 +39,7 @@ public interface SupplierApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<SupplierResponse> createSupplier(@Valid @RequestBody CreateSupplierRequest request);
+    ResponseEntity<SupplierResponse> create(@Valid @RequestBody CreateSupplierRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getSupplierById")
@@ -48,7 +48,7 @@ public interface SupplierApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    SupplierResponse getSupplierById(@PathVariable UUID id);
+    SupplierResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listSuppliers")
@@ -56,6 +56,5 @@ public interface SupplierApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<SupplierResponse> listSuppliers(
-            @ParameterObject SupplierSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<SupplierResponse> list(@ParameterObject SupplierSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

@@ -37,7 +37,7 @@ public interface StockMovementApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<StockMovementResponse> createMovement(@Valid @RequestBody CreateStockMovementRequest request);
+    ResponseEntity<StockMovementResponse> create(@Valid @RequestBody CreateStockMovementRequest request);
 
     @GetMapping("/stock-movements/{id}")
     @Operation(operationId = "getStockMovementById")
@@ -46,7 +46,7 @@ public interface StockMovementApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    StockMovementResponse getMovement(@PathVariable UUID id);
+    StockMovementResponse getById(@PathVariable UUID id);
 
     @GetMapping("/stock-movements")
     @Operation(operationId = "listStockMovements")
@@ -54,5 +54,5 @@ public interface StockMovementApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<StockMovementResponse> listMovements(@ParameterObject Pageable pageable);
+    Page<StockMovementResponse> list(@ParameterObject Pageable pageable);
 }

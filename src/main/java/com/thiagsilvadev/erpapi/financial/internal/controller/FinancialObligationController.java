@@ -19,12 +19,12 @@ class FinancialObligationController implements FinancialObligationApi {
     }
 
     @Override
-    public FinancialObligationResponse getFinancialObligation(@PathVariable UUID id) {
+    public FinancialObligationResponse getById(@PathVariable UUID id) {
         return financialObligationQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<FinancialObligationResponse> listFinancialObligations(Pageable pageable) {
+    public Page<FinancialObligationResponse> list(Pageable pageable) {
         return financialObligationQueryUseCase.list(pageable);
     }
 }

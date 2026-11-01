@@ -16,7 +16,7 @@ class KpiController implements KpiApi {
     }
 
     @Override
-    public ExecutiveKpiResponse getExecutiveKpis(KpiCriteria criteria) {
+    public ExecutiveKpiResponse getExecutive(KpiCriteria criteria) {
         return getExecutiveKpisUseCase.execute(criteria);
     }
 }

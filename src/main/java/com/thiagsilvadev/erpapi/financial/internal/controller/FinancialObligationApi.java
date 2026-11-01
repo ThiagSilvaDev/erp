@@ -32,7 +32,7 @@ interface FinancialObligationApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    FinancialObligationResponse getFinancialObligation(@PathVariable UUID id);
+    FinancialObligationResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listFinancialObligations")
@@ -40,5 +40,5 @@ interface FinancialObligationApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<FinancialObligationResponse> listFinancialObligations(@ParameterObject Pageable pageable);
+    Page<FinancialObligationResponse> list(@ParameterObject Pageable pageable);
 }

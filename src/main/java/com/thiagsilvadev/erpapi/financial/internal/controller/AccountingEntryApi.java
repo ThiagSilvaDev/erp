@@ -42,7 +42,7 @@ interface AccountingEntryApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
-    ResponseEntity<AccountingEntryResponse> createEntry(@Valid @RequestBody CreateAccountingEntryRequest request);
+    ResponseEntity<AccountingEntryResponse> create(@Valid @RequestBody CreateAccountingEntryRequest request);
 
     @GetMapping
     @Operation(operationId = "listAccountingEntries")
@@ -51,7 +51,7 @@ interface AccountingEntryApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    Page<AccountingEntryResponse> listEntries(
+    Page<AccountingEntryResponse> list(
             @ParameterObject AccountingEntrySearchCriteria criteria, @ParameterObject Pageable pageable);
 
     @GetMapping("/balances")

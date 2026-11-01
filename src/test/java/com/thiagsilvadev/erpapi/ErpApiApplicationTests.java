@@ -12,7 +12,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -100,6 +102,34 @@ class ErpApiApplicationTests {
                 .andExpect(jsonPath(path + "['responses']['404']").exists())
                 .andExpect(jsonPath(path + "['responses']['200']['content']['application/json']['schema']['$ref']")
                         .value("#/components/schemas/ShipmentResponse"));
+    }
+
+    @Test
+    void shouldPreserveOperationIdsForEveryHttpMethodAndPath() throws Exception {
+        JsonNode expected;
+        try (var resource = getClass().getResourceAsStream("/openapi-operation-ids.json")) {
+            assertThat(resource).isNotNull();
+            expected = JsonMapper.builder().build().readTree(resource);
+        }
+        Map<String, String> expectedIds = new HashMap<>();
+        expected.properties()
+                .forEach(entry ->
+                        expectedIds.put(entry.getKey(), entry.getValue().asText()));
+        Map<String, String> actualIds = new HashMap<>();
+        for (var path : openApi().path("paths").properties()) {
+            if (!path.getKey().startsWith("/api/v1/")) {
+                continue;
+            }
+            for (var method : path.getValue().properties()) {
+                if (Set.of("get", "post", "put", "patch", "delete").contains(method.getKey())) {
+                    actualIds.put(
+                            method.getKey().toUpperCase(Locale.ROOT) + " " + path.getKey(),
+                            method.getValue().path("operationId").asText());
+                }
+            }
+        }
+        assertThat(expectedIds).hasSize(97);
+        assertThat(actualIds).containsExactlyInAnyOrderEntriesOf(expectedIds);
     }
 
     @Test

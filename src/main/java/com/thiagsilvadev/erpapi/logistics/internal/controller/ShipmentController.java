@@ -40,12 +40,12 @@ class ShipmentController implements ShipmentApi {
     }
 
     @Override
-    public Page<ShipmentResponse> listShipments(ShipmentSearchCriteria criteria, Pageable pageable) {
+    public Page<ShipmentResponse> list(ShipmentSearchCriteria criteria, Pageable pageable) {
         return shipmentQueryUseCase.list(criteria, pageable);
     }
 
     @Override
-    public ShipmentResponse getShipment(@PathVariable UUID id) {
+    public ShipmentResponse getById(@PathVariable UUID id) {
         return shipmentQueryUseCase.getById(id);
     }
 

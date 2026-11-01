@@ -39,7 +39,7 @@ public interface CustomerApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
-    ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CreateCustomerRequest request);
+    ResponseEntity<CustomerResponse> create(@Valid @RequestBody CreateCustomerRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getCustomerById")
@@ -48,7 +48,7 @@ public interface CustomerApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    CustomerResponse getCustomerById(@PathVariable UUID id);
+    CustomerResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listCustomers")
@@ -56,6 +56,5 @@ public interface CustomerApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<CustomerResponse> listCustomers(
-            @ParameterObject CustomerSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<CustomerResponse> list(@ParameterObject CustomerSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

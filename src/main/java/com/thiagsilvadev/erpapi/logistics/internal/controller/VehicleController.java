@@ -27,18 +27,18 @@ class VehicleController implements VehicleApi {
     }
 
     @Override
-    public ResponseEntity<VehicleResponse> createVehicle(@Valid @RequestBody CreateVehicleRequest request) {
+    public ResponseEntity<VehicleResponse> create(@Valid @RequestBody CreateVehicleRequest request) {
         VehicleResponse response = createVehicleUseCase.execute(request);
         return ResponseEntities.created(response.id(), response);
     }
 
     @Override
-    public VehicleResponse getVehicle(@PathVariable UUID id) {
+    public VehicleResponse getById(@PathVariable UUID id) {
         return vehicleQueryUseCase.getById(id);
     }
 
     @Override
-    public Page<VehicleResponse> listVehicles(Pageable pageable) {
+    public Page<VehicleResponse> list(Pageable pageable) {
         return vehicleQueryUseCase.list(pageable);
     }
 }

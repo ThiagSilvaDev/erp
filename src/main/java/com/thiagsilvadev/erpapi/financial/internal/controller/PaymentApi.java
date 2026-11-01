@@ -38,7 +38,7 @@ interface PaymentApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     @ApiResponse(responseCode = "409", ref = CONFLICT)
-    ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody CreatePaymentRequest request);
+    ResponseEntity<PaymentResponse> create(@Valid @RequestBody CreatePaymentRequest request);
 
     @GetMapping("/{id}")
     @Operation(operationId = "getPaymentById")
@@ -47,7 +47,7 @@ interface PaymentApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
-    PaymentResponse getPayment(@PathVariable UUID id);
+    PaymentResponse getById(@PathVariable UUID id);
 
     @GetMapping
     @Operation(operationId = "listPayments")
@@ -55,5 +55,5 @@ interface PaymentApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<PaymentResponse> listPayments(@ParameterObject Pageable pageable);
+    Page<PaymentResponse> list(@ParameterObject Pageable pageable);
 }
