@@ -33,6 +33,7 @@ import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.TenantRole
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.security.PermissionCatalog;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.security.PermissionCatalogFixture;
 import com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions;
+import com.thiagsilvadev.erpapi.user.api.UserPermissions;
 
 class RoleTemplateServiceTest {
 
@@ -77,6 +78,7 @@ class RoleTemplateServiceTest {
                 .isEqualTo(permissionCatalog.tenantPermissions().stream()
                         .filter(permission -> !permission.equals(IamPermissions.OWNERSHIP_TRANSFER))
                         .collect(Collectors.toSet()));
+        assertThat(permissions.get(2)).contains(UserPermissions.READ, UserPermissions.WRITE, UserPermissions.DELETE);
         assertThat(permissions.get(4)).containsExactly(LogisticsPermissions.DRIVER_WORKFLOW);
 
         verify(eventPublisher, times(5)).publishEvent(any(TenantRoleCreatedEvent.class));

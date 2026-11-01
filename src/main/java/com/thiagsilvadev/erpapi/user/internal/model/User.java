@@ -52,14 +52,6 @@ public class User extends AbstractBaseEntity {
         return new User(firstName, lastName, contact, birthDate);
     }
 
-    public void activate() {
-        this.status = UserStatus.ACTIVE;
-    }
-
-    public void inactivate() {
-        this.status = UserStatus.INACTIVE;
-    }
-
     public String getDisplayName() {
         return firstName + " " + lastName;
     }
