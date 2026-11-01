@@ -38,7 +38,7 @@ import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.TenantRole
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.TenantRoleRepository;
 import com.thiagsilvadev.erpapi.user.api.UserFacade;
 
-class TenantAccessProvisioningFacadeImplTest {
+class TenantMembershipServiceTest {
 
     private final TenantMembershipRepository membershipRepository = mock(TenantMembershipRepository.class);
     private final TenantRoleAssignmentRepository assignmentRepository = mock(TenantRoleAssignmentRepository.class);
@@ -46,7 +46,7 @@ class TenantAccessProvisioningFacadeImplTest {
     private final RoleTemplateService templateService = mock(RoleTemplateService.class);
     private final UserFacade userFacade = mock(UserFacade.class);
     private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
-    private final TenantAccessProvisioningFacadeImpl service = new TenantAccessProvisioningFacadeImpl(
+    private final TenantMembershipService service = new TenantMembershipService(
             membershipRepository,
             assignmentRepository,
             roleRepository,

@@ -5,16 +5,16 @@ import org.springframework.stereotype.Component;
 
 import com.thiagsilvadev.erpapi.company.api.CompanyCreatedEvent;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.RoleTemplateService;
-import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantAccessProvisioningFacadeImpl;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantMembershipService;
 
 @Component
 public class CompanyAuthorizationListener {
 
     private final RoleTemplateService roleTemplateService;
-    private final TenantAccessProvisioningFacadeImpl membershipService;
+    private final TenantMembershipService membershipService;
 
     public CompanyAuthorizationListener(
-            RoleTemplateService roleTemplateService, TenantAccessProvisioningFacadeImpl membershipService) {
+            RoleTemplateService roleTemplateService, TenantMembershipService membershipService) {
         this.roleTemplateService = roleTemplateService;
         this.membershipService = membershipService;
     }

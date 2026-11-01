@@ -16,18 +16,18 @@ import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.dto.CreateTenantMembe
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.dto.ReplaceMembershipRolesRequest;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.dto.TenantMembershipResponse;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.mapper.TenantMembershipMapper;
-import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantAccessProvisioningFacadeImpl;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantAuthorizationService;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantMembershipService;
 
 @Component
 public class TenantMembershipUseCase {
 
-    private final TenantAccessProvisioningFacadeImpl membershipService;
+    private final TenantMembershipService membershipService;
     private final TenantAuthorizationService authorizationService;
     private final TenantMembershipMapper membershipMapper;
 
     public TenantMembershipUseCase(
-            TenantAccessProvisioningFacadeImpl membershipService,
+            TenantMembershipService membershipService,
             TenantAuthorizationService authorizationService,
             TenantMembershipMapper membershipMapper) {
         this.membershipService = membershipService;

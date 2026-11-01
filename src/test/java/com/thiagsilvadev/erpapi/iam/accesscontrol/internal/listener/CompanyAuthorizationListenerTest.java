@@ -10,12 +10,12 @@ import org.junit.jupiter.api.Test;
 
 import com.thiagsilvadev.erpapi.company.api.CompanyCreatedEvent;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.RoleTemplateService;
-import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantAccessProvisioningFacadeImpl;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantMembershipService;
 
 class CompanyAuthorizationListenerTest {
 
     private final RoleTemplateService roleTemplateService = mock(RoleTemplateService.class);
-    private final TenantAccessProvisioningFacadeImpl membershipService = mock(TenantAccessProvisioningFacadeImpl.class);
+    private final TenantMembershipService membershipService = mock(TenantMembershipService.class);
     private final CompanyAuthorizationListener listener =
             new CompanyAuthorizationListener(roleTemplateService, membershipService);
 

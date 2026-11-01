@@ -18,12 +18,12 @@ import com.thiagsilvadev.erpapi.iam.accesscontrol.api.TenantAuthorizationSnapsho
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.dto.CreateTenantMembershipRequest;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.dto.ReplaceMembershipRolesRequest;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.mapper.TenantMembershipMapper;
-import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantAccessProvisioningFacadeImpl;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantAuthorizationService;
+import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.service.TenantMembershipService;
 
 class TenantMembershipUseCaseTest {
 
-    private final TenantAccessProvisioningFacadeImpl membershipService = mock(TenantAccessProvisioningFacadeImpl.class);
+    private final TenantMembershipService membershipService = mock(TenantMembershipService.class);
     private final TenantAuthorizationService authorizationService = mock(TenantAuthorizationService.class);
     private final TenantMembershipUseCase useCase =
             new TenantMembershipUseCase(membershipService, authorizationService, new TenantMembershipMapper());
