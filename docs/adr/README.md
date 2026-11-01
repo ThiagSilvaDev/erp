@@ -15,6 +15,7 @@ history of meetings, adoption dates or rejected alternatives.
 | [0003](0003-token-contexts.md) | Stateless JWTs with tenant and platform contexts |
 | [0004](0004-module-integration.md) | Synchronous stock coordination and persisted events |
 | [0005](0005-development-schema.md) | Development schema updates and deferred Flyway adoption |
+| [0006](0006-authorization-and-transaction-conventions.md) | Permission constants and centralized after-commit side effects |
 
 ## Adding a decision
 
