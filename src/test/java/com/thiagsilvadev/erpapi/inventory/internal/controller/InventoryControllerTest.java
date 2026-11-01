@@ -12,7 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.CreateWarehouseRequest;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.mapper.WarehouseMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
 import com.thiagsilvadev.erpapi.inventory.internal.usecase.warehouse.CreateWarehouseUseCase;

@@ -22,7 +22,7 @@ import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapperImpl;
+import com.thiagsilvadev.erpapi.sales.internal.mapper.SalesMapperImpl;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrderItem;
 

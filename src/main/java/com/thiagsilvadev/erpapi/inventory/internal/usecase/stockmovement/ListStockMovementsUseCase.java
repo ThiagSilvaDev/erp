@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.mapper.StockMovementMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.StockMovementRepository;
 
 @Component

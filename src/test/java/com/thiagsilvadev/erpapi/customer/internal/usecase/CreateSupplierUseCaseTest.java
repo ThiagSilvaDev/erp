@@ -23,7 +23,7 @@ import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.dto.AddressRequest;
 import com.thiagsilvadev.erpapi.customer.internal.dto.ContactRequest;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CreateSupplierRequest;
-import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
+import com.thiagsilvadev.erpapi.customer.internal.mapper.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;
 import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
 

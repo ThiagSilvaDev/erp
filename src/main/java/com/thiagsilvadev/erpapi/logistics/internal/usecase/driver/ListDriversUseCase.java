@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
+import com.thiagsilvadev.erpapi.logistics.internal.mapper.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
 
 @Component

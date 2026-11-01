@@ -8,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.CreateFinancialAccountRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
+import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccount;
 import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialAccountRepository;
 

@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.mapper.InventoryItemMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryItemRepository;
 
 @Component

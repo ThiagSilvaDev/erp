@@ -17,7 +17,7 @@ import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.customer.internal.dto.ContactRequest;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CreateContactPersonRequest;
-import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
+import com.thiagsilvadev.erpapi.customer.internal.mapper.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;
 import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
 import com.thiagsilvadev.erpapi.customer.internal.repository.ContactPersonRepository;

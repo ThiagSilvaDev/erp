@@ -8,10 +8,10 @@ import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderBuyerSummaryResponse;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderSellerSummaryResponse;
+import com.thiagsilvadev.erpapi.sales.internal.mapper.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 
 @Component

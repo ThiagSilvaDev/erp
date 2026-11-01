@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
-import com.thiagsilvadev.erpapi.sales.internal.dto.SalesMapper;
+import com.thiagsilvadev.erpapi.sales.internal.mapper.SalesMapper;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 

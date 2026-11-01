@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.sales.internal.dto;
+package com.thiagsilvadev.erpapi.sales.internal.mapper;
 
 import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
@@ -10,6 +10,8 @@ import com.thiagsilvadev.erpapi.common.domain.model.Money;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderDeliveryRouteSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderItemSnapshot;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
+import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderItemResponse;
+import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.model.*;
 
 @Mapper(componentModel = "spring")

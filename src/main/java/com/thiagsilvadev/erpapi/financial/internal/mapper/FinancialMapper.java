@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.financial.internal.dto;
+package com.thiagsilvadev.erpapi.financial.internal.mapper;
 
 import org.mapstruct.Mapper;
 

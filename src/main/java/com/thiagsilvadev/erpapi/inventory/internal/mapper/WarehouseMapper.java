@@ -1,8 +1,9 @@
-package com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse;
+package com.thiagsilvadev.erpapi.inventory.internal.mapper;
 
 import org.mapstruct.Mapper;
 
 import com.thiagsilvadev.erpapi.inventory.api.WarehouseSnapshot;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.Warehouse;
 
 @Mapper(componentModel = "spring")

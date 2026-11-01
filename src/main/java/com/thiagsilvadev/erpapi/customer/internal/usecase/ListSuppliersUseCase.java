@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierResponse;
 import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierSearchCriteria;
+import com.thiagsilvadev.erpapi.customer.internal.mapper.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerSpecification;
 import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
 

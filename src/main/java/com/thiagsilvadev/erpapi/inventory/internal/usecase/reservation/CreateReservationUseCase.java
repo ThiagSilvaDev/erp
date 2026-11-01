@@ -10,8 +10,8 @@ import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.ReserveStockCommand;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.CreateReservationRequest;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.mapper.ReservationMapper;
 
 @Component
 public class CreateReservationUseCase {

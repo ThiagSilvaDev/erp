@@ -10,9 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.accountingentry.AccountingEntryResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.accountingentry.AccountingEntrySearchCriteria;
+import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.repository.AccountingEntryRepository;
 
 @Component

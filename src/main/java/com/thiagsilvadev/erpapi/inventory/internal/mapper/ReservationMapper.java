@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.inventory.internal.dto.reservation;
+package com.thiagsilvadev.erpapi.inventory.internal.mapper;
 
 import java.util.UUID;
 
@@ -9,6 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.SalesOrderReferenceProvider;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationProductDto;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationSalesOrderSummaryResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationWarehouseSummaryResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.InventoryReservation;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
 

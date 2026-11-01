@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
+import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 
 @Component

@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.customer.internal.dto;
+package com.thiagsilvadev.erpapi.customer.internal.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -7,6 +7,13 @@ import com.thiagsilvadev.erpapi.common.domain.model.Contact;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
 import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
+import com.thiagsilvadev.erpapi.customer.internal.dto.AddressRequest;
+import com.thiagsilvadev.erpapi.customer.internal.dto.AddressResponse;
+import com.thiagsilvadev.erpapi.customer.internal.dto.ContactPersonResponse;
+import com.thiagsilvadev.erpapi.customer.internal.dto.ContactRequest;
+import com.thiagsilvadev.erpapi.customer.internal.dto.ContactResponse;
+import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerResponse;
+import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierResponse;
 import com.thiagsilvadev.erpapi.customer.internal.model.ContactPerson;
 import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
 import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;

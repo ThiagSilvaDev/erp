@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.inventory.internal.dto.reservation;
+package com.thiagsilvadev.erpapi.inventory.internal.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -13,6 +13,7 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundExceptio
 import com.thiagsilvadev.erpapi.inventory.api.InventoryReservationSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.SalesOrderReference;
 import com.thiagsilvadev.erpapi.inventory.api.SalesOrderReferenceProvider;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.WarehouseRepository;
 
 class ReservationMapperTest {

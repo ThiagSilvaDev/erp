@@ -15,9 +15,9 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundExceptio
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.financial.internal.dto.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.CreatePaymentRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
+import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccount;
 import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
 import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntrySource;

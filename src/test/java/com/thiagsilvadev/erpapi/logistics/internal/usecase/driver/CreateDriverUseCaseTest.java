@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.logistics.internal.dto.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.CreateDriverRequest;
 import com.thiagsilvadev.erpapi.logistics.internal.dto.driver.DriverResponse;
+import com.thiagsilvadev.erpapi.logistics.internal.mapper.LogisticsMapper;
 import com.thiagsilvadev.erpapi.logistics.internal.model.Driver;
 import com.thiagsilvadev.erpapi.logistics.internal.repository.DriverRepository;
 import com.thiagsilvadev.erpapi.user.api.TenantUserAccessFacade;

@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.inventory.api.*;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationMapper;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse.WarehouseMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.mapper.ReservationMapper;
+import com.thiagsilvadev.erpapi.inventory.internal.mapper.WarehouseMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.model.*;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.*;
 

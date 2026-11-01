@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.dto.reservation.ReservationResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.mapper.ReservationMapper;
 import com.thiagsilvadev.erpapi.inventory.internal.repository.InventoryReservationRepository;
 
 @Component

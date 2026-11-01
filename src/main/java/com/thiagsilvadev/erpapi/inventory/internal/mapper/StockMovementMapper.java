@@ -1,7 +1,8 @@
-package com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement;
+package com.thiagsilvadev.erpapi.inventory.internal.mapper;
 
 import org.mapstruct.Mapper;
 
+import com.thiagsilvadev.erpapi.inventory.internal.dto.stockmovement.StockMovementResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.StockMovement;
 
 @Mapper(componentModel = "spring")

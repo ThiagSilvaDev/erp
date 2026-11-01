@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerResponse;
+import com.thiagsilvadev.erpapi.customer.internal.mapper.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
 import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
 

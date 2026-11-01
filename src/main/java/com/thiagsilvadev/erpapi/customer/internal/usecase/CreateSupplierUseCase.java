@@ -13,8 +13,8 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.internal.dto.CreateSupplierRequest;
-import com.thiagsilvadev.erpapi.customer.internal.dto.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.dto.SupplierResponse;
+import com.thiagsilvadev.erpapi.customer.internal.mapper.CustomerMapper;
 import com.thiagsilvadev.erpapi.customer.internal.model.Supplier;
 import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
 

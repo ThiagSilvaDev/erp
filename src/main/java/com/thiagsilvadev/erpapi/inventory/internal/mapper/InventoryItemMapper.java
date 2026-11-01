@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.inventory.internal.dto.item;
+package com.thiagsilvadev.erpapi.inventory.internal.mapper;
 
 import java.util.UUID;
 
@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.thiagsilvadev.erpapi.catalog.api.CatalogFacade;
 import com.thiagsilvadev.erpapi.catalog.api.CategorySnapshot;
 import com.thiagsilvadev.erpapi.catalog.api.ProductSnapshot;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemCategoryResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemProductResponse;
+import com.thiagsilvadev.erpapi.inventory.internal.dto.item.InventoryItemResponse;
 import com.thiagsilvadev.erpapi.inventory.internal.model.InventoryItem;
 
 @Mapper(componentModel = "spring")
