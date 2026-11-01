@@ -14,7 +14,7 @@ public record SalesOrderSnapshot(
         UUID sellerCompanyId,
         UUID buyerCompanyId,
         UUID customerId,
-        OrderStatus status,
+        SalesOrderStatus status,
         BigDecimal totalAmount,
         String currencyCode,
         Set<SalesOrderItemSnapshot> items) {}

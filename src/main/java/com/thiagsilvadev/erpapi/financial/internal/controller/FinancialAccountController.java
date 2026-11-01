@@ -12,25 +12,25 @@ import org.springframework.web.bind.annotation.*;
 import com.thiagsilvadev.erpapi.common.web.ResponseEntities;
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.CreateFinancialAccountRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
-import com.thiagsilvadev.erpapi.financial.internal.dto.entry.FinancialEntryResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.cashmovement.CashMovementResponse;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.account.CreateFinancialAccountUseCase;
 import com.thiagsilvadev.erpapi.financial.internal.usecase.account.FinancialAccountQueryUseCase;
-import com.thiagsilvadev.erpapi.financial.internal.usecase.entry.ListFinancialEntriesUseCase;
+import com.thiagsilvadev.erpapi.financial.internal.usecase.cashmovement.ListCashMovementsUseCase;
 
 @RestController
 class FinancialAccountController implements FinancialAccountApi {
 
     private final CreateFinancialAccountUseCase createFinancialAccountUseCase;
     private final FinancialAccountQueryUseCase financialAccountQueryUseCase;
-    private final ListFinancialEntriesUseCase listFinancialEntriesUseCase;
+    private final ListCashMovementsUseCase listCashMovementsUseCase;
 
     FinancialAccountController(
             CreateFinancialAccountUseCase createFinancialAccountUseCase,
             FinancialAccountQueryUseCase financialAccountQueryUseCase,
-            ListFinancialEntriesUseCase listFinancialEntriesUseCase) {
+            ListCashMovementsUseCase listCashMovementsUseCase) {
         this.createFinancialAccountUseCase = createFinancialAccountUseCase;
         this.financialAccountQueryUseCase = financialAccountQueryUseCase;
-        this.listFinancialEntriesUseCase = listFinancialEntriesUseCase;
+        this.listCashMovementsUseCase = listCashMovementsUseCase;
     }
 
     @Override
@@ -51,7 +51,7 @@ class FinancialAccountController implements FinancialAccountApi {
     }
 
     @Override
-    public Page<FinancialEntryResponse> listEntries(@PathVariable UUID accountId, Pageable pageable) {
-        return listFinancialEntriesUseCase.execute(accountId, pageable);
+    public Page<CashMovementResponse> listCashMovements(@PathVariable UUID accountId, Pageable pageable) {
+        return listCashMovementsUseCase.execute(accountId, pageable);
     }
 }

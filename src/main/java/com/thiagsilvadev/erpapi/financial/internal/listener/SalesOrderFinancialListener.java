@@ -7,10 +7,10 @@ import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
+import com.thiagsilvadev.erpapi.financial.internal.model.FinancialObligation;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
-import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialObligationRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
@@ -25,7 +25,7 @@ public class SalesOrderFinancialListener {
     private static final int SALE_INVOICE_DUE_DAYS = 15;
 
     private final InvoiceRepository invoiceRepository;
-    private final LedgerEntryRepository ledgerEntryRepository;
+    private final FinancialObligationRepository financialObligationRepository;
     private final PaymentRepository paymentRepository;
     private final BusinessNumberService businessNumberService;
     private final SalesFacade salesFacade;
@@ -33,13 +33,13 @@ public class SalesOrderFinancialListener {
 
     public SalesOrderFinancialListener(
             InvoiceRepository invoiceRepository,
-            LedgerEntryRepository ledgerEntryRepository,
+            FinancialObligationRepository financialObligationRepository,
             PaymentRepository paymentRepository,
             BusinessNumberService businessNumberService,
             SalesFacade salesFacade,
             AccountingPostingService accountingPostingService) {
         this.invoiceRepository = invoiceRepository;
-        this.ledgerEntryRepository = ledgerEntryRepository;
+        this.financialObligationRepository = financialObligationRepository;
         this.paymentRepository = paymentRepository;
         this.businessNumberService = businessNumberService;
         this.salesFacade = salesFacade;
@@ -64,7 +64,7 @@ public class SalesOrderFinancialListener {
                 order.currencyCode(),
                 event.confirmedAt().plusDays(SALE_INVOICE_DUE_DAYS)));
 
-        ledgerEntryRepository.save(LedgerEntry.receivable(
+        financialObligationRepository.save(FinancialObligation.receivable(
                 invoice.getCompanyId(),
                 invoice.getId(),
                 invoice.getAmount(),
@@ -80,7 +80,7 @@ public class SalesOrderFinancialListener {
                 throw new ConflictException("Cannot cancel sales order with financial payments.");
             }
             invoice.cancel();
-            ledgerEntryRepository.findByInvoiceId(invoice.getId()).ifPresent(LedgerEntry::cancel);
+            financialObligationRepository.findByInvoiceId(invoice.getId()).ifPresent(FinancialObligation::cancel);
             accountingPostingService.reverseInvoiceRevenue(invoice);
         });
     }

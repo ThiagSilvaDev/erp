@@ -1,6 +1,6 @@
 package com.thiagsilvadev.erpapi.financial.internal.model;
 
-public enum LedgerEntryStatus {
+public enum FinancialObligationStatus {
     OPEN,
     SETTLED,
     CANCELLED

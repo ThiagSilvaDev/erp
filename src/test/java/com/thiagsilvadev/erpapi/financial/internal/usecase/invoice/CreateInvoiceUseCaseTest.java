@@ -31,8 +31,8 @@ import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.CreateInvoiceRequ
 import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialObligationRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.sales.api.*;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 
@@ -44,7 +44,7 @@ class CreateInvoiceUseCaseTest {
     private InvoiceRepository invoiceRepository;
 
     @Mock
-    private LedgerEntryRepository ledgerEntryRepository;
+    private FinancialObligationRepository financialObligationRepository;
 
     @Mock
     private CustomerFacade customerFacade;
@@ -106,7 +106,7 @@ class CreateInvoiceUseCaseTest {
                         TENANT_ID,
                         buyerCompanyId,
                         null,
-                        OrderStatus.CONFIRMED,
+                        SalesOrderStatus.CONFIRMED,
                         new BigDecimal("20.00"),
                         "BRL",
                         Set.of()));
@@ -142,7 +142,7 @@ class CreateInvoiceUseCaseTest {
                         TENANT_ID,
                         null,
                         customerId,
-                        OrderStatus.CONFIRMED,
+                        SalesOrderStatus.CONFIRMED,
                         new BigDecimal("20.00"),
                         "BRL",
                         Set.of()));
@@ -184,7 +184,7 @@ class CreateInvoiceUseCaseTest {
     private CreateInvoiceUseCase useCase() {
         return new CreateInvoiceUseCase(
                 invoiceRepository,
-                ledgerEntryRepository,
+                financialObligationRepository,
                 customerFacade,
                 companyFacade,
                 salesFacade,

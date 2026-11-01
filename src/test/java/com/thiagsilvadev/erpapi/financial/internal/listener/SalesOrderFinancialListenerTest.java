@@ -19,8 +19,8 @@ import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
 import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
 import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialObligationRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 import com.thiagsilvadev.erpapi.sales.api.*;
 
@@ -31,7 +31,7 @@ class SalesOrderFinancialListenerTest {
     private InvoiceRepository invoiceRepository;
 
     @Mock
-    private LedgerEntryRepository ledgerEntryRepository;
+    private FinancialObligationRepository financialObligationRepository;
 
     @Mock
     private PaymentRepository paymentRepository;
@@ -90,7 +90,7 @@ class SalesOrderFinancialListenerTest {
     private SalesOrderFinancialListener listener() {
         return new SalesOrderFinancialListener(
                 invoiceRepository,
-                ledgerEntryRepository,
+                financialObligationRepository,
                 paymentRepository,
                 businessNumberService,
                 salesFacade,
@@ -109,7 +109,7 @@ class SalesOrderFinancialListenerTest {
                 sellerCompanyId,
                 buyerCompanyId,
                 customerId,
-                OrderStatus.CONFIRMED,
+                SalesOrderStatus.CONFIRMED,
                 new BigDecimal("20.00"),
                 "BRL",
                 Set.of());

@@ -28,11 +28,11 @@ import com.thiagsilvadev.erpapi.financial.internal.repository.*;
 import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
 import com.thiagsilvadev.erpapi.financial.internal.service.ChartOfAccountsService;
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
-import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderStatus;
 
 class FinancialDevSeederTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
@@ -41,10 +41,10 @@ class FinancialDevSeederTest {
     @Test
     void shouldSeedInvoicesPaymentsAndCollectionsAcrossDates() {
         InvoiceRepository invoiceRepository = mock(InvoiceRepository.class);
-        LedgerEntryRepository ledgerRepository = mock(LedgerEntryRepository.class);
+        FinancialObligationRepository financialObligationRepository = mock(FinancialObligationRepository.class);
         FinancialAccountRepository accountRepository = mock(FinancialAccountRepository.class);
         PaymentRepository paymentRepository = mock(PaymentRepository.class);
-        FinancialEntryRepository entryRepository = mock(FinancialEntryRepository.class);
+        CashMovementRepository entryRepository = mock(CashMovementRepository.class);
         AccountingEntryRepository accountingEntryRepository = mock(AccountingEntryRepository.class);
         CompanyFacade companyFacade = mock(CompanyFacade.class);
         CustomerFacade customerFacade = mock(CustomerFacade.class);
@@ -77,7 +77,7 @@ class FinancialDevSeederTest {
         when(accountRepository.findAllByCompanyId(any(), any())).thenReturn(new PageImpl<>(List.of(account)));
         when(businessNumberService.next(any())).thenReturn(1L);
         when(invoiceRepository.saveAndFlush(any())).thenAnswer(invocation -> withId(invocation.getArgument(0)));
-        when(ledgerRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(financialObligationRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(paymentRepository.saveAndFlush(any())).thenAnswer(invocation -> withId(invocation.getArgument(0)));
         when(entryRepository.saveAndFlush(any())).thenAnswer(invocation -> withId(invocation.getArgument(0)));
         when(accountingEntryRepository.countByCompanyIdAndSourceType(COMPANY_ID, AccountingEntrySourceType.MANUAL))
@@ -92,7 +92,7 @@ class FinancialDevSeederTest {
 
         new FinancialDevSeeder(
                         invoiceRepository,
-                        ledgerRepository,
+                        financialObligationRepository,
                         accountRepository,
                         paymentRepository,
                         entryRepository,
@@ -111,7 +111,7 @@ class FinancialDevSeederTest {
         verify(invoiceRepository, times(FinancialDevSeeder.seedInvoiceCount())).saveAndFlush(captor.capture());
         verify(invoiceRepository, times(FinancialDevSeeder.seedInvoiceCount())).updateCreatedAtForDevSeed(any(), any());
         verify(paymentRepository, times(6)).saveAndFlush(any(Payment.class));
-        verify(entryRepository, times(6)).saveAndFlush(any(FinancialEntry.class));
+        verify(entryRepository, times(6)).saveAndFlush(any(CashMovement.class));
         verify(entryRepository, times(6)).updateOccurredAtForDevSeed(any(), any());
         verify(accountingPostingService, times(10)).postInvoiceRevenue(any(Invoice.class));
         verify(accountingEntryRepository, times(2)).saveAndFlush(any(AccountingEntry.class));
@@ -133,7 +133,7 @@ class FinancialDevSeederTest {
                         COMPANY_ID,
                         null,
                         UUID.randomUUID(),
-                        OrderStatus.CONFIRMED,
+                        SalesOrderStatus.CONFIRMED,
                         BigDecimal.ONE,
                         "BRL",
                         Set.of()))

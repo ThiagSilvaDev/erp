@@ -18,21 +18,21 @@ import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.CreateInvoiceRequ
 import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
 import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
 import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
+import com.thiagsilvadev.erpapi.financial.internal.model.FinancialObligation;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
-import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialObligationRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService;
-import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
 import com.thiagsilvadev.erpapi.sales.api.SalesFacade;
 import com.thiagsilvadev.erpapi.sales.api.SalesOrderSnapshot;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderStatus;
 
 @Component
 public class CreateInvoiceUseCase {
 
     private final InvoiceRepository invoiceRepository;
-    private final LedgerEntryRepository ledgerEntryRepository;
+    private final FinancialObligationRepository financialObligationRepository;
     private final CustomerFacade customerFacade;
     private final CompanyFacade companyFacade;
     private final SalesFacade salesFacade;
@@ -42,7 +42,7 @@ public class CreateInvoiceUseCase {
 
     public CreateInvoiceUseCase(
             InvoiceRepository invoiceRepository,
-            LedgerEntryRepository ledgerEntryRepository,
+            FinancialObligationRepository financialObligationRepository,
             CustomerFacade customerFacade,
             CompanyFacade companyFacade,
             SalesFacade salesFacade,
@@ -50,7 +50,7 @@ public class CreateInvoiceUseCase {
             BusinessNumberService businessNumberService,
             AccountingPostingService accountingPostingService) {
         this.invoiceRepository = invoiceRepository;
-        this.ledgerEntryRepository = ledgerEntryRepository;
+        this.financialObligationRepository = financialObligationRepository;
         this.customerFacade = customerFacade;
         this.companyFacade = companyFacade;
         this.salesFacade = salesFacade;
@@ -80,7 +80,7 @@ public class CreateInvoiceUseCase {
                 request.currencyCode(),
                 request.dueDate()));
 
-        ledgerEntryRepository.save(LedgerEntry.receivable(
+        financialObligationRepository.save(FinancialObligation.receivable(
                 companyId, invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
         accountingPostingService.postInvoiceRevenue(invoice);
 
@@ -88,7 +88,7 @@ public class CreateInvoiceUseCase {
     }
 
     private void validateSalesOrderInvoice(CreateInvoiceRequest request, SalesOrderSnapshot order) {
-        if (order.status() != OrderStatus.CONFIRMED) {
+        if (order.status() != SalesOrderStatus.CONFIRMED) {
             throw new ConflictException("Only confirmed sales orders can be invoiced.");
         }
         BillingPartyType expectedType =

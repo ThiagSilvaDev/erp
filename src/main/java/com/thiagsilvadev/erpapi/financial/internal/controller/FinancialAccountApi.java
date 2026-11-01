@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.CreateFinancialAccountRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
-import com.thiagsilvadev.erpapi.financial.internal.dto.entry.FinancialEntryResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.cashmovement.CashMovementResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,8 +38,8 @@ interface FinancialAccountApi {
     @ApiResponse(responseCode = "200")
     Page<FinancialAccountResponse> listAccounts(@ParameterObject Pageable pageable);
 
-    @GetMapping("/{accountId}/entries")
-    @Operation(operationId = "listFinancialEntries")
+    @GetMapping("/{accountId}/cash-movements")
+    @Operation(operationId = "listCashMovements")
     @ApiResponse(responseCode = "200")
-    Page<FinancialEntryResponse> listEntries(@PathVariable UUID accountId, @ParameterObject Pageable pageable);
+    Page<CashMovementResponse> listCashMovements(@PathVariable UUID accountId, @ParameterObject Pageable pageable);
 }

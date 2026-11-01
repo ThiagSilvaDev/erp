@@ -24,7 +24,7 @@ import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
 import com.thiagsilvadev.erpapi.inventory.api.WarehouseSnapshot;
-import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderStatus;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
 
@@ -79,6 +79,6 @@ class SalesDevSeederTest {
         verify(repository, times(SalesDevSeeder.seedOrderCount())).updateCreatedAtForDevSeed(any(), any());
         assertThat(captor.getAllValues())
                 .extracting(SalesOrder::getStatus)
-                .contains(OrderStatus.DRAFT, OrderStatus.CONFIRMED, OrderStatus.CANCELLED);
+                .contains(SalesOrderStatus.DRAFT, SalesOrderStatus.CONFIRMED, SalesOrderStatus.CANCELLED);
     }
 }

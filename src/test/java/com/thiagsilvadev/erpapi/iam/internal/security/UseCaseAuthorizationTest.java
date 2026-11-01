@@ -29,7 +29,7 @@ class UseCaseAuthorizationTest {
         "com.thiagsilvadev.erpapi.customer.internal.usecase.SupplierQueryUseCase",
         "com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.CreateInvoiceUseCase",
         "com.thiagsilvadev.erpapi.financial.internal.usecase.invoice.InvoiceQueryUseCase",
-        "com.thiagsilvadev.erpapi.financial.internal.usecase.ledgerentry.LedgerEntryQueryUseCase",
+        "com.thiagsilvadev.erpapi.financial.internal.usecase.financialobligation.FinancialObligationQueryUseCase",
         "com.thiagsilvadev.erpapi.financial.internal.usecase.payment.CreatePaymentUseCase",
         "com.thiagsilvadev.erpapi.financial.internal.usecase.payment.PaymentQueryUseCase",
         "com.thiagsilvadev.erpapi.inventory.internal.usecase.item.InventoryItemQueryUseCase",

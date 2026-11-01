@@ -22,8 +22,8 @@ import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
 import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
-import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderStatus;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrderItem;
 import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
@@ -37,18 +37,18 @@ class SalesDevSeeder implements ApplicationRunner {
     private static final String WAREHOUSE_CODE = "MAIN";
 
     private static final List<OrderSeed> ORDERS = List.of(
-            new OrderSeed(56, "SKU-002", 2, PaymentMethod.BANK_TRANSFER, OrderStatus.CONFIRMED),
-            new OrderSeed(51, "SKU-003", 4, PaymentMethod.CREDIT_CARD, OrderStatus.CANCELLED),
-            new OrderSeed(45, "SKU-004", 12, PaymentMethod.PIX, OrderStatus.CONFIRMED),
-            new OrderSeed(38, "SKU-005", 6, PaymentMethod.BOLETO, OrderStatus.DRAFT),
-            new OrderSeed(32, "SKU-001", 10, PaymentMethod.PIX, OrderStatus.CONFIRMED),
-            new OrderSeed(27, "SKU-002", 3, PaymentMethod.BANK_TRANSFER, OrderStatus.CONFIRMED),
-            new OrderSeed(23, "SKU-003", 5, PaymentMethod.CREDIT_CARD, OrderStatus.CONFIRMED),
-            new OrderSeed(19, "SKU-004", 8, PaymentMethod.PIX, OrderStatus.CANCELLED),
-            new OrderSeed(14, "SKU-005", 7, PaymentMethod.BOLETO, OrderStatus.CONFIRMED),
-            new OrderSeed(9, "SKU-006", 10, PaymentMethod.DEBIT_CARD, OrderStatus.DRAFT),
-            new OrderSeed(5, "SKU-001", 15, PaymentMethod.PIX, OrderStatus.CONFIRMED),
-            new OrderSeed(1, "SKU-007", 20, PaymentMethod.CREDIT_CARD, OrderStatus.CANCELLED));
+            new OrderSeed(56, "SKU-002", 2, PaymentMethod.BANK_TRANSFER, SalesOrderStatus.CONFIRMED),
+            new OrderSeed(51, "SKU-003", 4, PaymentMethod.CREDIT_CARD, SalesOrderStatus.CANCELLED),
+            new OrderSeed(45, "SKU-004", 12, PaymentMethod.PIX, SalesOrderStatus.CONFIRMED),
+            new OrderSeed(38, "SKU-005", 6, PaymentMethod.BOLETO, SalesOrderStatus.DRAFT),
+            new OrderSeed(32, "SKU-001", 10, PaymentMethod.PIX, SalesOrderStatus.CONFIRMED),
+            new OrderSeed(27, "SKU-002", 3, PaymentMethod.BANK_TRANSFER, SalesOrderStatus.CONFIRMED),
+            new OrderSeed(23, "SKU-003", 5, PaymentMethod.CREDIT_CARD, SalesOrderStatus.CONFIRMED),
+            new OrderSeed(19, "SKU-004", 8, PaymentMethod.PIX, SalesOrderStatus.CANCELLED),
+            new OrderSeed(14, "SKU-005", 7, PaymentMethod.BOLETO, SalesOrderStatus.CONFIRMED),
+            new OrderSeed(9, "SKU-006", 10, PaymentMethod.DEBIT_CARD, SalesOrderStatus.DRAFT),
+            new OrderSeed(5, "SKU-001", 15, PaymentMethod.PIX, SalesOrderStatus.CONFIRMED),
+            new OrderSeed(1, "SKU-007", 20, PaymentMethod.CREDIT_CARD, SalesOrderStatus.CANCELLED));
 
     private final SalesOrderRepository orderRepository;
     private final CustomerFacade customerFacade;
@@ -109,7 +109,7 @@ class SalesDevSeeder implements ApplicationRunner {
         }
     }
 
-    private static void applyStatus(SalesOrder order, OrderStatus status) {
+    private static void applyStatus(SalesOrder order, SalesOrderStatus status) {
         switch (status) {
             case DRAFT -> {
                 // The factory already creates draft orders.
@@ -123,5 +123,6 @@ class SalesDevSeeder implements ApplicationRunner {
         return ORDERS.size();
     }
 
-    private record OrderSeed(int daysAgo, String sku, int quantity, PaymentMethod paymentMethod, OrderStatus status) {}
+    private record OrderSeed(
+            int daysAgo, String sku, int quantity, PaymentMethod paymentMethod, SalesOrderStatus status) {}
 }

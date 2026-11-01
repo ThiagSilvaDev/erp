@@ -30,10 +30,10 @@ import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
 import com.thiagsilvadev.erpapi.customer.internal.repository.SupplierRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.AccountingAccountRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.AccountingEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.CashMovementRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialAccountRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialObligationRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.AuthorizationAuditRepository;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.repository.PlatformRoleAssignmentRepository;
@@ -207,8 +207,8 @@ class ErpApiApplicationTests {
         }
 
         @Bean
-        LedgerEntryRepository ledgerEntryRepository() {
-            return mock(LedgerEntryRepository.class);
+        FinancialObligationRepository financialObligationRepository() {
+            return mock(FinancialObligationRepository.class);
         }
 
         @Bean
@@ -217,8 +217,8 @@ class ErpApiApplicationTests {
         }
 
         @Bean
-        FinancialEntryRepository financialEntryRepository() {
-            return mock(FinancialEntryRepository.class);
+        CashMovementRepository cashMovementRepository() {
+            return mock(CashMovementRepository.class);
         }
 
         @Bean

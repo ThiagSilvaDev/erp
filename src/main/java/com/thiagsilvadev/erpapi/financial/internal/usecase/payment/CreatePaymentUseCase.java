@@ -18,18 +18,18 @@ import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.CreatePaymentRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
 import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
+import com.thiagsilvadev.erpapi.financial.internal.model.CashMovement;
+import com.thiagsilvadev.erpapi.financial.internal.model.CashMovementSource;
 import com.thiagsilvadev.erpapi.financial.internal.model.FinancialAccount;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntrySource;
+import com.thiagsilvadev.erpapi.financial.internal.model.FinancialObligation;
 import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
 import com.thiagsilvadev.erpapi.financial.internal.model.InvoiceStatus;
-import com.thiagsilvadev.erpapi.financial.internal.model.LedgerEntry;
 import com.thiagsilvadev.erpapi.financial.internal.model.Payment;
 import com.thiagsilvadev.erpapi.financial.internal.model.PaymentStatus;
+import com.thiagsilvadev.erpapi.financial.internal.repository.CashMovementRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialAccountRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialObligationRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
-import com.thiagsilvadev.erpapi.financial.internal.repository.LedgerEntryRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
 
 @Component
@@ -37,25 +37,25 @@ public class CreatePaymentUseCase {
 
     private final InvoiceRepository invoiceRepository;
     private final PaymentRepository paymentRepository;
-    private final LedgerEntryRepository ledgerEntryRepository;
+    private final FinancialObligationRepository financialObligationRepository;
     private final FinancialAccountRepository accountRepository;
-    private final FinancialEntryRepository entryRepository;
+    private final CashMovementRepository cashMovementRepository;
     private final FinancialMapper mapper;
     private final BusinessNumberService businessNumberService;
 
     public CreatePaymentUseCase(
             InvoiceRepository invoiceRepository,
             PaymentRepository paymentRepository,
-            LedgerEntryRepository ledgerEntryRepository,
+            FinancialObligationRepository financialObligationRepository,
             FinancialAccountRepository accountRepository,
-            FinancialEntryRepository entryRepository,
+            CashMovementRepository cashMovementRepository,
             FinancialMapper mapper,
             BusinessNumberService businessNumberService) {
         this.invoiceRepository = invoiceRepository;
         this.paymentRepository = paymentRepository;
-        this.ledgerEntryRepository = ledgerEntryRepository;
+        this.financialObligationRepository = financialObligationRepository;
         this.accountRepository = accountRepository;
-        this.entryRepository = entryRepository;
+        this.cashMovementRepository = cashMovementRepository;
         this.mapper = mapper;
         this.businessNumberService = businessNumberService;
     }
@@ -90,14 +90,14 @@ public class CreatePaymentUseCase {
 
         if (request.status() == PaymentStatus.PAID) {
             payment.markAsPaid(request.paidAt() != null ? request.paidAt() : LocalDate.now());
-            createIncomeEntryIfAccountPresent(payment, invoice);
+            createIncomeCashMovementIfAccountPresent(payment, invoice);
         }
 
         if (totalPaidAmount.compareTo(invoice.getAmount()) == 0) {
             invoice.markPaid();
-            ledgerEntryRepository
+            financialObligationRepository
                     .findByCompanyIdAndInvoiceId(companyId, invoice.getId())
-                    .ifPresent(LedgerEntry::settle);
+                    .ifPresent(FinancialObligation::settle);
         }
 
         return mapper.toResponse(payment);
@@ -116,12 +116,12 @@ public class CreatePaymentUseCase {
         }
     }
 
-    private void createIncomeEntryIfAccountPresent(Payment payment, Invoice invoice) {
+    private void createIncomeCashMovementIfAccountPresent(Payment payment, Invoice invoice) {
         if (payment.getDestinationAccountId() != null) {
-            entryRepository.save(FinancialEntry.income(
+            cashMovementRepository.save(CashMovement.income(
                     payment.getCompanyId(),
                     payment.getDestinationAccountId(),
-                    FinancialEntrySource.PAYMENT,
+                    CashMovementSource.PAYMENT,
                     payment.getAmount(),
                     invoice.getCurrencyCode(),
                     payment.getId(),

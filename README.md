@@ -22,6 +22,7 @@ identity and access management, inventory, logistics, sales, and users.
 ## Technical documentation
 
 - [Architecture](docs/ARCHITECTURE.md): structure, modules, dependencies and workflows.
+- [Glossary](docs/GLOSSARY.md): canonical ERP terms and module ownership.
 - [Domain](docs/DOMAIN.md): ERP concepts and implemented business rules.
 - [Security](docs/SECURITY.md): authentication, authorization and token lifecycle.
 - [Testing](docs/TESTING.md): strategy, conventions and database prerequisites.
@@ -38,7 +39,7 @@ The code is organized by business capability under
 | `catalog` | Products and categories |
 | `company` | Companies, addresses, and company contacts |
 | `customer` | Customers, suppliers, and contact people |
-| `financial` | Accounts, ledger entries, invoices, and payments |
+| `financial` | Financial obligations, cash movements, accounting, invoices, and payments |
 | `iam` | Authentication, credentials, login, and JWT issuance |
 | `iam.accesscontrol` | Tenant memberships, roles, permissions, platform assignments, and authorization audit |
 | `inventory` | Warehouses, stock, movements, and reservations |

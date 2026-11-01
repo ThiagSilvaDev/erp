@@ -1,4 +1,4 @@
-package com.thiagsilvadev.erpapi.financial.internal.usecase.entry;
+package com.thiagsilvadev.erpapi.financial.internal.usecase.cashmovement;
 
 import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.READ;
 
@@ -11,30 +11,30 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
-import com.thiagsilvadev.erpapi.financial.internal.dto.entry.FinancialEntryResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.cashmovement.CashMovementResponse;
 import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.CashMovementRepository;
 
 @Component
-public class ListFinancialEntriesUseCase {
+public class ListCashMovementsUseCase {
 
-    private final FinancialEntryRepository entryRepository;
+    private final CashMovementRepository cashMovementRepository;
     private final FinancialMapper mapper;
 
-    public ListFinancialEntriesUseCase(FinancialEntryRepository entryRepository, FinancialMapper mapper) {
-        this.entryRepository = entryRepository;
+    public ListCashMovementsUseCase(CashMovementRepository cashMovementRepository, FinancialMapper mapper) {
+        this.cashMovementRepository = cashMovementRepository;
         this.mapper = mapper;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('" + READ + "')")
-    public Page<FinancialEntryResponse> execute(UUID accountId, Pageable pageable) {
+    public Page<CashMovementResponse> execute(UUID accountId, Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
         if (accountId != null) {
-            return entryRepository
+            return cashMovementRepository
                     .findByCompanyIdAndAccountId(companyId, accountId, pageable)
                     .map(mapper::toResponse);
         }
-        return entryRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
+        return cashMovementRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
     }
 }

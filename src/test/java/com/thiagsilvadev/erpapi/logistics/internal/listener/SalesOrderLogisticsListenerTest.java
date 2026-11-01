@@ -147,7 +147,7 @@ class SalesOrderLogisticsListenerTest {
                 sellerCompanyId,
                 null,
                 UUID.randomUUID(),
-                OrderStatus.CONFIRMED,
+                SalesOrderStatus.CONFIRMED,
                 java.math.BigDecimal.TEN,
                 "BRL",
                 java.util.Set.of(

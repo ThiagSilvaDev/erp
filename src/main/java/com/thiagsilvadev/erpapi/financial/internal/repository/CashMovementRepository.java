@@ -13,18 +13,18 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.thiagsilvadev.erpapi.financial.internal.model.FinancialEntry;
+import com.thiagsilvadev.erpapi.financial.internal.model.CashMovement;
 
-public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, UUID> {
+public interface CashMovementRepository extends JpaRepository<CashMovement, UUID> {
 
-    Page<FinancialEntry> findByAccountId(UUID accountId, Pageable pageable);
+    Page<CashMovement> findByAccountId(UUID accountId, Pageable pageable);
 
-    Page<FinancialEntry> findAllByCompanyId(UUID companyId, Pageable pageable);
+    Page<CashMovement> findAllByCompanyId(UUID companyId, Pageable pageable);
 
-    Page<FinancialEntry> findByCompanyIdAndAccountId(UUID companyId, UUID accountId, Pageable pageable);
+    Page<CashMovement> findByCompanyIdAndAccountId(UUID companyId, UUID accountId, Pageable pageable);
 
     @Modifying(flushAutomatically = true)
-    @Query(value = "update financial_entries set occurred_at = :occurredAt where id = :id", nativeQuery = true)
+    @Query(value = "update financial_cash_movements set occurred_at = :occurredAt where id = :id", nativeQuery = true)
     void updateOccurredAtForDevSeed(@Param("id") UUID id, @Param("occurredAt") Instant occurredAt);
 
     @Query(
@@ -33,7 +33,7 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
                     select (entry.occurred_at at time zone 'UTC')::date as "date",
                            entry.currency_code as "currencyCode",
                            coalesce(sum(entry.amount), 0) as "amount"
-                      from financial_entries entry
+                      from financial_cash_movements entry
                      where entry.company_id = :companyId
                        and entry.type = 'INCOME'
                        and entry.source = 'PAYMENT'

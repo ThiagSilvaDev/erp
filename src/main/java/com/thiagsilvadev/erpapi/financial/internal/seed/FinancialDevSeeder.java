@@ -50,10 +50,10 @@ class FinancialDevSeeder implements ApplicationRunner {
             new InvoiceSeed(2, "300.00", "USD", 20, InvoiceSeedStatus.OPEN, null, null));
 
     private final InvoiceRepository invoiceRepository;
-    private final LedgerEntryRepository ledgerEntryRepository;
+    private final FinancialObligationRepository financialObligationRepository;
     private final FinancialAccountRepository accountRepository;
     private final PaymentRepository paymentRepository;
-    private final FinancialEntryRepository entryRepository;
+    private final CashMovementRepository entryRepository;
     private final AccountingEntryRepository accountingEntryRepository;
     private final CompanyFacade companyFacade;
     private final CustomerFacade customerFacade;
@@ -65,10 +65,10 @@ class FinancialDevSeeder implements ApplicationRunner {
 
     FinancialDevSeeder(
             InvoiceRepository invoiceRepository,
-            LedgerEntryRepository ledgerEntryRepository,
+            FinancialObligationRepository financialObligationRepository,
             FinancialAccountRepository accountRepository,
             PaymentRepository paymentRepository,
-            FinancialEntryRepository entryRepository,
+            CashMovementRepository entryRepository,
             AccountingEntryRepository accountingEntryRepository,
             CompanyFacade companyFacade,
             CustomerFacade customerFacade,
@@ -78,7 +78,7 @@ class FinancialDevSeeder implements ApplicationRunner {
             SalesFacade salesFacade,
             Clock clock) {
         this.invoiceRepository = invoiceRepository;
-        this.ledgerEntryRepository = ledgerEntryRepository;
+        this.financialObligationRepository = financialObligationRepository;
         this.accountRepository = accountRepository;
         this.paymentRepository = paymentRepository;
         this.entryRepository = entryRepository;
@@ -124,7 +124,7 @@ class FinancialDevSeeder implements ApplicationRunner {
             invoiceRepository.updateCreatedAtForDevSeed(
                     invoice.getId(),
                     today.minusDays(seed.daysAgo()).atTime(12, 0).toInstant(ZoneOffset.UTC));
-            LedgerEntry ledger = ledgerEntryRepository.save(LedgerEntry.receivable(
+            FinancialObligation financialObligation = financialObligationRepository.save(FinancialObligation.receivable(
                     companyId, invoice.getId(), invoice.getAmount(), invoice.getCurrencyCode(), invoice.getDueDate()));
 
             switch (seed.status()) {
@@ -134,7 +134,7 @@ class FinancialDevSeeder implements ApplicationRunner {
                 }
                 case CANCELLED -> {
                     invoice.cancel();
-                    ledger.cancel();
+                    financialObligation.cancel();
                 }
                 case PAID, PARTIALLY_PAID -> {
                     accountingPostingService.postInvoiceRevenue(invoice);
@@ -144,7 +144,7 @@ class FinancialDevSeeder implements ApplicationRunner {
                             customer.id(),
                             destinationAccount,
                             invoice,
-                            ledger,
+                            financialObligation,
                             salesOrderReference,
                             seed,
                             today);
@@ -214,7 +214,7 @@ class FinancialDevSeeder implements ApplicationRunner {
             UUID customerId,
             FinancialAccount destinationAccount,
             Invoice invoice,
-            LedgerEntry ledger,
+            FinancialObligation financialObligation,
             UUID salesOrderReference,
             InvoiceSeed seed,
             LocalDate today) {
@@ -233,10 +233,10 @@ class FinancialDevSeeder implements ApplicationRunner {
         payment.markAsPaid(paidAt);
         payment = paymentRepository.saveAndFlush(payment);
 
-        FinancialEntry entry = entryRepository.saveAndFlush(FinancialEntry.income(
+        CashMovement entry = entryRepository.saveAndFlush(CashMovement.income(
                 companyId,
                 destinationAccount.getId(),
-                FinancialEntrySource.PAYMENT,
+                CashMovementSource.PAYMENT,
                 seed.paidAmount(),
                 seed.currencyCode(),
                 payment.getId(),
@@ -246,7 +246,7 @@ class FinancialDevSeeder implements ApplicationRunner {
 
         if (seed.status() == InvoiceSeedStatus.PAID) {
             invoice.markPaid();
-            ledger.settle();
+            financialObligation.settle();
         }
     }
 

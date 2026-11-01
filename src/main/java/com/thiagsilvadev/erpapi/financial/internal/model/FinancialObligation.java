@@ -10,15 +10,15 @@ import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 @Entity
-@Table(name = "ledger_entries")
-public class LedgerEntry extends AbstractBaseEntity {
+@Table(name = "financial_obligations")
+public class FinancialObligation extends AbstractBaseEntity {
 
     @Column(name = "company_id", nullable = false, updatable = false)
     private UUID companyId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private LedgerEntryType type;
+    private FinancialObligationType type;
 
     private UUID invoiceId;
 
@@ -33,13 +33,13 @@ public class LedgerEntry extends AbstractBaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private LedgerEntryStatus status = LedgerEntryStatus.OPEN;
+    private FinancialObligationStatus status = FinancialObligationStatus.OPEN;
 
-    protected LedgerEntry() {}
+    protected FinancialObligation() {}
 
-    private LedgerEntry(
+    private FinancialObligation(
             UUID companyId,
-            LedgerEntryType type,
+            FinancialObligationType type,
             UUID invoiceId,
             BigDecimal amount,
             String currencyCode,
@@ -52,22 +52,23 @@ public class LedgerEntry extends AbstractBaseEntity {
         this.dueDate = dueDate;
     }
 
-    public static LedgerEntry receivable(
+    public static FinancialObligation receivable(
             UUID companyId, UUID invoiceId, BigDecimal amount, String currencyCode, LocalDate dueDate) {
-        return new LedgerEntry(companyId, LedgerEntryType.RECEIVABLE, invoiceId, amount, currencyCode, dueDate);
+        return new FinancialObligation(
+                companyId, FinancialObligationType.RECEIVABLE, invoiceId, amount, currencyCode, dueDate);
     }
 
     public void settle() {
-        this.status = LedgerEntryStatus.SETTLED;
+        this.status = FinancialObligationStatus.SETTLED;
     }
 
     public void cancel() {
-        if (status != LedgerEntryStatus.SETTLED) {
-            this.status = LedgerEntryStatus.CANCELLED;
+        if (status != FinancialObligationStatus.SETTLED) {
+            this.status = FinancialObligationStatus.CANCELLED;
         }
     }
 
-    public LedgerEntryType getType() {
+    public FinancialObligationType getType() {
         return type;
     }
 
@@ -91,7 +92,7 @@ public class LedgerEntry extends AbstractBaseEntity {
         return dueDate;
     }
 
-    public LedgerEntryStatus getStatus() {
+    public FinancialObligationStatus getStatus() {
         return status;
     }
 }

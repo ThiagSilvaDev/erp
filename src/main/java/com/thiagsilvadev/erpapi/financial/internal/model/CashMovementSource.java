@@ -1,6 +1,6 @@
 package com.thiagsilvadev.erpapi.financial.internal.model;
 
-public enum FinancialEntrySource {
+public enum CashMovementSource {
     PAYMENT,
     REFUND,
     MANUAL

@@ -1,6 +1,6 @@
 package com.thiagsilvadev.erpapi.sales.api;
 
-public enum OrderStatus {
+public enum SalesOrderStatus {
     DRAFT,
     CONFIRMED,
     CANCELLED

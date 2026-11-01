@@ -11,8 +11,8 @@ import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
-@Table(name = "financial_entries")
-public class FinancialEntry extends AbstractBaseEntity {
+@Table(name = "financial_cash_movements")
+public class CashMovement extends AbstractBaseEntity {
 
     @Column(name = "company_id", nullable = false, updatable = false)
     private UUID companyId;
@@ -22,11 +22,11 @@ public class FinancialEntry extends AbstractBaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private FinancialEntryType type;
+    private CashMovementType type;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private FinancialEntrySource source;
+    private CashMovementSource source;
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
@@ -43,13 +43,13 @@ public class FinancialEntry extends AbstractBaseEntity {
     @Column(name = "occurred_at", nullable = false)
     private Instant occurredAt;
 
-    protected FinancialEntry() {}
+    protected CashMovement() {}
 
-    private FinancialEntry(
+    private CashMovement(
             UUID companyId,
             UUID accountId,
-            FinancialEntryType type,
-            FinancialEntrySource source,
+            CashMovementType type,
+            CashMovementSource source,
             BigDecimal amount,
             String currencyCode,
             UUID referenceId,
@@ -71,18 +71,42 @@ public class FinancialEntry extends AbstractBaseEntity {
         this.occurredAt = Instant.now();
     }
 
-    public static FinancialEntry income(
+    public static CashMovement income(
             UUID companyId,
             UUID accountId,
-            FinancialEntrySource source,
+            CashMovementSource source,
             BigDecimal amount,
             String currencyCode,
             UUID referenceId,
             String description) {
-        return new FinancialEntry(
+        return new CashMovement(
+                companyId, accountId, CashMovementType.INCOME, source, amount, currencyCode, referenceId, description);
+    }
+
+    public static CashMovement expense(
+            UUID companyId,
+            UUID accountId,
+            CashMovementSource source,
+            BigDecimal amount,
+            String currencyCode,
+            UUID referenceId,
+            String description) {
+        return new CashMovement(
+                companyId, accountId, CashMovementType.EXPENSE, source, amount, currencyCode, referenceId, description);
+    }
+
+    public static CashMovement transferIn(
+            UUID companyId,
+            UUID accountId,
+            CashMovementSource source,
+            BigDecimal amount,
+            String currencyCode,
+            UUID referenceId,
+            String description) {
+        return new CashMovement(
                 companyId,
                 accountId,
-                FinancialEntryType.INCOME,
+                CashMovementType.TRANSFER_IN,
                 source,
                 amount,
                 currencyCode,
@@ -90,18 +114,18 @@ public class FinancialEntry extends AbstractBaseEntity {
                 description);
     }
 
-    public static FinancialEntry expense(
+    public static CashMovement transferOut(
             UUID companyId,
             UUID accountId,
-            FinancialEntrySource source,
+            CashMovementSource source,
             BigDecimal amount,
             String currencyCode,
             UUID referenceId,
             String description) {
-        return new FinancialEntry(
+        return new CashMovement(
                 companyId,
                 accountId,
-                FinancialEntryType.EXPENSE,
+                CashMovementType.TRANSFER_OUT,
                 source,
                 amount,
                 currencyCode,
@@ -109,56 +133,18 @@ public class FinancialEntry extends AbstractBaseEntity {
                 description);
     }
 
-    public static FinancialEntry transferIn(
+    public static CashMovement adjustment(
             UUID companyId,
             UUID accountId,
-            FinancialEntrySource source,
+            CashMovementSource source,
             BigDecimal amount,
             String currencyCode,
             UUID referenceId,
             String description) {
-        return new FinancialEntry(
+        return new CashMovement(
                 companyId,
                 accountId,
-                FinancialEntryType.TRANSFER_IN,
-                source,
-                amount,
-                currencyCode,
-                referenceId,
-                description);
-    }
-
-    public static FinancialEntry transferOut(
-            UUID companyId,
-            UUID accountId,
-            FinancialEntrySource source,
-            BigDecimal amount,
-            String currencyCode,
-            UUID referenceId,
-            String description) {
-        return new FinancialEntry(
-                companyId,
-                accountId,
-                FinancialEntryType.TRANSFER_OUT,
-                source,
-                amount,
-                currencyCode,
-                referenceId,
-                description);
-    }
-
-    public static FinancialEntry adjustment(
-            UUID companyId,
-            UUID accountId,
-            FinancialEntrySource source,
-            BigDecimal amount,
-            String currencyCode,
-            UUID referenceId,
-            String description) {
-        return new FinancialEntry(
-                companyId,
-                accountId,
-                FinancialEntryType.ADJUSTMENT,
+                CashMovementType.ADJUSTMENT,
                 source,
                 amount,
                 currencyCode,
@@ -174,11 +160,11 @@ public class FinancialEntry extends AbstractBaseEntity {
         return accountId;
     }
 
-    public FinancialEntryType getType() {
+    public CashMovementType getType() {
         return type;
     }
 
-    public FinancialEntrySource getSource() {
+    public CashMovementSource getSource() {
         return source;
     }
 

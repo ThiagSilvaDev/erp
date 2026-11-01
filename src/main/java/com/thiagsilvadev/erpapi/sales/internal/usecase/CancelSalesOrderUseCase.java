@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
-import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderStatus;
 import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
 import com.thiagsilvadev.erpapi.sales.internal.event.SalesOrderEventPublisher;
 import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
@@ -43,7 +43,7 @@ public class CancelSalesOrderUseCase {
         SalesOrder order = orderRepository
                 .findByIdAndSellerCompanyId(id, sellerCompanyId)
                 .orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
-        if (order.getStatus() == OrderStatus.CONFIRMED) {
+        if (order.getStatus() == SalesOrderStatus.CONFIRMED) {
             eventPublisher.salesOrderCancelled(order);
         }
         order.cancel();

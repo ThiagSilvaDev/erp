@@ -9,22 +9,22 @@ import org.springframework.transaction.annotation.Transactional;
 import com.thiagsilvadev.erpapi.common.reporting.ComparativePeriod;
 import com.thiagsilvadev.erpapi.financial.api.FinancialKpiFacade;
 import com.thiagsilvadev.erpapi.financial.api.FinancialKpiSnapshot;
-import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialEntryRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.CashMovementRepository;
 import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
 
 @Service
 class FinancialKpiFacadeImpl implements FinancialKpiFacade {
 
     private final InvoiceRepository invoiceRepository;
-    private final FinancialEntryRepository entryRepository;
+    private final CashMovementRepository cashMovementRepository;
     private final FinancialKpiCalculator calculator;
 
     FinancialKpiFacadeImpl(
             InvoiceRepository invoiceRepository,
-            FinancialEntryRepository entryRepository,
+            CashMovementRepository cashMovementRepository,
             FinancialKpiCalculator calculator) {
         this.invoiceRepository = invoiceRepository;
-        this.entryRepository = entryRepository;
+        this.cashMovementRepository = cashMovementRepository;
         this.calculator = calculator;
     }
 
@@ -39,7 +39,7 @@ class FinancialKpiFacadeImpl implements FinancialKpiFacade {
                                 row.getDate(), row.getCurrencyCode(), row.getCount(), row.getAmount()))
                         .toList();
         var collections =
-                entryRepository
+                cashMovementRepository
                         .findCollectionKpiRows(companyId, period.queryFromInclusive(), period.queryToExclusive())
                         .stream()
                         .map(row -> new FinancialKpiCalculator.CollectionRow(

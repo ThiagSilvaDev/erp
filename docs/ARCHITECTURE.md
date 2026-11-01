@@ -4,7 +4,7 @@ This ERP is a Java 21 / Spring Boot modular monolith: one application and one
 PostgreSQL database, organized by business capability. Spring Modulith verifies
 module boundaries and persists event publications through its JDBC integration.
 
-[Domain](DOMAIN.md) · [Security](SECURITY.md) · [Testing](TESTING.md) ·
+[Glossary](GLOSSARY.md) · [Domain](DOMAIN.md) · [Security](SECURITY.md) · [Testing](TESTING.md) ·
 [Decisions](adr/README.md) · [Agent instructions](../AGENTS.md)
 
 ## Structure and ownership
@@ -22,7 +22,7 @@ that structure under `src/test/java/com/thiagsilvadev/erpapi`.
 | `iam.accesscontrol` | Tenant memberships, roles, permissions, platform assignments and authorization audit |
 | `inventory` | Warehouses, stock balances, reservations and movements |
 | `sales` | Sales orders, buyers, items and fulfillment choices |
-| `financial` | Invoices, payments, receivables/payables, financial accounts and accounting entries |
+| `financial` | Invoices, payments, financial obligations, cash movements, financial accounts and accounting entries |
 | `logistics` | Drivers, vehicles, shipments and tracking |
 | `kpi` | Executive indicators aggregated through business-module APIs |
 | `common` | Shared validation, value objects, tenant/security context, errors, numbering and reporting contracts |

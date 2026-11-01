@@ -5,9 +5,9 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
-import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderStatus;
 
 public record SalesOrderResponse(
         UUID id,
@@ -21,7 +21,7 @@ public record SalesOrderResponse(
         UUID buyerCompanyId,
         UUID customerId,
         SalesOrderBuyerSummaryResponse buyerSummary,
-        OrderStatus status,
+        SalesOrderStatus status,
         BigDecimal totalAmount,
         String currencyCode,
         String formattedTotalAmount,

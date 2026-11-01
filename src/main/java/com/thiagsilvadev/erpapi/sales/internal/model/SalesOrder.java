@@ -8,9 +8,9 @@ import jakarta.persistence.*;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.sales.api.FulfillmentType;
-import com.thiagsilvadev.erpapi.sales.api.OrderStatus;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 import com.thiagsilvadev.erpapi.sales.api.SaleType;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderStatus;
 import com.thiagsilvadev.erpapi.sales.internal.exception.DeliveryRouteErrorCode;
 import com.thiagsilvadev.erpapi.sales.internal.exception.SalesOrderErrorCode;
 import com.thiagsilvadev.erpapi.sales.internal.exception.SalesOrderException;
@@ -47,7 +47,7 @@ public class SalesOrder extends AbstractBaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderStatus status = OrderStatus.DRAFT;
+    private SalesOrderStatus status = SalesOrderStatus.DRAFT;
 
     @OneToMany(mappedBy = "salesOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SalesOrderItem> items = new LinkedHashSet<>();
@@ -164,17 +164,17 @@ public class SalesOrder extends AbstractBaseEntity {
     }
 
     public void confirm() {
-        if (this.status != OrderStatus.DRAFT) {
+        if (this.status != SalesOrderStatus.DRAFT) {
             throw new SalesOrderException(SalesOrderErrorCode.MUST_BE_DRAFT_TO_CONFIRM);
         }
-        this.status = OrderStatus.CONFIRMED;
+        this.status = SalesOrderStatus.CONFIRMED;
     }
 
     public void cancel() {
-        if (status == OrderStatus.CANCELLED) {
+        if (status == SalesOrderStatus.CANCELLED) {
             return;
         }
-        this.status = OrderStatus.CANCELLED;
+        this.status = SalesOrderStatus.CANCELLED;
     }
 
     public boolean isDelivery() {
@@ -225,7 +225,7 @@ public class SalesOrder extends AbstractBaseEntity {
         return orderNumber;
     }
 
-    public OrderStatus getStatus() {
+    public SalesOrderStatus getStatus() {
         return status;
     }
 
@@ -240,7 +240,7 @@ public class SalesOrder extends AbstractBaseEntity {
     }
 
     void removeItem(SalesOrderItem item) {
-        if (this.status != OrderStatus.DRAFT) {
+        if (this.status != SalesOrderStatus.DRAFT) {
             throw new SalesOrderException(SalesOrderErrorCode.MUST_BE_DRAFT_TO_REMOVE_ITEMS);
         }
 

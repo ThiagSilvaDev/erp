@@ -36,6 +36,7 @@ Each module exposes public contracts through `api` and keeps implementation deta
 Supporting documentation:
 
 - [Architecture](docs/ARCHITECTURE.md): structure, module dependencies and workflows.
+- [Glossary](docs/GLOSSARY.md): canonical ERP terminology and module ownership.
 - [Domain](docs/DOMAIN.md): implemented ERP concepts and business rules.
 - [Security](docs/SECURITY.md): authentication, authorization and token lifecycle.
 - [Testing](docs/TESTING.md): test strategy, conventions and prerequisites.
@@ -213,6 +214,18 @@ Avoid public setters.
 ---
 
 # Domain Modeling
+
+## Canonical terminology
+
+- `docs/GLOSSARY.md` defines the canonical ERP terms in English and their owning modules.
+- Use those terms consistently in Java identifiers, public contracts, database mappings and frontend labels.
+- Keep the glossary and affected module Javadocs synchronized whenever a term changes.
+- Each module root `package-info.java` must contain a short English Javadoc describing its scope and
+  three or four principal terms. This includes the nested `iam.accesscontrol` module; `common`
+  documents only cross-cutting concepts. Preserve Spring Modulith declarations when editing these files.
+- Distinguish `FinancialObligation` (receivable/payable), `CashMovement` (financial-account movement)
+  and `AccountingEntry` (accounting posting). Use `SalesOrderStatus` for sales order state.
+
 
 Use smart factory methods.
 
@@ -508,17 +521,14 @@ ERP_IAM_JWT_SECRET
 
 # Database
 
-No migration tool is currently configured.
+The project is in development, with no near-term production rollout planned.
+Local development and test databases are disposable: recreate them when schema changes require it.
+Do not introduce Flyway, migration scripts or compatibility mechanisms to preserve existing local data.
+Use the existing Hibernate schema initialization/update settings on the recreated database.
+Limit a reset to this project's local database; do not remove unrelated databases or shared volumes.
 
-Do not add ad hoc SQL scripts.
-
-If migrations become necessary, use Flyway:
-
-```text
-src/main/resources/db/migration
-```
-
-Never rely on Hibernate auto-DDL in production.
+Revisit schema migration and data-preservation requirements only when production planning is explicitly
+introduced. Never rely on Hibernate auto-DDL in production.
 
 ---
 

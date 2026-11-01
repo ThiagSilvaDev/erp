@@ -1,6 +1,6 @@
 package com.thiagsilvadev.erpapi.financial.internal.model;
 
-public enum FinancialEntryType {
+public enum CashMovementType {
     INCOME,
     EXPENSE,
     TRANSFER_IN,

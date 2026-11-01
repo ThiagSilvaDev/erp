@@ -1,7 +1,7 @@
 # ERP domain
 
 This document describes the current business model and implemented rules.
-[Architecture](ARCHITECTURE.md) · [Security](SECURITY.md) ·
+[Glossary](GLOSSARY.md) · [Architecture](ARCHITECTURE.md) · [Security](SECURITY.md) ·
 [Testing](TESTING.md) · [Decisions](adr/README.md)
 
 ## Parties, ownership and catalog
@@ -76,9 +76,9 @@ Sources: [InventoryItem](../src/main/java/com/thiagsilvadev/erpapi/inventory/int
 ## Billing, payments and accounting
 
 An **invoice** records an amount, currency, due date and billing party; a
-**ledger entry** records a receivable or payable. A **financial account** is a
+**financial obligation** records a receivable or payable. A **financial account** is a
 cash/bank/payment destination, whereas an **accounting account** belongs to the
-chart of accounts. Financial entries record account movements; accounting
+chart of accounts. Cash movements record financial-account changes; accounting
 entries record dated debit/credit postings.
 
 Confirmation processing creates one invoice per sales-order reference, bills
