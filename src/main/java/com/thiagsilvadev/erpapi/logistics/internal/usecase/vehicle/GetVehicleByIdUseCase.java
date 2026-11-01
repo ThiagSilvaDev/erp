@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle;
 
+import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.READ;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +27,7 @@ public class GetVehicleByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public VehicleResponse execute(UUID id) {
         var companyId = TenantContext.requireTenantId();
         return vehicleRepository

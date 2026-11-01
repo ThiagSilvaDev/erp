@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment;
 
+import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.TRACK;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -29,7 +31,7 @@ public class AddShipmentTrackingEventUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).TRACK)")
+    @PreAuthorize("hasAuthority('" + TRACK + "')")
     public ShipmentResponse execute(UUID shipmentId, CreateTrackingEventRequest request) {
         Shipment shipment = shipmentReader.get(shipmentId);
         Instant occurredAt = TrackingRequests.occurredAt(request, clock);

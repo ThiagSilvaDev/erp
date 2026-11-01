@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.inventory.internal.usecase.reservation;
 
+import static com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions.READ;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +27,7 @@ public class GetReservationByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public ReservationResponse execute(UUID id) {
         var companyId = TenantContext.requireTenantId();
         return mapper.toResponse(reservationRepository

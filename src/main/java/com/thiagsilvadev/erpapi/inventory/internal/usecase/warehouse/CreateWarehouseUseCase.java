@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.inventory.internal.usecase.warehouse;
 
+import static com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions.WRITE;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -25,7 +27,7 @@ public class CreateWarehouseUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public WarehouseResponse execute(CreateWarehouseRequest request) {
         var companyId = TenantContext.requireTenantId();
         String code = Warehouse.normalizeCode(request.code());

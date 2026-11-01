@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.customer.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.customer.api.CustomerPermissions.WRITE;
+
 import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -31,7 +33,7 @@ public class CreateSupplierUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public SupplierResponse execute(CreateSupplierRequest request) {
         var companyId = TenantContext.requireTenantId();
         companyFacade.getCompany(companyId);

@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.inventory.internal.usecase.warehouse;
 
+import static com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions.READ;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +25,7 @@ public class ListWarehousesUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.inventory.api.InventoryPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<WarehouseResponse> execute(Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
         return warehouseRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);

@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.accountingentry;
 
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.READ;
+
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +25,7 @@ public class ListAccountBalancesUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public List<AccountBalanceResponse> execute(AccountBalanceCriteria criteria) {
         var companyId = TenantContext.requireTenantId();
         if (criteria.from().isAfter(criteria.to())) {

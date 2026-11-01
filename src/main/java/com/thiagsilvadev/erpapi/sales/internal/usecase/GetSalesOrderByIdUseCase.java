@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.sales.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.sales.api.SalesPermissions.READ;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +27,7 @@ public class GetSalesOrderByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public SalesOrderResponse execute(UUID id) {
         var sellerCompanyId = TenantContext.requireTenantId();
         return responseAssembler.toResponse(orderRepository

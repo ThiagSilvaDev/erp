@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.usecase.product;
 
+import static com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions.READ;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +27,7 @@ public class GetProductByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public ProductResponse execute(UUID id) {
         var companyId = TenantContext.requireTenantId();
         Product product = productRepository

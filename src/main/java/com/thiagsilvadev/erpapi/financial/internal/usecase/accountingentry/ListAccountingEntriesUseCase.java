@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.accountingentry;
 
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.READ;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +27,7 @@ public class ListAccountingEntriesUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<AccountingEntryResponse> execute(AccountingEntrySearchCriteria criteria, Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
         boolean hasFrom = criteria.from() != null;

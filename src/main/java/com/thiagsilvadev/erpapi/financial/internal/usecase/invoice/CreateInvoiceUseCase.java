@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.invoice;
 
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.WRITE;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,7 +59,7 @@ public class CreateInvoiceUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public InvoiceResponse execute(CreateInvoiceRequest request) {
         var companyId = TenantContext.requireTenantId();
         validateBillingParty(request.billingPartyType(), request.billingPartyId());

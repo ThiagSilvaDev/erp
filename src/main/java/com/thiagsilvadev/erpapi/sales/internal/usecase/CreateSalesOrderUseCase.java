@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.sales.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.sales.api.SalesPermissions.WRITE;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,7 +57,7 @@ public class CreateSalesOrderUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public SalesOrderResponse execute(CreateSalesOrderRequest request) {
         UUID sellerCompanyId = TenantContext.requireTenantId();
 

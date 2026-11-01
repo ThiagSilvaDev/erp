@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment;
 
+import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.DISPATCH;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,7 +35,7 @@ public class AssignDispatchUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).DISPATCH)")
+    @PreAuthorize("hasAuthority('" + DISPATCH + "')")
     public ShipmentResponse execute(UUID shipmentId, AssignDispatchRequest request) {
         var sellerCompanyId = TenantContext.requireTenantId();
         Shipment shipment = shipmentReader.get(shipmentId);

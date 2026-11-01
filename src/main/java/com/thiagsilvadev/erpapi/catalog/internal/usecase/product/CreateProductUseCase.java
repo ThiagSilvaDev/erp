@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.usecase.product;
 
+import static com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions.WRITE;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -39,7 +41,7 @@ public class CreateProductUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public ProductResponse execute(CreateProductRequest request) {
         var companyId = TenantContext.requireTenantId();
         Sku sku = Sku.of(request.sku());

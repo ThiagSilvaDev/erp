@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.usecase.product;
 
+import static com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions.READ;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +27,7 @@ public class ListProductsUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<ProductResponse> execute(ProductSearchCriteria criteria, Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
         return productRepository

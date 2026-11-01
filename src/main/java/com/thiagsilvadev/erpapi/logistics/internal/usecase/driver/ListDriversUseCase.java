@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.usecase.driver;
 
+import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.READ;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +25,7 @@ public class ListDriversUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<DriverResponse> execute(Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
         return driverRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);

@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.catalog.internal.usecase.category;
 
+import static com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions.WRITE;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -25,7 +27,7 @@ public class CreateCategoryUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public CategoryResponse execute(CreateCategoryRequest request) {
         var companyId = TenantContext.requireTenantId();
         String code = Category.normalizeCode(request.code());

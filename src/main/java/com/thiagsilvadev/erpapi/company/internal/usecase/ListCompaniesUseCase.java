@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.company.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.company.api.CompanyPermissions.READ;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,7 +38,7 @@ public class ListCompaniesUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.company.api.CompanyPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<CompanyResponse> execute(CompanySearchCriteria criteria, Pageable pageable) {
         var companies = companyRepository.findAll(CompanySpecification.withCriteria(criteria), pageable);
         Map<UUID, CompanyContact> primaryContactsByCompanyId =

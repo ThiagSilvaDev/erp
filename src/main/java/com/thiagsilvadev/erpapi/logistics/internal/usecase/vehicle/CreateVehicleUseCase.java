@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.usecase.vehicle;
 
+import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.WRITE;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -25,7 +27,7 @@ public class CreateVehicleUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public VehicleResponse execute(CreateVehicleRequest request) {
         var companyId = TenantContext.requireTenantId();
         var vehicle = Vehicle.create(companyId, request.plate(), request.description(), request.capacity());

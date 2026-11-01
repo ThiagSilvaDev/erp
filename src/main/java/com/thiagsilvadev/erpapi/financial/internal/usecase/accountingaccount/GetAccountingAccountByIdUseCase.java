@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.accountingaccount;
 
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.READ;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +27,7 @@ public class GetAccountingAccountByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public AccountingAccountResponse execute(UUID id) {
         var companyId = TenantContext.requireTenantId();
         return mapper.toResponse(accountRepository

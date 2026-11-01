@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.accountingaccount;
 
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.WRITE;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +27,7 @@ public class CreateAccountingAccountUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public AccountingAccountResponse execute(CreateAccountingAccountRequest request) {
         var companyId = TenantContext.requireTenantId();
         String code = request.code().trim();

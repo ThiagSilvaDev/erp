@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.kpi.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.kpi.api.KpiPermissions.READ;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +40,7 @@ public class GetExecutiveKpisUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.kpi.api.KpiPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public ExecutiveKpiResponse execute(KpiCriteria criteria) {
         var period = periodResolver.resolve(criteria);
         var comparativePeriod = period.comparativePeriod();

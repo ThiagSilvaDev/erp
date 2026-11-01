@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.account;
 
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.READ;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +25,7 @@ public class ListFinancialAccountsUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<FinancialAccountResponse> execute(Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
         return accountRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);

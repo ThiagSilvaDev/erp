@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment;
 
+import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.READ;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,7 +20,7 @@ public class GetShipmentByIdUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public ShipmentResponse execute(UUID id) {
         return shipmentReader.toResponse(shipmentReader.get(id));
     }

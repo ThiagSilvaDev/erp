@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.payment;
 
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.WRITE;
+
 import java.math.BigDecimal;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,7 +59,7 @@ public class CreatePaymentUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public PaymentResponse execute(CreatePaymentRequest request) {
         var companyId = TenantContext.requireTenantId();
         Invoice invoice = invoiceRepository

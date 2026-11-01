@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.logistics.internal.usecase.shipment;
 
+import static com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions.READ;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +26,7 @@ public class ListShipmentsUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.logistics.api.LogisticsPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<ShipmentResponse> execute(ShipmentSearchCriteria criteria, Pageable pageable) {
         var sellerCompanyId = TenantContext.requireTenantId();
         return shipmentRepository

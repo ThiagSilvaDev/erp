@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.invoice;
 
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.READ;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +26,7 @@ public class ListInvoicesUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<InvoiceResponse> execute(InvoiceSearchCriteria criteria, Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
         if (criteria != null && criteria.salesOrderId() != null) {

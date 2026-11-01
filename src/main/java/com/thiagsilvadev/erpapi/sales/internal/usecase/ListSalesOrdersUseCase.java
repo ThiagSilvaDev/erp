@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.sales.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.sales.api.SalesPermissions.READ;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +26,7 @@ public class ListSalesOrdersUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.sales.api.SalesPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<SalesOrderResponse> execute(SalesOrderSearchCriteria criteria, Pageable pageable) {
         var sellerCompanyId = TenantContext.requireTenantId();
         return orderRepository

@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.customer.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.customer.api.CustomerPermissions.READ;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +25,7 @@ public class ListContactPersonsUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<ContactPersonResponse> execute(Pageable pageable) {
         var ownerCompanyId = TenantContext.requireTenantId();
         return contactPersonRepository

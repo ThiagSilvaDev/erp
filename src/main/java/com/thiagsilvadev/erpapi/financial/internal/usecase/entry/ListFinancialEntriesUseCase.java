@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.financial.internal.usecase.entry;
 
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.READ;
+
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -25,7 +27,7 @@ public class ListFinancialEntriesUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.financial.api.FinancialPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<FinancialEntryResponse> execute(UUID accountId, Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
         if (accountId != null) {

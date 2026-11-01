@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.customer.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.customer.api.CustomerPermissions.WRITE;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +33,7 @@ public class CreateContactPersonUseCase {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.customer.api.CustomerPermissions).WRITE)")
+    @PreAuthorize("hasAuthority('" + WRITE + "')")
     public ContactPersonResponse execute(CreateContactPersonRequest request) {
         var ownerCompanyId = TenantContext.requireTenantId();
         customerRepository

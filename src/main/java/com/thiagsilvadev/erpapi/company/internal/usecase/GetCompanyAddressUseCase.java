@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.company.internal.usecase;
 
+import static com.thiagsilvadev.erpapi.company.api.CompanyPermissions.READ;
+
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +26,7 @@ public class GetCompanyAddressUseCase {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority(T(com.thiagsilvadev.erpapi.company.api.CompanyPermissions).READ)")
+    @PreAuthorize("hasAuthority('" + READ + "')")
     public CompanyAddressResponse execute(UUID companyId) {
         Company company = companyRepository
                 .findById(companyId)
