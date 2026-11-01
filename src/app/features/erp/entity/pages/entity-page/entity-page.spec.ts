@@ -138,6 +138,7 @@ describe('EntityPage', () => {
 
   it('maps sales order create fields into the API item array', () => {
     const fixture = createComponent('sales-orders');
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     const component = fixture.componentInstance;
 
     component.createForm().setValue({

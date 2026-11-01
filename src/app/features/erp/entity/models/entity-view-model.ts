@@ -53,6 +53,8 @@ export interface EntityField {
   label: string;
   defaultValue?: EntityFormValue;
   required?: boolean;
+  hint?: string;
+  maxLength?: number;
   section?: string;
   type?: 'date' | 'email' | 'number' | 'password' | 'radio' | 'select' | 'textarea';
   options?: EntityFieldOption[];

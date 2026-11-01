@@ -46,6 +46,7 @@
                 nz-input
                 [id]="'search-' + field.key"
                 [type]="field.type ?? 'text'"
+                [attr.maxlength]="field.maxLength ?? null"
                 [formControlName]="field.key"
                 class="w-full"
               />
@@ -104,7 +105,14 @@
           <nz-form-label [nzFor]="'create-' + field.key" [nzRequired]="field.required">
             {{ field.label }}
           </nz-form-label>
-          <nz-form-control nzErrorTip="This field is required.">
+          <nz-form-control
+            [nzExtra]="field.hint"
+            [nzErrorTip]="
+              field.maxLength
+                ? 'Enter no more than ' + field.maxLength + ' characters.'
+                : 'This field is required.'
+            "
+          >
             @if (field.type === 'select') {
               <nz-select
                 [id]="'create-' + field.key"
@@ -147,6 +155,7 @@
                   nz-input
                   [id]="'create-' + field.key"
                   [type]="field.type ?? 'text'"
+                  [attr.maxlength]="field.maxLength ?? null"
                   [formControlName]="field.key"
                   class="w-full"
                   inputmode="numeric"
@@ -168,6 +177,7 @@
                 nz-input
                 [id]="'create-' + field.key"
                 [type]="field.type ?? 'text'"
+                [attr.maxlength]="field.maxLength ?? null"
                 [formControlName]="field.key"
                 class="w-full"
               />

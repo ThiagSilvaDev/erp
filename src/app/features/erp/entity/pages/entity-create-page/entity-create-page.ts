@@ -20,7 +20,10 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 
 import { CreateSalesOrderRequestFulfillmentType } from '@generated-api/modules/sales/dtos';
 import { CompaniesService } from '@generated-api/modules/companies/Companies.service';
-import type { AddressResponse, CompanyAddressResponse } from '@generated-api/modules/companies/dtos';
+import type {
+  AddressResponse,
+  CompanyAddressResponse,
+} from '@generated-api/modules/companies/dtos';
 import { CustomersService } from '@generated-api/modules/customers/Customers.service';
 import type { CustomerResponse } from '@generated-api/modules/customers/dtos';
 import { CepAddressService } from '../../data-access/cep-address.service';
@@ -234,7 +237,10 @@ export class EntityCreatePage {
       }
       controls[field.key] = new FormControl<EntityFormValue>('', {
         nonNullable: true,
-        validators: field.required ? [Validators.required] : [],
+        validators: [
+          ...(field.required ? [Validators.required] : []),
+          ...(field.maxLength ? [Validators.maxLength(field.maxLength)] : []),
+        ],
       });
     }
     return new FormGroup(controls);
@@ -375,9 +381,7 @@ export class EntityCreatePage {
   }
 
   private optionKeysFor(fields: EntityField[]): EntityOptionsKey[] {
-    return [
-      ...new Set(fields.flatMap((field) => (field.optionsKey ? [field.optionsKey] : []))),
-    ];
+    return [...new Set(fields.flatMap((field) => (field.optionsKey ? [field.optionsKey] : [])))];
   }
 
   private entityKeyFromRouteData(data: Record<string, unknown>): EntityKey {

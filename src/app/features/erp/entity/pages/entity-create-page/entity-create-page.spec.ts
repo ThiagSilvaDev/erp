@@ -14,6 +14,7 @@ import { InventoryService } from '@generated-api/modules/inventory/Inventory.ser
 import { SalesService } from '@generated-api/modules/sales/Sales.service';
 import { SuppliersService } from '@generated-api/modules/suppliers/Suppliers.service';
 import { UsersService } from '@generated-api/modules/users/Users.service';
+import { productsEntityConfig } from '../../../catalog/catalog.entity-config';
 import { categoriesEntityConfig } from '../../../catalog/catalog.entity-config';
 import { companiesEntityConfig } from '../../../companies/companies.entity-config';
 import { salesOrdersEntityConfig } from '../../../sales/sales.entity-config';
@@ -107,6 +108,7 @@ describe('EntityCreatePage', () => {
         { provide: ENTITY_CONFIGS, multi: true, useFactory: companiesEntityConfig },
         { provide: ENTITY_CONFIGS, multi: true, useFactory: salesOrdersEntityConfig },
         { provide: ENTITY_CONFIGS, multi: true, useFactory: categoriesEntityConfig },
+        { provide: ENTITY_CONFIGS, multi: true, useFactory: productsEntityConfig },
         { provide: ENTITY_CONFIGS, multi: true, useFactory: usersEntityConfig },
         { provide: CepAddressService, useValue: cepAddress },
         { provide: CatalogService, useValue: catalog },
@@ -130,14 +132,59 @@ describe('EntityCreatePage', () => {
     vi.clearAllMocks();
   });
 
+  it.each(['', '   '])('requests automatic SKU assignment for an empty entry (%j)', async (sku) => {
+    const fixture = createComponent('products');
+    const component = fixture.componentInstance;
+    component
+      .createForm()
+      .patchValue({
+        sku,
+        name: 'Product',
+        amount: 10,
+        currencyCode: 'BRL',
+        categoryId: 'category-1',
+      });
+    await fixture.whenStable();
+    expect(component.createForm().valid).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Leave blank to generate a SKU');
+    component.submitCreate();
+    expect(catalog.createProduct).toHaveBeenCalledWith({
+      sku: undefined,
+      name: 'Product',
+      description: undefined,
+      basePrice: { amount: 10, currencyCode: 'BRL' },
+      categoryId: 'category-1',
+    });
+  });
+
+  it('keeps manual SKUs and prevents overlong values', () => {
+    const component = createComponent('products').componentInstance;
+    component
+      .createForm()
+      .patchValue({
+        sku: ' custom-1 ',
+        name: 'Product',
+        amount: 10,
+        currencyCode: 'BRL',
+        categoryId: 'category-1',
+      });
+    component.submitCreate();
+    expect(catalog.createProduct).toHaveBeenCalledWith(
+      expect.objectContaining({ sku: 'custom-1' }),
+    );
+    catalog.createProduct.mockClear();
+    component.createForm().controls['sku'].setValue('X'.repeat(80));
+    expect(component.createForm().controls['sku'].valid).toBe(true);
+    component.createForm().controls['sku'].setValue('X'.repeat(81));
+    component.submitCreate();
+    expect(component.createForm().controls['sku'].hasError('maxlength')).toBe(true);
+    expect(catalog.createProduct).not.toHaveBeenCalled();
+  });
+
   it('loads only lookup options needed by the current create page', () => {
     createComponent('sales-orders');
 
-    expect(optionsFacade.loadOptions).toHaveBeenCalledWith([
-      'customers',
-      'products',
-      'warehouses',
-    ]);
+    expect(optionsFacade.loadOptions).toHaveBeenCalledWith(['customers', 'products', 'warehouses']);
   });
 
   it('loads delivery route details when a sales customer is selected', () => {

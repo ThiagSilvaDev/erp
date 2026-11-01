@@ -58,7 +58,7 @@ export function productsEntityConfig(): EntityConfig {
       { key: 'sku', label: 'SKU' },
       { key: 'name', label: 'Name' },
       { key: 'category.name', label: 'Category' },
-      { key: 'formattedBasePrice', label: 'Price'},
+      { key: 'formattedBasePrice', label: 'Price' },
       { key: 'status', label: 'Status' },
     ],
     detailFields: [
@@ -77,7 +77,13 @@ export function productsEntityConfig(): EntityConfig {
       { key: 'status', label: 'Status', type: 'select', options: activeStatusOptions },
     ],
     createFields: [
-      { key: 'sku', label: 'SKU', required: true, section: 'Product' },
+      {
+        key: 'sku',
+        label: 'SKU (optional)',
+        section: 'Product',
+        maxLength: 80,
+        hint: 'Leave blank to generate a SKU from the category when you save (for example, OFFICE-00000001). Enter your own SKU to use an existing code. Maximum 80 characters.',
+      },
       { key: 'name', label: 'Name', required: true, section: 'Product' },
       { key: 'description', label: 'Description', type: 'textarea', section: 'Product' },
       { key: 'amount', label: 'Base price', required: true, type: 'number', section: 'Pricing' },
@@ -95,7 +101,7 @@ export function productsEntityConfig(): EntityConfig {
       catalog.listProducts({ ...criteria, page, size }).pipe(map(pageData)),
     create: (value) =>
       catalog.createProduct({
-        sku: text(value['sku']),
+        sku: text(value['sku']).trim() || undefined,
         name: text(value['name']),
         description: text(value['description']) || undefined,
         basePrice: {

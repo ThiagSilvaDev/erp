@@ -300,7 +300,10 @@ export class EntityPage {
     for (const field of fields) {
       controls[field.key] = new FormControl<EntityFormValue>(field.defaultValue ?? '', {
         nonNullable: true,
-        validators: field.required ? [Validators.required] : [],
+        validators: [
+          ...(field.required ? [Validators.required] : []),
+          ...(field.maxLength ? [Validators.maxLength(field.maxLength)] : []),
+        ],
       });
     }
     return new FormGroup(controls);

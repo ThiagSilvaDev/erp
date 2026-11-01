@@ -1,5 +1,7 @@
 <section class="mx-auto grid w-full max-w-5xl gap-4">
-  <div class="flex flex-col gap-3 border-b border-slate-200 pb-3 sm:flex-row sm:items-start sm:justify-between">
+  <div
+    class="flex flex-col gap-3 border-b border-slate-200 pb-3 sm:flex-row sm:items-start sm:justify-between"
+  >
     <div class="min-w-0">
       <h1 class="m-0 truncate text-xl font-semibold text-slate-950">New {{ config().title }}</h1>
       <p class="m-0 mt-1 text-sm text-slate-500">{{ config().description }}</p>
@@ -29,7 +31,14 @@
               <nz-form-label [nzFor]="'create-page-' + field.key" [nzRequired]="field.required">
                 {{ field.label }}
               </nz-form-label>
-              <nz-form-control nzErrorTip="This field is required.">
+              <nz-form-control
+                [nzExtra]="field.hint"
+                [nzErrorTip]="
+                  field.maxLength
+                    ? 'Enter no more than ' + field.maxLength + ' characters.'
+                    : 'This field is required.'
+                "
+              >
                 @if (field.type === 'select') {
                   <nz-select
                     [id]="'create-page-' + field.key"
@@ -72,6 +81,7 @@
                       nz-input
                       [id]="'create-page-' + field.key"
                       [type]="field.type ?? 'text'"
+                      [attr.maxlength]="field.maxLength ?? null"
                       [formControlName]="field.key"
                       class="w-full"
                       inputmode="numeric"
@@ -93,6 +103,7 @@
                     nz-input
                     [id]="'create-page-' + field.key"
                     [type]="field.type ?? 'text'"
+                    [attr.maxlength]="field.maxLength ?? null"
                     [formControlName]="field.key"
                     class="w-full"
                   />
