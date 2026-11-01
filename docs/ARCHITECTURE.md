@@ -94,6 +94,12 @@ permission constants, for example `hasAuthority('" + WRITE + "')`. SpEL type
 references such as `T(com.example.Permissions).WRITE` are not used: they survive
 no rename, cannot be found by the IDE and embed fully qualified names.
 
+Read operations for one aggregate are exposed by a single `XQueryUseCase` with
+`getById(...)` and `list(...)`, each keeping its own `@PreAuthorize` and read-only
+transaction. A controller therefore injects one query dependency instead of a
+get-by-id and a list use case; command workflows still get one use case per
+operation. The rule covers one class per aggregate, never one class per module.
+
 Side effects that must run after commit (credential provisioning, domain event
 publication) go through
 [AfterCommit](../src/main/java/com/thiagsilvadev/erpapi/common/transaction/AfterCommit.java),
