@@ -269,6 +269,14 @@ mapper
 - Never name a facade implementation `XService` — always derive the name from the interface it implements
   (e.g. `CredentialProvisioningFacade` is implemented by `CredentialProvisioningFacadeImpl`, not `CredentialProvisioningService`).
 - Plain domain services that do not implement an `api` facade keep the `XService` name.
+- A facade implementation is a thin adapter: it delegates to an internal service that owns the workflow,
+  and it never exposes public methods that are missing from the facade contract.
+- Use cases depend on internal services, never on `XFacadeImpl` classes.
+
+### Mapper package
+
+All mappers live in `internal/mapper`. Nothing that maps entities to DTOs belongs in `internal/dto`
+or in `internal/usecase`.
 
 ---
 
@@ -295,13 +303,37 @@ Queries:
 @Transactional(readOnly = true)
 ```
 
+### After-commit side effects
+
+Work that must not run for rolled-back transactions (credential provisioning, event publication) goes
+through `common/transaction/AfterCommit.run(...)`. Do not register `TransactionSynchronization` by hand.
+
+Never move secrets such as raw passwords onto the application event bus: the Modulith event registry
+can persist events that have transactional listeners.
+
+### Unique constraint races
+
+Concurrent creations are guarded by `existsBy...` pre-checks plus the database unique constraint.
+The `DataIntegrityViolationException` catch must rethrow a domain exception: swallowing it leaves the
+transaction rollback-only and the commit fails with `UnexpectedRollbackException` instead of returning
+the translated conflict.
+
 ---
 
 # Mapping
 
-Prefer manual mapping.
+Mappers live in `internal/mapper`.
 
-Use MapStruct only when it significantly reduces repetitive boilerplate.
+Choose the manual mapping style by size, not by preference:
+
+| Shape | Use |
+| --- | --- |
+| Up to two flat target records, no embedded sources, no computed fields | Plain class with static methods |
+| Three or more targets, embedded sources, or computed/derived fields | MapStruct `@Mapper` |
+
+A type that resolves other data to build a response is not a mapper: it injects a facade or a
+repository, is named `XResponseAssembler`, and lives in `internal/service`. Assemblers must not be
+used to map collections without batching the lookups.
 
 Naming:
 
@@ -341,9 +373,29 @@ Controllers should not translate exceptions manually.
 For required-attribute validation inside entities and value objects:
 
 - non-blank text → `Strings.required(...)` / `Strings.normalizeCode(...)`
-- non-null references → `DomainAssert.requireNotNull(...)`
+- non-null references → `DomainAssert.requireNotNull(value, "Attribute name")`
 
-Both throw `InvalidAttributeException`.
+Both throw `InvalidAttributeException`. Pass the attribute name only: the exception appends the reason.
+Never use `Objects.requireNonNull` in `internal/model` packages.
+
+`DomainValidationException` and its message-based `DomainAssert` helpers exist for shared value objects,
+which cannot own module error codes. Aggregates that own an error-code contract use the `DomainErrorCode`
+overloads instead.
+
+### Authorization expressions
+
+Guard use cases with permission constants, never with SpEL type references:
+
+```java
+import static com.thiagsilvadev.erpapi.catalog.api.CatalogPermissions.WRITE;
+
+@PreAuthorize("hasAuthority('" + WRITE + "')")
+```
+
+Never write `@PreAuthorize("hasAuthority(T(com.example.Permissions).READ)")`. The concatenated constant is
+resolved at compile time, keeps the expression free of fully qualified names, and survives renames.
+When a permission belongs to another module that already depends on this one, declare a local constant
+with a comment explaining the avoided module cycle.
 
 ---
 
@@ -396,7 +448,9 @@ Rules:
 - add tests when behavior changes
 - test business rules
 - test failure paths
-- keep `ApplicationModularityTests` passing
+- keep `ApplicationModularityTests`, `ArchitectureRulesTest` and `SourceConventionsTest` passing
+- test persistence and transaction semantics against PostgreSQL (`dbtest` profile) instead of mocking the
+  repository, e.g. `UserEmailUniquenessPersistenceTest`
 
 Prefer deterministic tests.
 
