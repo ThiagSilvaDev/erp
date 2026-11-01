@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 @Entity
 @Table(name = "ledger_entries")
@@ -43,7 +44,7 @@ public class LedgerEntry extends AbstractBaseEntity {
             BigDecimal amount,
             String currencyCode,
             LocalDate dueDate) {
-        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
         this.type = type;
         this.invoiceId = invoiceId;
         this.amount = amount;

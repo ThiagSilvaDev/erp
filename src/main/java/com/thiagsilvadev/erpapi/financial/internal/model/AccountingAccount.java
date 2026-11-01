@@ -1,11 +1,11 @@
 package com.thiagsilvadev.erpapi.financial.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -58,12 +58,12 @@ public class AccountingAccount extends AbstractBaseEntity {
             AccountingAccountType type,
             AccountingSystemRole systemRole,
             boolean acceptsPostings) {
-        this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
         this.code = Strings.required(code, "Accounting account code");
         this.name = Strings.required(name, "Accounting account name");
         this.description = Strings.trimToNull(description);
         this.parentId = parentId;
-        this.type = Objects.requireNonNull(type, "Accounting account type is required");
+        this.type = DomainAssert.requireNotNull(type, "Accounting account type");
         this.systemRole = systemRole;
         this.acceptsPostings = acceptsPostings;
     }

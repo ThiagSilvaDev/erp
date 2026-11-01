@@ -2,12 +2,12 @@ package com.thiagsilvadev.erpapi.financial.internal.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -59,9 +59,9 @@ public class AccountingEntry extends AbstractBaseEntity {
             AccountingEntrySourceType sourceType,
             UUID sourceId,
             String description) {
-        this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
-        this.accountId = Objects.requireNonNull(accountId, "Account ID is required");
-        this.competenceDate = Objects.requireNonNull(competenceDate, "Competence date is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
+        this.accountId = DomainAssert.requireNotNull(accountId, "Account ID");
+        this.competenceDate = DomainAssert.requireNotNull(competenceDate, "Competence date");
         if (amount == null) {
             throw new IllegalArgumentException("Amount is required");
         }
@@ -70,8 +70,8 @@ public class AccountingEntry extends AbstractBaseEntity {
         }
         this.amount = amount;
         this.currencyCode = Strings.required(currencyCode, "Currency code").toUpperCase();
-        this.direction = Objects.requireNonNull(direction, "Direction is required");
-        this.sourceType = Objects.requireNonNull(sourceType, "Source type is required");
+        this.direction = DomainAssert.requireNotNull(direction, "Direction");
+        this.sourceType = DomainAssert.requireNotNull(sourceType, "Source type");
         this.sourceId = sourceId;
         this.description = Strings.trimToNull(description);
     }

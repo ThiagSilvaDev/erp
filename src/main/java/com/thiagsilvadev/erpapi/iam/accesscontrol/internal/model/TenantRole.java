@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.iam.accesscontrol.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -12,6 +11,7 @@ import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AuthorizationStatus;
 
@@ -51,11 +51,11 @@ public class TenantRole extends AbstractBaseEntity {
     protected TenantRole() {}
 
     private TenantRole(UUID companyId, String code, String name, String description, TenantRoleType type) {
-        this.companyId = Objects.requireNonNull(companyId, "Role company cannot be null");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Role company");
         this.code = Strings.normalizeCode(code, "Role code");
         this.name = Strings.required(name, "Role name");
         this.description = Strings.trimToNull(description);
-        this.type = Objects.requireNonNull(type, "Role type cannot be null");
+        this.type = DomainAssert.requireNotNull(type, "Role type");
     }
 
     public static TenantRole builtIn(UUID companyId, String code, String name, String description) {

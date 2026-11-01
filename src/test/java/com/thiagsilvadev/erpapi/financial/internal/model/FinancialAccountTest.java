@@ -43,8 +43,8 @@ class FinancialAccountTest {
     @Test
     void shouldFailWhenTypeIsNull() {
         assertThatThrownBy(() -> FinancialAccount.create(COMPANY_ID, "Itaú PJ", null, null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("Financial account type is required");
+                .isInstanceOf(InvalidAttributeException.class)
+                .hasMessage("Financial account type cannot be null");
     }
 
     @Test

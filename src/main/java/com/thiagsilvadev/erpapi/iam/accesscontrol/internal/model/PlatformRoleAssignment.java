@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.iam.accesscontrol.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -11,6 +10,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.api.AuthorizationStatus;
 
 @Entity
@@ -36,8 +36,8 @@ public class PlatformRoleAssignment extends AbstractBaseEntity {
     protected PlatformRoleAssignment() {}
 
     private PlatformRoleAssignment(UUID userId, PlatformRole role) {
-        this.userId = Objects.requireNonNull(userId, "Platform assignment user is required");
-        this.role = Objects.requireNonNull(role, "Platform assignment role is required");
+        this.userId = DomainAssert.requireNotNull(userId, "Platform assignment user");
+        this.role = DomainAssert.requireNotNull(role, "Platform assignment role");
     }
 
     public static PlatformRoleAssignment create(UUID userId, PlatformRole role) {

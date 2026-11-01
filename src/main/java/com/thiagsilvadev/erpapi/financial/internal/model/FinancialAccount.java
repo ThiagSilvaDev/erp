@@ -1,11 +1,11 @@
 package com.thiagsilvadev.erpapi.financial.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -37,9 +37,9 @@ public class FinancialAccount extends AbstractBaseEntity {
     protected FinancialAccount() {}
 
     private FinancialAccount(UUID companyId, String name, FinancialAccountType type, String description) {
-        this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
         this.name = Strings.required(name, "Financial account name");
-        this.type = Objects.requireNonNull(type, "Financial account type is required");
+        this.type = DomainAssert.requireNotNull(type, "Financial account type");
         this.description = Strings.trimToNull(description);
     }
 

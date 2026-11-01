@@ -9,19 +9,21 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.InvalidAttributeException;
+
 class TenantMembershipTest {
 
     @Test
     void shouldRequireUser() {
         assertThatThrownBy(() -> TenantMembership.create(null, UUID.randomUUID()))
-                .isInstanceOf(NullPointerException.class)
+                .isInstanceOf(InvalidAttributeException.class)
                 .hasMessageContaining("user");
     }
 
     @Test
     void shouldRequireCompany() {
         assertThatThrownBy(() -> TenantMembership.create(UUID.randomUUID(), null))
-                .isInstanceOf(NullPointerException.class)
+                .isInstanceOf(InvalidAttributeException.class)
                 .hasMessageContaining("company");
     }
 

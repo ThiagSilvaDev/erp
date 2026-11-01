@@ -2,12 +2,12 @@ package com.thiagsilvadev.erpapi.financial.internal.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -54,10 +54,10 @@ public class FinancialEntry extends AbstractBaseEntity {
             String currencyCode,
             UUID referenceId,
             String description) {
-        this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
-        this.accountId = Objects.requireNonNull(accountId, "Account ID is required");
-        this.type = Objects.requireNonNull(type, "Entry type is required");
-        this.source = Objects.requireNonNull(source, "Entry source is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
+        this.accountId = DomainAssert.requireNotNull(accountId, "Account ID");
+        this.type = DomainAssert.requireNotNull(type, "Entry type");
+        this.source = DomainAssert.requireNotNull(source, "Entry source");
         if (amount == null) {
             throw new IllegalArgumentException("Amount is required");
         }

@@ -9,7 +9,6 @@ public class InvalidAttributeException extends DomainValidationException {
 
     private final String attribute;
 
-    @SuppressWarnings("deprecation")
     private InvalidAttributeException(String attribute, String reason) {
         super(attribute + " " + reason);
         this.attribute = attribute;

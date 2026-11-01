@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -32,7 +33,7 @@ public class Warehouse extends AbstractBaseEntity {
     protected Warehouse() {}
 
     private Warehouse(UUID companyId, String code, String name) {
-        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
         this.code = normalizeCode(code);
         this.name = Strings.required(name, "Warehouse name");
     }

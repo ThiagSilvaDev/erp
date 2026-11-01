@@ -1,11 +1,11 @@
 package com.thiagsilvadev.erpapi.logistics.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -37,8 +37,8 @@ public class Driver extends AbstractBaseEntity {
     protected Driver() {}
 
     private Driver(UUID companyId, UUID userId, String licenseNumber) {
-        this.companyId = Objects.requireNonNull(companyId, "Company ID is required");
-        this.userId = Objects.requireNonNull(userId, "User ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
+        this.userId = DomainAssert.requireNotNull(userId, "User ID");
         this.licenseNumber = Strings.normalizeCode(licenseNumber, "Driver license number");
     }
 

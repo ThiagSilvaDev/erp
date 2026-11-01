@@ -5,6 +5,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 @Entity
 @Table(name = "inventory_reservations")
@@ -28,7 +29,7 @@ public class InventoryReservation extends AbstractBaseEntity {
     protected InventoryReservation() {}
 
     private InventoryReservation(UUID companyId, UUID productId, UUID warehouseId, int quantity, UUID salesOrderId) {
-        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
         this.productId = productId;
         this.warehouseId = warehouseId;
         this.quantity = quantity;

@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.sales.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.AttributeOverride;
@@ -9,6 +8,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
 
 import com.thiagsilvadev.erpapi.common.domain.model.GeoLocation;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Embeddable
@@ -42,7 +42,7 @@ public class DeliveryRoute {
             String routeName, UUID originWarehouseId, String destinationDescription, GeoLocation destinationLocation) {
         return new DeliveryRoute(
                 Strings.required(routeName, "Route name"),
-                Objects.requireNonNull(originWarehouseId, "Origin warehouse ID is required"),
+                DomainAssert.requireNotNull(originWarehouseId, "Origin warehouse ID"),
                 Strings.required(destinationDescription, "Destination description"),
                 destinationLocation);
     }

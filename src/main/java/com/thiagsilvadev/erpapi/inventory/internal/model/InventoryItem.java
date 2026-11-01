@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.inventory.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -40,9 +39,8 @@ public class InventoryItem extends AbstractBaseEntity {
     protected InventoryItem() {}
 
     private InventoryItem(UUID productId, Warehouse warehouse, int quantityOnHand) {
-        this.companyId =
-                Objects.requireNonNull(warehouse, "Warehouse is required").getCompanyId();
-        this.productId = Objects.requireNonNull(productId, "Product ID is required");
+        this.companyId = DomainAssert.requireNotNull(warehouse, "Warehouse").getCompanyId();
+        this.productId = DomainAssert.requireNotNull(productId, "Product ID");
         this.warehouse = warehouse;
         this.quantityOnHand = DomainAssert.requireNonNegative(
                 quantityOnHand, InventoryErrorCode.QUANTITY_ON_HAND_MUST_BE_NON_NEGATIVE);

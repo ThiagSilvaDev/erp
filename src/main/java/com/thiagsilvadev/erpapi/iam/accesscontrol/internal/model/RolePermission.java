@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.iam.accesscontrol.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -9,6 +8,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -30,7 +30,7 @@ public class RolePermission extends AbstractBaseEntity {
     protected RolePermission() {}
 
     private RolePermission(UUID roleId, String permissionKey) {
-        this.roleId = Objects.requireNonNull(roleId, "Permission role cannot be null");
+        this.roleId = DomainAssert.requireNotNull(roleId, "Permission role");
         this.permissionKey = Strings.required(permissionKey, "Permission key");
     }
 

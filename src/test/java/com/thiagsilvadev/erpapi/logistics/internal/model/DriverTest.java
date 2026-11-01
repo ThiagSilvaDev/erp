@@ -24,8 +24,8 @@ class DriverTest {
     @Test
     void shouldRejectMissingUser() {
         assertThatThrownBy(() -> Driver.create(COMPANY_ID, null, "CNH-1"))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("User ID is required");
+                .isInstanceOf(InvalidAttributeException.class)
+                .hasMessage("User ID cannot be null");
     }
 
     @Test

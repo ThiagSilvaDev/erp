@@ -3,13 +3,14 @@ package com.thiagsilvadev.erpapi.common.reporting;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Objects;
+
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 public record ComparativePeriod(DateRange current, DateRange previous, List<DateRange> trendRanges) {
 
     public ComparativePeriod {
-        Objects.requireNonNull(current, "Current range is required");
-        Objects.requireNonNull(previous, "Previous range is required");
+        DomainAssert.requireNotNull(current, "Current range");
+        DomainAssert.requireNotNull(previous, "Previous range");
         trendRanges = List.copyOf(trendRanges);
     }
 

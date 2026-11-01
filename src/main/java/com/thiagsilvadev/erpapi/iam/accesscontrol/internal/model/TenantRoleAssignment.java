@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.iam.accesscontrol.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -12,6 +11,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 @Entity
 @Table(
@@ -45,10 +45,10 @@ public class TenantRoleAssignment extends AbstractBaseEntity {
     protected TenantRoleAssignment() {}
 
     private TenantRoleAssignment(UUID membershipId, UUID roleId, AuthorizationScopeType scopeType, UUID scopeId) {
-        this.membershipId = Objects.requireNonNull(membershipId, "Assignment membership cannot be null");
-        this.roleId = Objects.requireNonNull(roleId, "Assignment role cannot be null");
-        this.scopeType = Objects.requireNonNull(scopeType, "Assignment scope type cannot be null");
-        this.scopeId = Objects.requireNonNull(scopeId, "Assignment scope id cannot be null");
+        this.membershipId = DomainAssert.requireNotNull(membershipId, "Assignment membership");
+        this.roleId = DomainAssert.requireNotNull(roleId, "Assignment role");
+        this.scopeType = DomainAssert.requireNotNull(scopeType, "Assignment scope type");
+        this.scopeId = DomainAssert.requireNotNull(scopeId, "Assignment scope id");
     }
 
     public static TenantRoleAssignment tenant(UUID membershipId, UUID roleId, UUID tenantId) {

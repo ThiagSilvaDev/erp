@@ -1,12 +1,12 @@
 package com.thiagsilvadev.erpapi.logistics.internal.model;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -42,9 +42,9 @@ public class ShipmentTrackingEvent extends AbstractBaseEntity {
             String location,
             String notes,
             UUID performedByUserId) {
-        this.shipment = Objects.requireNonNull(shipment, "Shipment is required");
-        this.status = Objects.requireNonNull(status, "Tracking status is required");
-        this.occurredAt = Objects.requireNonNull(occurredAt, "Occurred timestamp is required");
+        this.shipment = DomainAssert.requireNotNull(shipment, "Shipment");
+        this.status = DomainAssert.requireNotNull(status, "Tracking status");
+        this.occurredAt = DomainAssert.requireNotNull(occurredAt, "Occurred timestamp");
         this.location = Strings.trimToNull(location);
         this.notes = Strings.trimToNull(notes);
         this.performedByUserId = performedByUserId;
@@ -68,7 +68,7 @@ public class ShipmentTrackingEvent extends AbstractBaseEntity {
                 occurredAt,
                 location,
                 notes,
-                Objects.requireNonNull(performedByUserId, "Performed-by user is required"));
+                DomainAssert.requireNotNull(performedByUserId, "Performed-by user"));
     }
 
     public Shipment getShipment() {

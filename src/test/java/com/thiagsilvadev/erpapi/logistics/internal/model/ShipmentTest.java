@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.domain.exception.InvalidAttributeException;
 
 class ShipmentTest {
     private static final UUID COMPANY_ID = UUID.randomUUID();
@@ -107,7 +108,7 @@ class ShipmentTest {
                 UUID.randomUUID(),
                 "Customer dock");
 
-        assertThatThrownBy(() -> shipment.load(null)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> shipment.load(null)).isInstanceOf(InvalidAttributeException.class);
 
         assertThat(shipment.getStatus()).isEqualTo(ShipmentStatus.DISPATCH_ASSIGNED);
         assertThat(shipment.getLoadedAt()).isNull();

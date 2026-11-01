@@ -1,6 +1,5 @@
 package com.thiagsilvadev.erpapi.iam.accesscontrol.internal.model;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -14,6 +13,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.exception.UserActorIdRequiredException;
 
@@ -85,10 +85,10 @@ public class AuthorizationAudit extends AbstractBaseEntity {
             AuthorizationAction action,
             String beforeValue,
             String afterValue) {
-        Objects.requireNonNull(targetId, "Audit target id cannot be null");
-        Objects.requireNonNull(targetType, "Audit target type cannot be null");
-        Objects.requireNonNull(action, "Audit action cannot be null");
-        Objects.requireNonNull(actorType, "Audit actor type cannot be null");
+        DomainAssert.requireNotNull(targetId, "Audit target id");
+        DomainAssert.requireNotNull(targetType, "Audit target type");
+        DomainAssert.requireNotNull(action, "Audit action");
+        DomainAssert.requireNotNull(actorType, "Audit actor type");
         if (actorType == AuthorizationActorType.USER && actorUserId == null) {
             throw new UserActorIdRequiredException();
         }

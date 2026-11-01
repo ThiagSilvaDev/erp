@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
 import com.thiagsilvadev.erpapi.common.domain.model.Plate;
 import com.thiagsilvadev.erpapi.common.domain.model.PlateType;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Entity
@@ -39,7 +40,7 @@ public class Vehicle extends AbstractBaseEntity {
     protected Vehicle() {}
 
     private Vehicle(UUID companyId, String plate, String description, int capacity) {
-        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
         this.plate = Plate.of(plate, PlateType.MERCOSUL);
         this.description = Strings.required(description, "Vehicle description");
         if (capacity <= 0) {

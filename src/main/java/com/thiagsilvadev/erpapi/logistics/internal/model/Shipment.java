@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 @Entity
 @Table(
@@ -97,9 +98,9 @@ public class Shipment extends AbstractBaseEntity {
             UUID buyerCompanyId,
             UUID customerId,
             List<ShipmentItem> items) {
-        Long requiredShipmentNumber = Objects.requireNonNull(shipmentNumber, "Shipment number is required");
-        UUID requiredSalesOrderId = Objects.requireNonNull(salesOrderId, "Sales order is required");
-        UUID requiredSellerCompanyId = Objects.requireNonNull(sellerCompanyId, "Seller company is required");
+        Long requiredShipmentNumber = DomainAssert.requireNotNull(shipmentNumber, "Shipment number");
+        UUID requiredSalesOrderId = DomainAssert.requireNotNull(salesOrderId, "Sales order");
+        UUID requiredSellerCompanyId = DomainAssert.requireNotNull(sellerCompanyId, "Seller company");
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Shipment must have at least one item");
         }
@@ -117,17 +118,16 @@ public class Shipment extends AbstractBaseEntity {
         if (status != ShipmentStatus.CREATED) {
             throw new ConflictException("Cannot assign route to shipment in status " + status);
         }
-        this.routeName = Objects.requireNonNull(routeName, "Route name is required");
-        this.originWarehouseId = Objects.requireNonNull(originWarehouseId, "Origin warehouse is required");
-        this.destinationDescription =
-                Objects.requireNonNull(destinationDescription, "Destination description is required");
+        this.routeName = DomainAssert.requireNotNull(routeName, "Route name");
+        this.originWarehouseId = DomainAssert.requireNotNull(originWarehouseId, "Origin warehouse");
+        this.destinationDescription = DomainAssert.requireNotNull(destinationDescription, "Destination description");
     }
 
     public void assignDispatch(
             Driver driver, Vehicle vehicle, String routeName, UUID originWarehouseId, String destinationDescription) {
         status.requireTransitionTo(ShipmentStatus.DISPATCH_ASSIGNED);
-        this.driver = Objects.requireNonNull(driver, "Driver is required");
-        this.vehicle = Objects.requireNonNull(vehicle, "Vehicle is required");
+        this.driver = DomainAssert.requireNotNull(driver, "Driver");
+        this.vehicle = DomainAssert.requireNotNull(vehicle, "Vehicle");
 
         if (routeName != null) {
             this.routeName = routeName;
@@ -154,25 +154,25 @@ public class Shipment extends AbstractBaseEntity {
 
     public void load(Instant loadedAt) {
         status.requireTransitionTo(ShipmentStatus.LOADED);
-        this.loadedAt = Objects.requireNonNull(loadedAt, "Loaded timestamp is required");
+        this.loadedAt = DomainAssert.requireNotNull(loadedAt, "Loaded timestamp");
         this.status = ShipmentStatus.LOADED;
     }
 
     public void dispatch(Instant dispatchedAt) {
         status.requireTransitionTo(ShipmentStatus.IN_TRANSIT);
-        this.dispatchedAt = Objects.requireNonNull(dispatchedAt, "Dispatched timestamp is required");
+        this.dispatchedAt = DomainAssert.requireNotNull(dispatchedAt, "Dispatched timestamp");
         this.status = ShipmentStatus.IN_TRANSIT;
     }
 
     public void deliver(Instant deliveredAt) {
         status.requireTransitionTo(ShipmentStatus.DELIVERED);
-        this.deliveredAt = Objects.requireNonNull(deliveredAt, "Delivered timestamp is required");
+        this.deliveredAt = DomainAssert.requireNotNull(deliveredAt, "Delivered timestamp");
         this.status = ShipmentStatus.DELIVERED;
     }
 
     public void cancel(Instant cancelledAt) {
         status.requireTransitionTo(ShipmentStatus.CANCELLED);
-        this.cancelledAt = Objects.requireNonNull(cancelledAt, "Cancelled timestamp is required");
+        this.cancelledAt = DomainAssert.requireNotNull(cancelledAt, "Cancelled timestamp");
         this.status = ShipmentStatus.CANCELLED;
     }
 

@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import com.thiagsilvadev.erpapi.common.domain.exception.InvalidAttributeException;
 import com.thiagsilvadev.erpapi.iam.accesscontrol.internal.exception.UserActorIdRequiredException;
 
 class AuthorizationAuditTest {
@@ -69,7 +70,7 @@ class AuthorizationAuditTest {
                         AuthorizationAction.ROLE_CREATED,
                         null,
                         null))
-                .isInstanceOf(NullPointerException.class)
+                .isInstanceOf(InvalidAttributeException.class)
                 .hasMessageContaining("cannot be null");
     }
 

@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 @Entity
 @Table(
@@ -60,7 +61,7 @@ public class Invoice extends AbstractBaseEntity {
             String currencyCode,
             LocalDate dueDate) {
         this.invoiceNumber = invoiceNumber;
-        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
         this.billingPartyType = billingPartyType;
         this.billingPartyId = billingPartyId;
         this.salesOrderId = salesOrderId;

@@ -5,6 +5,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 
 @Entity
 @Table(
@@ -48,7 +49,7 @@ public class StockMovement extends AbstractBaseEntity {
             int quantity,
             StockMovementType type,
             StockMovementReason reason) {
-        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
         }
@@ -56,8 +57,8 @@ public class StockMovement extends AbstractBaseEntity {
         this.productId = productId;
         this.warehouseId = warehouseId;
         this.quantity = quantity;
-        this.type = java.util.Objects.requireNonNull(type, "Stock movement type is required");
-        this.reason = java.util.Objects.requireNonNull(reason, "Stock movement reason is required");
+        this.type = DomainAssert.requireNotNull(type, "Stock movement type");
+        this.reason = DomainAssert.requireNotNull(reason, "Stock movement reason");
     }
 
     public static StockMovement create(

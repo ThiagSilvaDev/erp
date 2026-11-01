@@ -5,6 +5,7 @@ import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.common.domain.validation.Strings;
 
 @Embeddable
@@ -31,8 +32,8 @@ public class ShipmentItem {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Shipment item quantity must be positive");
         }
-        this.productId = java.util.Objects.requireNonNull(productId, "Product is required");
-        this.warehouseId = java.util.Objects.requireNonNull(warehouseId, "Warehouse is required");
+        this.productId = DomainAssert.requireNotNull(productId, "Product");
+        this.warehouseId = DomainAssert.requireNotNull(warehouseId, "Warehouse");
         this.productSku = Strings.required(productSku, "Product SKU");
         this.productName = Strings.required(productName, "Product name");
         this.quantity = quantity;

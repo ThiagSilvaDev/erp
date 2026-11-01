@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.thiagsilvadev.erpapi.common.domain.model.AbstractBaseEntity;
+import com.thiagsilvadev.erpapi.common.domain.validation.DomainAssert;
 import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
 
 @Entity
@@ -68,7 +69,7 @@ public class Payment extends AbstractBaseEntity {
             LocalDate dueDate,
             LocalDate paidAt) {
         this.paymentNumber = paymentNumber;
-        this.companyId = java.util.Objects.requireNonNull(companyId, "Company ID is required");
+        this.companyId = DomainAssert.requireNotNull(companyId, "Company ID");
         this.salesOrderId = salesOrderId;
         this.customerId = customerId;
         this.invoiceId = invoiceId;
