@@ -56,5 +56,6 @@ interface InvoiceApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<InvoiceResponse> list(@ParameterObject InvoiceSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<InvoiceResponse> list(
+            @Valid @ParameterObject InvoiceSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

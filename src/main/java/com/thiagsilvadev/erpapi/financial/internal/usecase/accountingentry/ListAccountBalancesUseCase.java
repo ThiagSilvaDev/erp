@@ -8,7 +8,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.accountingentry.AccountBalanceCriteria;
 import com.thiagsilvadev.erpapi.financial.internal.dto.accountingentry.AccountBalanceResponse;
@@ -28,10 +27,6 @@ public class ListAccountBalancesUseCase {
     @PreAuthorize("hasAuthority('" + READ + "')")
     public List<AccountBalanceResponse> execute(AccountBalanceCriteria criteria) {
         var companyId = TenantContext.requireTenantId();
-        if (criteria.from().isAfter(criteria.to())) {
-            throw new DomainValidationException("from must be on or before to.");
-        }
-
         return entryRepository
                 .findAccountBalances(
                         companyId,

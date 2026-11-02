@@ -94,5 +94,6 @@ public interface CompanyApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<CompanyResponse> list(@ParameterObject CompanySearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<CompanyResponse> list(
+            @Valid @ParameterObject CompanySearchCriteria criteria, @ParameterObject Pageable pageable);
 }

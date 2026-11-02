@@ -55,7 +55,7 @@ public interface SalesOrderApi {
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     Page<SalesOrderResponse> list(
-            @ParameterObject SalesOrderSearchCriteria criteria, @ParameterObject Pageable pageable);
+            @Valid @ParameterObject SalesOrderSearchCriteria criteria, @ParameterObject Pageable pageable);
 
     @PostMapping("/{id}/confirm")
     @Operation(operationId = "confirmSalesOrder")

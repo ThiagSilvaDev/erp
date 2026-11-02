@@ -1,6 +1,6 @@
 package com.thiagsilvadev.erpapi.user.internal.repository;
 
-import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,11 +16,11 @@ public final class UserSpecification {
     private UserSpecification() {}
 
     public static Specification<User> withCriteria(UserSearchCriteria criteria, Set<UUID> allowedUserIds) {
-        return Specification.allOf(List.of(
+        return Specification.allOf(
                 hasEmail(criteria.email()),
                 hasNameLike(criteria.name()),
                 hasStatus(criteria.status()),
-                hasIdIn(allowedUserIds)));
+                hasIdIn(allowedUserIds));
     }
 
     private static Specification<User> hasEmail(String email) {
@@ -39,15 +39,19 @@ public final class UserSpecification {
             if (name == null || name.isBlank()) {
                 return null;
             }
-            String pattern = "%" + name.toLowerCase() + "%";
+            String pattern = "%" + escapeLike(name.trim().toLowerCase(Locale.ROOT)) + "%";
             return cb.or(
-                    cb.like(cb.lower(root.get("firstName")), pattern),
-                    cb.like(cb.lower(root.get("lastName")), pattern));
+                    cb.like(cb.lower(root.get("firstName")), pattern, '\\'),
+                    cb.like(cb.lower(root.get("lastName")), pattern, '\\'));
         };
     }
 
     private static Specification<User> hasStatus(UserStatus status) {
         return (root, query, cb) -> status == null ? null : cb.equal(root.get("status"), status);
+    }
+
+    private static String escapeLike(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
     private static Specification<User> hasIdIn(Set<UUID> ids) {

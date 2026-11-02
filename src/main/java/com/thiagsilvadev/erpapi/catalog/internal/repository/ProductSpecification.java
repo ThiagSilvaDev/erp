@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.catalog.internal.repository;
 
+import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -52,7 +53,12 @@ public class ProductSpecification {
             if (name == null || name.isBlank()) {
                 return null;
             }
-            return cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+            return cb.like(
+                    cb.lower(root.get("name")), "%" + escapeLike(name.trim().toLowerCase(Locale.ROOT)) + "%", '\\');
         };
+    }
+
+    private static String escapeLike(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

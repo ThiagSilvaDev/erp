@@ -24,7 +24,7 @@ public class SalesOrderSpecification {
                 criteria.customerId() == null ? null : cb.equal(root.get("customerId"), criteria.customerId());
         Specification<SalesOrder> status =
                 (root, query, cb) -> criteria.status() == null ? null : cb.equal(root.get("status"), criteria.status());
-        return saleType.and(seller).and(buyer).and(customer).and(status);
+        return Specification.allOf(saleType, seller, buyer, customer, status);
     }
 
     public static Specification<SalesOrder> withCriteriaForSeller(

@@ -8,7 +8,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.thiagsilvadev.erpapi.common.domain.exception.DomainValidationException;
 import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
 import com.thiagsilvadev.erpapi.financial.internal.dto.accountingentry.AccountingEntryResponse;
 import com.thiagsilvadev.erpapi.financial.internal.dto.accountingentry.AccountingEntrySearchCriteria;
@@ -30,27 +29,20 @@ public class ListAccountingEntriesUseCase {
     @PreAuthorize("hasAuthority('" + READ + "')")
     public Page<AccountingEntryResponse> execute(AccountingEntrySearchCriteria criteria, Pageable pageable) {
         var companyId = TenantContext.requireTenantId();
-        boolean hasFrom = criteria.from() != null;
-        boolean hasTo = criteria.to() != null;
-        if (hasFrom != hasTo) {
-            throw new DomainValidationException("Both from and to must be provided together.");
-        }
-        if (hasFrom && criteria.from().isAfter(criteria.to())) {
-            throw new DomainValidationException("from must be on or before to.");
-        }
-
-        if (hasFrom && criteria.accountId() != null) {
+        boolean hasDateRange = criteria != null && criteria.from() != null;
+        boolean hasAccount = criteria != null && criteria.accountId() != null;
+        if (hasDateRange && hasAccount) {
             return entryRepository
                     .findByCompanyIdAndAccountIdAndCompetenceDateBetween(
                             companyId, criteria.accountId(), criteria.from(), criteria.to(), pageable)
                     .map(mapper::toResponse);
         }
-        if (hasFrom) {
+        if (hasDateRange) {
             return entryRepository
                     .findByCompanyIdAndCompetenceDateBetween(companyId, criteria.from(), criteria.to(), pageable)
                     .map(mapper::toResponse);
         }
-        if (criteria.accountId() != null) {
+        if (hasAccount) {
             return entryRepository
                     .findByCompanyIdAndAccountId(companyId, criteria.accountId(), pageable)
                     .map(mapper::toResponse);

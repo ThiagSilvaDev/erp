@@ -62,5 +62,6 @@ public interface ProductApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<ProductResponse> list(@ParameterObject ProductSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<ProductResponse> list(
+            @Valid @ParameterObject ProductSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

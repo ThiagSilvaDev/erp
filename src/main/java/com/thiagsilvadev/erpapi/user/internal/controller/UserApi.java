@@ -61,5 +61,5 @@ public interface UserApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<UserSnapshot> list(@ParameterObject UserSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<UserSnapshot> list(@Valid @ParameterObject UserSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

@@ -52,7 +52,7 @@ interface AccountingEntryApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     @ApiResponse(responseCode = "422", ref = UNPROCESSABLE_ENTITY)
     Page<AccountingEntryResponse> list(
-            @ParameterObject AccountingEntrySearchCriteria criteria, @ParameterObject Pageable pageable);
+            @Valid @ParameterObject AccountingEntrySearchCriteria criteria, @ParameterObject Pageable pageable);
 
     @GetMapping("/balances")
     @Operation(operationId = "listAccountBalances")

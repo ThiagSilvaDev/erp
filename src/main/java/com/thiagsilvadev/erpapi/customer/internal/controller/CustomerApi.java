@@ -56,5 +56,6 @@ public interface CustomerApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<CustomerResponse> list(@ParameterObject CustomerSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<CustomerResponse> list(
+            @Valid @ParameterObject CustomerSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

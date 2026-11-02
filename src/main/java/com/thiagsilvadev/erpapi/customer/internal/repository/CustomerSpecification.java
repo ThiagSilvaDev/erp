@@ -1,5 +1,6 @@
 package com.thiagsilvadev.erpapi.customer.internal.repository;
 
+import java.util.Locale;
 import java.util.UUID;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -72,6 +73,10 @@ public class CustomerSpecification {
         if (value == null || value.isBlank()) {
             return null;
         }
-        return cb.like(cb.lower(path), "%" + value.toLowerCase() + "%");
+        return cb.like(cb.lower(path), "%" + escapeLike(value.trim().toLowerCase(Locale.ROOT)) + "%", '\\');
+    }
+
+    private static String escapeLike(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

@@ -21,11 +21,12 @@ public class ShipmentSpecification {
                 : cb.equal(root.get("vehicle").get("id"), criteria.vehicleId());
         Specification<Shipment> status =
                 (root, query, cb) -> criteria.status() == null ? null : cb.equal(root.get("status"), criteria.status());
-        return salesOrder.and(driver).and(vehicle).and(status);
+        return Specification.allOf(salesOrder, driver, vehicle, status);
     }
 
     public static Specification<Shipment> withCriteriaForSeller(ShipmentSearchCriteria criteria, UUID sellerCompanyId) {
-        return ((Specification<Shipment>) (root, query, cb) -> cb.equal(root.get("sellerCompanyId"), sellerCompanyId))
-                .and(withCriteria(criteria));
+        Specification<Shipment> sellerScope =
+                (root, query, cb) -> cb.equal(root.get("sellerCompanyId"), sellerCompanyId);
+        return Specification.allOf(sellerScope, withCriteria(criteria));
     }
 }

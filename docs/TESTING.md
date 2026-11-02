@@ -13,7 +13,8 @@ paths; add integration coverage when persistence or module interactions matter.
 | --- | --- | --- |
 | Domain | JUnit 5 and AssertJ for factories, invariants and transitions | [SalesOrderTest](../src/test/java/com/thiagsilvadev/erpapi/sales/internal/model/SalesOrderTest.java) |
 | Use cases/services | Mockito collaborators, arguments and resulting state | [CreateSalesOrderUseCaseTest](../src/test/java/com/thiagsilvadev/erpapi/sales/internal/usecase/CreateSalesOrderUseCaseTest.java) |
-| Query use cases | Covered through the controller test driving `getById`/`list`, plus tenant-scope tests | [SalesOrderTenantScopeUseCaseTest](../src/test/java/com/thiagsilvadev/erpapi/sales/internal/usecase/SalesOrderTenantScopeUseCaseTest.java) |
+| Query use cases | Covered through controller tests and tenant-scope tests; criteria date validation has focused tests | [SalesOrderTenantScopeUseCaseTest](../src/test/java/com/thiagsilvadev/erpapi/sales/internal/usecase/SalesOrderTenantScopeUseCaseTest.java) |
+| Search conventions | Criteria validation, normalized matching and tenant scopes should be covered; see [Search](SEARCH.md) for current contract | [AccountingEntrySearchCriteriaTest](../src/test/java/com/thiagsilvadev/erpapi/financial/internal/dto/accountingentry/AccountingEntrySearchCriteriaTest.java) |
 | HTTP | MockMvc request/response and security assertions | [AuthControllerTest](../src/test/java/com/thiagsilvadev/erpapi/iam/internal/controller/AuthControllerTest.java) |
 | Persistence | Spring Data JPA tests against PostgreSQL | [AuthorizationAuditJpaTest](../src/test/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/model/AuthorizationAuditJpaTest.java) |
 | Transactional integration | Spring Boot tests for audit persistence and failure | [AuthorizationAuditListenerPersistenceTest](../src/test/java/com/thiagsilvadev/erpapi/iam/accesscontrol/AuthorizationAuditListenerPersistenceTest.java) |

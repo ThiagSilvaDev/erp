@@ -61,5 +61,6 @@ public interface CategoryApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<CategoryResponse> list(@ParameterObject CategorySearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<CategoryResponse> list(
+            @Valid @ParameterObject CategorySearchCriteria criteria, @ParameterObject Pageable pageable);
 }

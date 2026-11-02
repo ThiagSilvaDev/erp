@@ -2,4 +2,7 @@ package com.thiagsilvadev.erpapi.customer.internal.dto;
 
 import java.util.UUID;
 
-public record CustomerSearchCriteria(String name, String document, UUID ownerCompanyId) {}
+import jakarta.validation.constraints.Size;
+
+public record CustomerSearchCriteria(
+        @Size(max = 120) String name, @Size(max = 32) String document, UUID ownerCompanyId) {}

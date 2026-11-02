@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.company.internal.repository;
 
+import java.util.Locale;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
@@ -36,10 +38,10 @@ public class CompanySpecification {
             String digits = cnpjStr.replaceAll("\\D", "");
 
             if (digits.isBlank()) {
-                return null;
+                return cb.disjunction();
             }
 
-            return cb.like(root.get("cnpj").get("number"), digits + "%");
+            return cb.like(root.get("cnpj").get("number"), digits + "%", '\\');
         };
     }
 
@@ -48,10 +50,14 @@ public class CompanySpecification {
             if (name == null || name.isBlank()) {
                 return null;
             }
-            String pattern = "%" + name.toLowerCase() + "%";
+            String pattern = "%" + escapeLike(name.trim().toLowerCase(Locale.ROOT)) + "%";
             return cb.or(
-                    cb.like(cb.lower(root.get("legalName")), pattern),
-                    cb.like(cb.lower(root.get("tradeName")), pattern));
+                    cb.like(cb.lower(root.get("legalName")), pattern, '\\'),
+                    cb.like(cb.lower(root.get("tradeName")), pattern, '\\'));
         };
+    }
+
+    private static String escapeLike(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

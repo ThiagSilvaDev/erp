@@ -56,5 +56,6 @@ public interface SupplierApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<SupplierResponse> list(@ParameterObject SupplierSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<SupplierResponse> list(
+            @Valid @ParameterObject SupplierSearchCriteria criteria, @ParameterObject Pageable pageable);
 }

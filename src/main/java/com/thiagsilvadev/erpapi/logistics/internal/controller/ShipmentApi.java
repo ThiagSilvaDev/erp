@@ -35,7 +35,8 @@ public interface ShipmentApi {
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
-    Page<ShipmentResponse> list(@ParameterObject ShipmentSearchCriteria criteria, @ParameterObject Pageable pageable);
+    Page<ShipmentResponse> list(
+            @Valid @ParameterObject ShipmentSearchCriteria criteria, @ParameterObject Pageable pageable);
 
     @GetMapping("/shipments/{id}")
     @Operation(operationId = "getShipmentById")
