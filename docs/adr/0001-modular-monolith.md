@@ -24,5 +24,5 @@ entities, and the current system does not provide independent module deployment.
 ## References
 
 [Architecture](../ARCHITECTURE.md),
-[modularity verification](../../src/test/java/com/thiagsilvadev/erpapi/ApplicationModularityTests.java),
-[module declarations](../../src/main/java/com/thiagsilvadev/erpapi/sales/package-info.java).
+[modularity verification](../../apps/api/src/test/java/com/thiagsilvadev/erpapi/ApplicationModularityTests.java),
+[module declarations](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/package-info.java).

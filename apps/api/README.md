@@ -21,12 +21,12 @@ identity and access management, inventory, logistics, sales, and users.
 
 ## Technical documentation
 
-- [Architecture](docs/ARCHITECTURE.md): structure, modules, dependencies and workflows.
-- [Glossary](docs/GLOSSARY.md): canonical ERP terms and module ownership.
-- [Domain](docs/DOMAIN.md): ERP concepts and implemented business rules.
-- [Security](docs/SECURITY.md): authentication, authorization and token lifecycle.
-- [Testing](docs/TESTING.md): strategy, conventions and database prerequisites.
-- [Architecture decisions](docs/adr/README.md): current choices and their consequences.
+- [Architecture](../../docs/ARCHITECTURE.md): structure, modules, dependencies and workflows.
+- [Glossary](../../docs/GLOSSARY.md): canonical ERP terms and module ownership.
+- [Domain](../../docs/DOMAIN.md): ERP concepts and implemented business rules.
+- [Security](../../docs/SECURITY.md): authentication, authorization and token lifecycle.
+- [Testing](../../docs/TESTING.md): strategy, conventions and database prerequisites.
+- [Architecture decisions](../../docs/adr/README.md): current choices and their consequences.
 - [Agent instructions](AGENTS.md): repository working rules and commit conventions.
 
 ## Architecture

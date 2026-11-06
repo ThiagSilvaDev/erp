@@ -34,7 +34,7 @@ it does not select a future production migration tool.
 
 ## References
 
-[Development configuration](../../src/main/resources/application-dev.properties),
-[database-test configuration](../../src/test/resources/application-dbtest.properties),
-[build dependencies](../../pom.xml),
-[database guidance](../../AGENTS.md#database).
+[Development configuration](../../apps/api/src/main/resources/application-dev.properties),
+[database-test configuration](../../apps/api/src/test/resources/application-dbtest.properties),
+[build dependencies](../../apps/api/pom.xml),
+[database guidance](../../apps/api/AGENTS.md#database).

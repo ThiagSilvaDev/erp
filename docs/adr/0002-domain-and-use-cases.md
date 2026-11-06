@@ -26,6 +26,6 @@ have their own transaction annotations.
 ## References
 
 [Domain](../DOMAIN.md),
-[confirmation use case](../../src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/ConfirmSalesOrderUseCase.java),
-[SalesOrder](../../src/main/java/com/thiagsilvadev/erpapi/sales/internal/model/SalesOrder.java),
-[agent instructions](../../AGENTS.md).
+[confirmation use case](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/ConfirmSalesOrderUseCase.java),
+[SalesOrder](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/internal/model/SalesOrder.java),
+[agent instructions](../../apps/api/AGENTS.md).

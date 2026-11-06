@@ -28,7 +28,7 @@ outstanding publication failures need operational attention.
 ## References
 
 [Confirmation flow](../ARCHITECTURE.md#confirming-a-sale),
-[confirmation use case](../../src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/ConfirmSalesOrderUseCase.java),
-[financial listener](../../src/main/java/com/thiagsilvadev/erpapi/financial/internal/listener/SalesOrderFinancialListener.java),
-[logistics listener](../../src/main/java/com/thiagsilvadev/erpapi/logistics/internal/listener/SalesOrderLogisticsListener.java),
-[dependencies](../../pom.xml).
+[confirmation use case](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/ConfirmSalesOrderUseCase.java),
+[financial listener](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/financial/internal/listener/SalesOrderFinancialListener.java),
+[logistics listener](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/logistics/internal/listener/SalesOrderLogisticsListener.java),
+[dependencies](../../apps/api/pom.xml).

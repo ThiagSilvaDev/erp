@@ -11,16 +11,16 @@ paths; add integration coverage when persistence or module interactions matter.
 
 | Area | Existing approach | Example |
 | --- | --- | --- |
-| Domain | JUnit 5 and AssertJ for factories, invariants and transitions | [SalesOrderTest](../src/test/java/com/thiagsilvadev/erpapi/sales/internal/model/SalesOrderTest.java) |
-| Use cases/services | Mockito collaborators, arguments and resulting state | [CreateSalesOrderUseCaseTest](../src/test/java/com/thiagsilvadev/erpapi/sales/internal/usecase/CreateSalesOrderUseCaseTest.java) |
-| Query use cases | Covered through controller tests and tenant-scope tests; criteria date validation has focused tests | [SalesOrderTenantScopeUseCaseTest](../src/test/java/com/thiagsilvadev/erpapi/sales/internal/usecase/SalesOrderTenantScopeUseCaseTest.java) |
-| Search conventions | Criteria validation, normalized matching and tenant scopes should be covered; see [Search](SEARCH.md) for current contract | [AccountingEntrySearchCriteriaTest](../src/test/java/com/thiagsilvadev/erpapi/financial/internal/dto/accountingentry/AccountingEntrySearchCriteriaTest.java) |
-| HTTP | MockMvc request/response and security assertions | [AuthControllerTest](../src/test/java/com/thiagsilvadev/erpapi/iam/internal/controller/AuthControllerTest.java) |
-| Persistence | Spring Data JPA tests against PostgreSQL | [AuthorizationAuditJpaTest](../src/test/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/model/AuthorizationAuditJpaTest.java) |
-| Transactional integration | Spring Boot tests for audit persistence and failure | [AuthorizationAuditListenerPersistenceTest](../src/test/java/com/thiagsilvadev/erpapi/iam/accesscontrol/AuthorizationAuditListenerPersistenceTest.java) |
-| Constraint and commit semantics | `@SpringBootTest` with `dbtest` and `TransactionTemplate` against real PostgreSQL | [UserEmailUniquenessPersistenceTest](../src/test/java/com/thiagsilvadev/erpapi/user/internal/repository/UserEmailUniquenessPersistenceTest.java) |
-| Architecture | Spring Modulith verification and ArchUnit rules | [ApplicationModularityTests](../src/test/java/com/thiagsilvadev/erpapi/ApplicationModularityTests.java), [ArchitectureRulesTest](../src/test/java/com/thiagsilvadev/erpapi/ArchitectureRulesTest.java) |
-| Source conventions | File scan of `src/main/java` for rules invisible in bytecode | [SourceConventionsTest](../src/test/java/com/thiagsilvadev/erpapi/SourceConventionsTest.java) |
+| Domain | JUnit 5 and AssertJ for factories, invariants and transitions | [SalesOrderTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/sales/internal/model/SalesOrderTest.java) |
+| Use cases/services | Mockito collaborators, arguments and resulting state | [CreateSalesOrderUseCaseTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/sales/internal/usecase/CreateSalesOrderUseCaseTest.java) |
+| Query use cases | Covered through controller tests and tenant-scope tests; criteria date validation has focused tests | [SalesOrderTenantScopeUseCaseTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/sales/internal/usecase/SalesOrderTenantScopeUseCaseTest.java) |
+| Search conventions | Criteria validation, normalized matching and tenant scopes should be covered; see [Search](SEARCH.md) for current contract | [AccountingEntrySearchCriteriaTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/financial/internal/dto/accountingentry/AccountingEntrySearchCriteriaTest.java) |
+| HTTP | MockMvc request/response and security assertions | [AuthControllerTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/iam/internal/controller/AuthControllerTest.java) |
+| Persistence | Spring Data JPA tests against PostgreSQL | [AuthorizationAuditJpaTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/model/AuthorizationAuditJpaTest.java) |
+| Transactional integration | Spring Boot tests for audit persistence and failure | [AuthorizationAuditListenerPersistenceTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/iam/accesscontrol/AuthorizationAuditListenerPersistenceTest.java) |
+| Constraint and commit semantics | `@SpringBootTest` with `dbtest` and `TransactionTemplate` against real PostgreSQL | [UserEmailUniquenessPersistenceTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/user/internal/repository/UserEmailUniquenessPersistenceTest.java) |
+| Architecture | Spring Modulith verification and ArchUnit rules | [ApplicationModularityTests](../apps/api/src/test/java/com/thiagsilvadev/erpapi/ApplicationModularityTests.java), [ArchitectureRulesTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/ArchitectureRulesTest.java) |
+| Source conventions | File scan of `src/main/java` for rules invisible in bytecode | [SourceConventionsTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/SourceConventionsTest.java) |
 
 Modularity verification checks the module dependency structure. Additional
 architecture rules prohibit controller persistence access, controllers
@@ -53,7 +53,7 @@ module has an isolated `@ApplicationModuleTest` suite.
 - Prefer explicit mocks and argument capture where the workflow's side effects
   are the contract. Avoid assertions that merely reproduce implementation steps.
 - Inject a fixed `Clock` for time-dependent behavior and use explicit UTC dates
-  where required. [FixedClockTestConfiguration](../src/test/java/com/thiagsilvadev/erpapi/support/FixedClockTestConfiguration.java)
+  where required. [FixedClockTestConfiguration](../apps/api/src/test/java/com/thiagsilvadev/erpapi/support/FixedClockTestConfiguration.java)
   supports Spring tests; unit tests can supply their own fixed clock.
 - Prefer deterministic synchronization to time-based sleeps. Keep test data in
   the relevant module and reset shared tenant context when a test sets it.
@@ -74,7 +74,7 @@ The schemas still share a PostgreSQL instance; this is not a fresh database per
 test run or an automatic database-reset guarantee.
 
 Connection details and the test signing secret are defined in
-[application-dbtest.properties](../src/test/resources/application-dbtest.properties).
+[application-dbtest.properties](../apps/api/src/test/resources/application-dbtest.properties).
 The repository does not configure a Testcontainers-based database lifecycle.
 LGTM and the `otel` profile are not prerequisites for verification.
 
@@ -88,6 +88,6 @@ LGTM and the `otel` profile are not prerequisites for verification.
 ```
 
 `verify` runs the tests and the configured Spotless check. Run it before
-completing repository work, as required by [AGENTS.md](../AGENTS.md). A successful
+completing repository work, as required by [AGENTS.md](../apps/api/AGENTS.md). A successful
 build checks the current suite; it is not evidence of complete coverage of every
 ERP workflow. New behavior needs tests for the rules and failure paths it adds.

@@ -51,7 +51,7 @@ several competing styles, which made review harder and hid two real risks:
 ## References
 
 [Request, persistence and transaction flow](../ARCHITECTURE.md#request-persistence-and-transaction-flow),
-[AfterCommit](../../src/main/java/com/thiagsilvadev/erpapi/common/transaction/AfterCommit.java),
-[UserEmailUniquenessPersistenceTest](../../src/test/java/com/thiagsilvadev/erpapi/user/internal/repository/UserEmailUniquenessPersistenceTest.java),
-[SourceConventionsTest](../../src/test/java/com/thiagsilvadev/erpapi/SourceConventionsTest.java),
+[AfterCommit](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/common/transaction/AfterCommit.java),
+[UserEmailUniquenessPersistenceTest](../../apps/api/src/test/java/com/thiagsilvadev/erpapi/user/internal/repository/UserEmailUniquenessPersistenceTest.java),
+[SourceConventionsTest](../../apps/api/src/test/java/com/thiagsilvadev/erpapi/SourceConventionsTest.java),
 [ADR 0004](0004-module-integration.md).

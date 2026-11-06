@@ -29,10 +29,10 @@ the `dev` profile, the OpenAPI document (`/v3/api-docs`) and Swagger UI
 outside development). Protected workflows additionally use method-level
 permission checks.
 
-Sources: [login](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/usecase/LoginUseCase.java),
-[company selection](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/usecase/SelectCompanyUseCase.java),
-[platform selection](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/usecase/SelectPlatformUseCase.java),
-[security configuration](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/config/IamSecurityConfiguration.java).
+Sources: [login](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/usecase/LoginUseCase.java),
+[company selection](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/usecase/SelectCompanyUseCase.java),
+[platform selection](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/usecase/SelectPlatformUseCase.java),
+[security configuration](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/config/IamSecurityConfiguration.java).
 
 ## Roles, permissions and tenant isolation
 
@@ -60,10 +60,10 @@ Authorization mutations produce audit records. Audit persistence and failure
 behavior are covered by dedicated integration tests, described in
 [TESTING.md](TESTING.md).
 
-Sources: [tenant authorization](../src/main/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/service/TenantAuthorizationService.java),
-[platform authorization](../src/main/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/service/PlatformAuthorizationService.java),
-[role updates](../src/main/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/usecase/UpdateTenantRoleUseCase.java),
-[tenant filter](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/security/TenantContextFilter.java).
+Sources: [tenant authorization](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/service/TenantAuthorizationService.java),
+[platform authorization](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/service/PlatformAuthorizationService.java),
+[role updates](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/usecase/UpdateTenantRoleUseCase.java),
+[tenant filter](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/security/TenantContextFilter.java).
 
 ## Session lifecycle and current limits
 
@@ -83,15 +83,15 @@ All token contexts revalidate credential status on every authenticated request.
 Inactive or missing credentials are rejected. Reactivating a credential permits
 reuse of tokens that remain otherwise valid.
 
-Sources: [token issuance](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/service/JwtTokenService.java),
-[authentication routes](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/controller/AuthController.java),
-[JWT defaults](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/config/IamJwtProperties.java).
+Sources: [token issuance](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/service/JwtTokenService.java),
+[authentication routes](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/controller/AuthController.java),
+[JWT defaults](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/config/IamJwtProperties.java).
 
 ## Configuration and handling
 
 Supply `ERP_IAM_JWT_SECRET` outside development. Startup requires at least 32
 UTF-8 bytes; production must provide a strong secret externally. The default
-`dev` secret and seeded administrator credentials in the [README](../README.md)
+`dev` secret and seeded administrator credentials in the [README](../apps/api/README.md)
 are for local use only. Changing a shared signing key invalidates tokens signed
 with the old key; no overlapping-key rotation mechanism is configured.
 

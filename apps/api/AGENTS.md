@@ -35,12 +35,12 @@ Each module exposes public contracts through `api` and keeps implementation deta
 
 Supporting documentation:
 
-- [Architecture](docs/ARCHITECTURE.md): structure, module dependencies and workflows.
-- [Glossary](docs/GLOSSARY.md): canonical ERP terminology and module ownership.
-- [Domain](docs/DOMAIN.md): implemented ERP concepts and business rules.
-- [Security](docs/SECURITY.md): authentication, authorization and token lifecycle.
-- [Testing](docs/TESTING.md): test strategy, conventions and prerequisites.
-- [ADRs](docs/adr/README.md): architectural decisions and consequences.
+- [Architecture](../../docs/ARCHITECTURE.md): structure, module dependencies and workflows.
+- [Glossary](../../docs/GLOSSARY.md): canonical ERP terminology and module ownership.
+- [Domain](../../docs/DOMAIN.md): implemented ERP concepts and business rules.
+- [Security](../../docs/SECURITY.md): authentication, authorization and token lifecycle.
+- [Testing](../../docs/TESTING.md): test strategy, conventions and prerequisites.
+- [ADRs](../../docs/adr/README.md): architectural decisions and consequences.
 
 Before completing any task, run:
 
@@ -227,7 +227,7 @@ Avoid public setters.
 
 ## Canonical terminology
 
-- `docs/GLOSSARY.md` defines the canonical ERP terms in English and their owning modules.
+- `../../docs/GLOSSARY.md` defines the canonical ERP terms in English and their owning modules.
 - Use those terms consistently in Java identifiers, public contracts, database mappings and frontend labels.
 - Keep the glossary and affected module Javadocs synchronized whenever a term changes.
 - Each module root `package-info.java` must contain a short English Javadoc describing its scope and

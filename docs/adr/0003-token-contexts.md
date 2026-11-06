@@ -26,9 +26,9 @@ assumed from the token format.
 ## References
 
 [Security](../SECURITY.md),
-[token issuance](../../src/main/java/com/thiagsilvadev/erpapi/iam/internal/service/JwtTokenService.java),
-[security configuration](../../src/main/java/com/thiagsilvadev/erpapi/iam/internal/config/IamSecurityConfiguration.java),
-[tenant authorization](../../src/main/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/service/TenantAuthorizationService.java).
+[token issuance](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/service/JwtTokenService.java),
+[security configuration](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/internal/config/IamSecurityConfiguration.java),
+[tenant authorization](../../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/accesscontrol/internal/service/TenantAuthorizationService.java).
 
 JWT validation now requires the configured issuer and complete context claims.
 All contexts check active credentials on each request; this is a status check,

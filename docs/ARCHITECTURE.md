@@ -5,7 +5,7 @@ PostgreSQL database, organized by business capability. Spring Modulith verifies
 module boundaries and persists event publications through its JDBC integration.
 
 [Glossary](GLOSSARY.md) · [Domain](DOMAIN.md) · [Security](SECURITY.md) · [Testing](TESTING.md) ·
-[Decisions](adr/README.md) · [Agent instructions](../AGENTS.md)
+[Decisions](adr/README.md) · [Agent instructions](../apps/api/AGENTS.md)
 
 ## Structure and ownership
 
@@ -69,9 +69,9 @@ flowchart LR
 
 Use contracts from the owning module; cross-module entity/repository injection
 is forbidden. The declarations can be inspected in, for example,
-[sales](../src/main/java/com/thiagsilvadev/erpapi/sales/package-info.java),
-[IAM](../src/main/java/com/thiagsilvadev/erpapi/iam/package-info.java) and
-[KPI](../src/main/java/com/thiagsilvadev/erpapi/kpi/package-info.java).
+[sales](../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/package-info.java),
+[IAM](../apps/api/src/main/java/com/thiagsilvadev/erpapi/iam/package-info.java) and
+[KPI](../apps/api/src/main/java/com/thiagsilvadev/erpapi/kpi/package-info.java).
 [Architecture tests](TESTING.md) enforce boundaries and selected layering rules.
 
 ## Request, persistence and transaction flow
@@ -86,7 +86,7 @@ snapshots, warehouse codes, sales order references) are named `XResponseAssemble
 and live in `internal/service`, because they perform lookups rather than field
 mapping. Entities and value objects validate required attributes through
 `Strings`/`DomainAssert`, not `Objects.requireNonNull`; tests in
-[SourceConventionsTest](../src/test/java/com/thiagsilvadev/erpapi/SourceConventionsTest.java)
+[SourceConventionsTest](../apps/api/src/test/java/com/thiagsilvadev/erpapi/SourceConventionsTest.java)
 enforce the resulting conventions.
 
 Use cases are guarded with `@PreAuthorize` expressions built from static-imported
@@ -102,7 +102,7 @@ operation. The rule covers one class per aggregate, never one class per module.
 
 Side effects that must run after commit (credential provisioning, domain event
 publication) go through
-[AfterCommit](../src/main/java/com/thiagsilvadev/erpapi/common/transaction/AfterCommit.java),
+[AfterCommit](../apps/api/src/main/java/com/thiagsilvadev/erpapi/common/transaction/AfterCommit.java),
 which falls back to immediate execution outside a transaction. Raw passwords never
 travel through the event bus, because the Modulith event registry can persist events
 that have transactional listeners.
@@ -160,14 +160,14 @@ transaction has committed, for example when payments exist or a shipment has
 already been loaded; the original sale transaction is not rolled back by that
 later listener failure. See [ADR 0004](adr/0004-module-integration.md).
 
-Sources: [confirmation use case](../src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/ConfirmSalesOrderUseCase.java),
-[financial listener](../src/main/java/com/thiagsilvadev/erpapi/financial/internal/listener/SalesOrderFinancialListener.java),
-[logistics listener](../src/main/java/com/thiagsilvadev/erpapi/logistics/internal/listener/SalesOrderLogisticsListener.java).
+Sources: [confirmation use case](../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/ConfirmSalesOrderUseCase.java),
+[financial listener](../apps/api/src/main/java/com/thiagsilvadev/erpapi/financial/internal/listener/SalesOrderFinancialListener.java),
+[logistics listener](../apps/api/src/main/java/com/thiagsilvadev/erpapi/logistics/internal/listener/SalesOrderLogisticsListener.java).
 
 ## Reserved integration events
 
-[UserCreatedEvent](../src/main/java/com/thiagsilvadev/erpapi/user/api/UserCreatedEvent.java) and
-[ProductCreatedEvent](../src/main/java/com/thiagsilvadev/erpapi/catalog/api/ProductCreatedEvent.java)
+[UserCreatedEvent](../apps/api/src/main/java/com/thiagsilvadev/erpapi/user/api/UserCreatedEvent.java) and
+[ProductCreatedEvent](../apps/api/src/main/java/com/thiagsilvadev/erpapi/catalog/api/ProductCreatedEvent.java)
 are public module contracts that are published deliberately without in-process subscribers. They are
 the reserved integration points for future consumers such as notifications or outbound webhooks, so
 they must not be deleted as unused code.
@@ -182,4 +182,4 @@ when adopted, as recorded in [ADR 0005](adr/0005-development-schema.md).
 
 Observability exports are enabled through the `otel` profile and the optional
 local LGTM stack. Setup commands and environment configuration belong in the
-[README](../README.md); coding conventions belong in [AGENTS.md](../AGENTS.md).
+[README](../apps/api/README.md); coding conventions belong in [AGENTS.md](../apps/api/AGENTS.md).

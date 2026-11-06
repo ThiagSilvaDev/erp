@@ -31,10 +31,10 @@ a gap-free business contract. Existing SKUs and historical snapshots remain unch
 when product details change. The catalog generation policy can be extended for
 future product-specific formatting without replacing allocation and validation.
 
-Sources: [Company](../src/main/java/com/thiagsilvadev/erpapi/company/internal/model/Company.java),
-[Customer](../src/main/java/com/thiagsilvadev/erpapi/customer/internal/model/Customer.java),
-[Product](../src/main/java/com/thiagsilvadev/erpapi/catalog/internal/model/Product.java),
-[Category](../src/main/java/com/thiagsilvadev/erpapi/catalog/internal/model/Category.java).
+Sources: [Company](../apps/api/src/main/java/com/thiagsilvadev/erpapi/company/internal/model/Company.java),
+[Customer](../apps/api/src/main/java/com/thiagsilvadev/erpapi/customer/internal/model/Customer.java),
+[Product](../apps/api/src/main/java/com/thiagsilvadev/erpapi/catalog/internal/model/Product.java),
+[Category](../apps/api/src/main/java/com/thiagsilvadev/erpapi/catalog/internal/model/Category.java).
 
 ## Sales
 
@@ -52,10 +52,10 @@ Sources: [Company](../src/main/java/com/thiagsilvadev/erpapi/company/internal/mo
 - Cancelling an order releases its reservations. A cancellation event is emitted
   when the order was confirmed; downstream restrictions are described below.
 
-Sources: [creation workflow](../src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/CreateSalesOrderUseCase.java),
-[SalesOrder](../src/main/java/com/thiagsilvadev/erpapi/sales/internal/model/SalesOrder.java),
-[SalesOrderItem](../src/main/java/com/thiagsilvadev/erpapi/sales/internal/model/SalesOrderItem.java),
-[cancellation workflow](../src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/CancelSalesOrderUseCase.java).
+Sources: [creation workflow](../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/CreateSalesOrderUseCase.java),
+[SalesOrder](../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/internal/model/SalesOrder.java),
+[SalesOrderItem](../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/internal/model/SalesOrderItem.java),
+[cancellation workflow](../apps/api/src/main/java/com/thiagsilvadev/erpapi/sales/internal/usecase/CancelSalesOrderUseCase.java).
 
 ## Stock
 
@@ -69,9 +69,9 @@ Reservations identify the sales order, product and warehouse. Loading a delivery
 shipment consumes its order reservations; cancelling a sale releases them.
 Movements record changes such as entries, exits, reservations and releases.
 
-Sources: [InventoryItem](../src/main/java/com/thiagsilvadev/erpapi/inventory/internal/model/InventoryItem.java),
-[InventoryFacade](../src/main/java/com/thiagsilvadev/erpapi/inventory/api/InventoryFacade.java),
-[shipment loading](../src/main/java/com/thiagsilvadev/erpapi/logistics/internal/usecase/shipment/LoadShipmentUseCase.java).
+Sources: [InventoryItem](../apps/api/src/main/java/com/thiagsilvadev/erpapi/inventory/internal/model/InventoryItem.java),
+[InventoryFacade](../apps/api/src/main/java/com/thiagsilvadev/erpapi/inventory/api/InventoryFacade.java),
+[shipment loading](../apps/api/src/main/java/com/thiagsilvadev/erpapi/logistics/internal/usecase/shipment/LoadShipmentUseCase.java).
 
 ## Billing, payments and accounting
 
@@ -107,12 +107,12 @@ single credit in the sales-revenue account and avoids repeating an existing
 posting. It does not create a complete balanced journal transaction or enforce
 that debits equal credits across all postings.
 
-Sources: [invoice creation](../src/main/java/com/thiagsilvadev/erpapi/financial/internal/usecase/invoice/CreateInvoiceUseCase.java),
-[payment creation](../src/main/java/com/thiagsilvadev/erpapi/financial/internal/usecase/payment/CreatePaymentUseCase.java),
-[payment sums](../src/main/java/com/thiagsilvadev/erpapi/financial/internal/repository/PaymentRepository.java),
-[Invoice](../src/main/java/com/thiagsilvadev/erpapi/financial/internal/model/Invoice.java),
-[revenue posting](../src/main/java/com/thiagsilvadev/erpapi/financial/internal/service/AccountingPostingService.java),
-[AccountingEntry](../src/main/java/com/thiagsilvadev/erpapi/financial/internal/model/AccountingEntry.java).
+Sources: [invoice creation](../apps/api/src/main/java/com/thiagsilvadev/erpapi/financial/internal/usecase/invoice/CreateInvoiceUseCase.java),
+[payment creation](../apps/api/src/main/java/com/thiagsilvadev/erpapi/financial/internal/usecase/payment/CreatePaymentUseCase.java),
+[payment sums](../apps/api/src/main/java/com/thiagsilvadev/erpapi/financial/internal/repository/PaymentRepository.java),
+[Invoice](../apps/api/src/main/java/com/thiagsilvadev/erpapi/financial/internal/model/Invoice.java),
+[revenue posting](../apps/api/src/main/java/com/thiagsilvadev/erpapi/financial/internal/service/AccountingPostingService.java),
+[AccountingEntry](../apps/api/src/main/java/com/thiagsilvadev/erpapi/financial/internal/model/AccountingEntry.java).
 
 ## Delivery and indicators
 
@@ -146,6 +146,6 @@ Executive KPIs combine module snapshots for the active tenant. Money is grouped
 by currency; reporting periods use UTC calendar dates. These aggregates are
 queries, not an additional owner of sales, stock or financial records.
 
-Sources: [Shipment](../src/main/java/com/thiagsilvadev/erpapi/logistics/internal/model/Shipment.java),
-[driver workflow](../src/main/java/com/thiagsilvadev/erpapi/logistics/internal/usecase/driver/CurrentDriverShipmentWorkflowUseCase.java),
-[KPI aggregation](../src/main/java/com/thiagsilvadev/erpapi/kpi/internal/usecase/GetExecutiveKpisUseCase.java).
+Sources: [Shipment](../apps/api/src/main/java/com/thiagsilvadev/erpapi/logistics/internal/model/Shipment.java),
+[driver workflow](../apps/api/src/main/java/com/thiagsilvadev/erpapi/logistics/internal/usecase/driver/CurrentDriverShipmentWorkflowUseCase.java),
+[KPI aggregation](../apps/api/src/main/java/com/thiagsilvadev/erpapi/kpi/internal/usecase/GetExecutiveKpisUseCase.java).

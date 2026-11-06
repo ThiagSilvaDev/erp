@@ -16,6 +16,7 @@ history of meetings, adoption dates or rejected alternatives.
 | [0004](0004-module-integration.md) | Synchronous stock coordination and persisted events |
 | [0005](0005-development-schema.md) | Disposable development databases and schema recreation |
 | [0006](0006-authorization-and-transaction-conventions.md) | Permission constants and centralized after-commit side effects |
+| [0007](0007-monorepo.md) | API and web application in one monorepo |
 
 ## Adding a decision
 
