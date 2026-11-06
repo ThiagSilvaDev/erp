@@ -1,0 +1,84 @@
+<main class="company-select-page">
+  <section class="company-select-shell" aria-labelledby="company-select-title">
+    <div class="company-select-header">
+      <div class="min-w-0">
+        <span class="text-xs font-bold uppercase text-blue-600">ERP Web</span>
+        <h1 id="company-select-title">Choose company</h1>
+        <p>Pick the company workspace for this session.</p>
+      </div>
+
+      <div class="company-select-header-actions">
+        @if (canActAsPlatformAdmin()) {
+          <button
+            nz-button
+            nzType="default"
+            type="button"
+            [nzLoading]="isEnteringPlatform()"
+            (click)="enterPlatformAdmin()"
+          >
+            Platform admin
+          </button>
+        }
+        <button nz-button nzType="default" type="button" (click)="logout()">Logout</button>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+      <nz-alert nzType="error" [nzMessage]="errorMessage()" nzShowIcon />
+    }
+
+    @if (isLoading()) {
+      <div class="loading-panel" role="status" aria-live="polite">
+        <nz-spin nzSimple />
+      </div>
+    } @else if (companies().length) {
+      <div class="company-grid" role="list" aria-label="Available companies">
+        @for (company of companies(); track trackCompany($index, company)) {
+          <nz-card
+            role="listitem"
+            class="company-card"
+            [class.company-card-active]="isActive(company)"
+          >
+            <div class="company-card-content">
+              <div class="company-avatar" aria-hidden="true">
+                <nz-icon nzType="apartment" />
+              </div>
+
+              <div class="company-card-main">
+                <div class="company-card-title">
+                  <h2>{{ companyName(company) }}</h2>
+                  @if (isActive(company)) {
+                    <span class="active-badge">Active</span>
+                  }
+                </div>
+                <div class="company-meta">
+                  @if (company.legalName && company.tradeName) {
+                    <span>{{ company.tradeName }}</span>
+                  }
+                  <span>{{ companyDocument(company) }}</span>
+                </div>
+              </div>
+
+              <button
+                nz-button
+                nzType="primary"
+                type="button"
+                [nzLoading]="isSelecting(company)"
+                [disabled]="selectedCompanyId() !== null && !isSelecting(company)"
+                (click)="selectCompany(company)"
+              >
+                Use
+              </button>
+            </div>
+          </nz-card>
+        }
+      </div>
+    } @else {
+      <div class="empty-panel">
+        <nz-icon nzType="apartment" />
+        <h2>No companies available</h2>
+        <p>Your user does not have a company workspace to enter.</p>
+      </div>
+    }
+  </section>
+</main>

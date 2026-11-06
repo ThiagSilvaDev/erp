@@ -1,0 +1,195 @@
+:host {
+  display: block;
+}
+
+.tab-panel {
+  display: grid;
+  gap: 14px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.panel-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.panel-header p {
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.filter-panel {
+  display: grid;
+  grid-template-columns: minmax(180px, 280px) auto;
+  align-items: end;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.filter-actions,
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pagination-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.actions-column {
+  width: 72px;
+}
+
+.shipment-actions-column {
+  width: 264px;
+}
+
+.shipment-number-column {
+  width: 96px;
+  white-space: nowrap;
+}
+
+.shipment-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+}
+
+.actions-cell {
+  text-align: left;
+}
+
+:host ::ng-deep .actions-cell .ant-btn,
+:host ::ng-deep .shipment-actions .ant-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  line-height: 1;
+}
+
+:host ::ng-deep .actions-cell .anticon,
+:host ::ng-deep .shipment-actions .anticon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.modal-form {
+  display: grid;
+  gap: 12px;
+}
+
+.modal-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.shipment-detail {
+  display: grid;
+  gap: 18px;
+}
+
+.detail-section {
+  display: grid;
+  gap: 10px;
+}
+
+.detail-section h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+:host ::ng-deep .shipment-detail-modal .ant-modal-body {
+  max-height: min(72vh, 760px);
+  overflow-y: auto;
+}
+
+:host ::ng-deep .ant-table-wrapper {
+  overflow-x: auto;
+}
+
+:host ::ng-deep .ant-table-thead > tr > th {
+  padding: 14px 16px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #f8fafc;
+}
+
+:host ::ng-deep .ant-table-tbody > tr > td {
+  padding: 14px 16px;
+  color: #334155;
+}
+
+:host ::ng-deep .ant-descriptions-item-label {
+  width: 34%;
+  color: #475569;
+  font-weight: 600;
+  background: #f8fafc;
+}
+
+:host ::ng-deep .ant-descriptions-item-content {
+  color: #334155;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .panel-header {
+    flex-direction: column;
+  }
+
+  .panel-header button {
+    width: 100%;
+  }
+
+  .filter-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions,
+  .modal-actions {
+    justify-content: stretch;
+  }
+
+  .modal-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions button,
+  .modal-actions button {
+    flex: 1;
+  }
+
+  .pagination-row {
+    justify-content: center;
+    overflow-x: auto;
+  }
+}

@@ -1,0 +1,280 @@
+<section class="sales-order-page mx-auto w-full max-w-7xl">
+  <nz-page-header
+    class="page-header no-print"
+    nzBackIcon
+    [nzGhost]="false"
+    (nzBack)="backToOrders()"
+  >
+    <nz-page-header-title>Order #{{ text(order()?.orderNumber) || '—' }}</nz-page-header-title>
+    <nz-page-header-subtitle>Sales order details</nz-page-header-subtitle>
+
+    @if (order(); as currentOrder) {
+      <nz-page-header-tags>
+        <nz-tag [nzColor]="statusColor(currentOrder.status)">
+          {{ statusLabel(currentOrder.status) }}
+        </nz-tag>
+      </nz-page-header-tags>
+    }
+
+    @if (order(); as currentOrder) {
+      <nz-page-header-content>
+        <div class="header-summary">
+          <div>
+            <span>Customer</span>
+            <strong>
+              {{
+                text(currentOrder.buyerSummary?.buyerName) ||
+                  text(currentOrder.buyerSummary?.companyName) ||
+                  'Not provided'
+              }}
+            </strong>
+          </div>
+          <div>
+            <span>Seller</span>
+            <strong>{{ text(currentOrder.sellerSummary?.companyName) || 'ERP System' }}</strong>
+          </div>
+          <div>
+            <span>Payment</span>
+            <strong>{{ paymentLabel(currentOrder.paymentMethod) || '—' }}</strong>
+          </div>
+          <div>
+            <span>Total</span>
+            <strong>
+              {{
+                text(currentOrder.formattedTotalAmount) ||
+                  formatCurrency(currentOrder.totalAmount, currentOrder.currencyCode)
+              }}
+            </strong>
+          </div>
+        </div>
+      </nz-page-header-content>
+    }
+
+    <nz-page-header-extra>
+      <button nz-button nzType="primary" type="button" [disabled]="!order()" (click)="print()">
+        <nz-icon nzType="printer" />
+        Print order
+      </button>
+    </nz-page-header-extra>
+  </nz-page-header>
+
+  @if (errorMessage()) {
+    <nz-alert nzType="error" [nzMessage]="errorMessage()" nzShowIcon />
+  }
+
+  <nz-spin class="order-loader" [nzSpinning]="isLoading()">
+    @if (order(); as order) {
+      <nz-card class="order-detail" data-print-source aria-label="Sales order detail">
+        <header class="order-header">
+          <div class="order-heading">
+            <div>
+              <span class="eyebrow">Sales order</span>
+              <h2 id="order-title">#{{ text(order.orderNumber) || '—' }}</h2>
+              <p>
+                {{ text(order.sellerSummary?.companyName) || 'ERP System' }}
+                <span aria-hidden="true">→</span>
+                {{
+                  text(order.buyerSummary?.buyerName) ||
+                    text(order.buyerSummary?.companyName) ||
+                    'Customer not provided'
+                }}
+              </p>
+            </div>
+          </div>
+
+          <div class="order-status">
+            <span>Status</span>
+            <nz-tag [nzColor]="statusColor(order.status)">
+              {{ statusLabel(order.status) }}
+            </nz-tag>
+          </div>
+        </header>
+
+        <section class="metric-strip" aria-label="Order summary">
+          <div class="metric metric-total">
+            <nz-statistic
+              nzTitle="Total amount"
+              [nzValue]="
+                text(order.formattedTotalAmount) ||
+                formatCurrency(order.totalAmount, order.currencyCode)
+              "
+            />
+          </div>
+          <div class="metric">
+            <nz-statistic nzTitle="Line items" [nzValue]="itemCount()" />
+          </div>
+          <div class="metric">
+            <nz-statistic nzTitle="Payment" [nzValue]="paymentLabel(order.paymentMethod) || '—'" />
+          </div>
+          <div class="metric">
+            <nz-statistic nzTitle="Fulfillment" [nzValue]="text(order.fulfillmentType) || '—'" />
+          </div>
+        </section>
+
+        <div class="content-grid">
+          <nz-divider class="section-divider" />
+
+          <section class="panel information-panel" aria-labelledby="details-title">
+            <div class="panel-heading">
+              <div>
+                <h3 id="details-title">Order information</h3>
+                <p>Customer, commercial, and fulfillment details</p>
+              </div>
+              <nz-icon nzType="file-text" />
+            </div>
+
+            <nz-descriptions
+              class="information-lines"
+              nzSize="small"
+              [nzColumn]="1"
+              [nzColon]="false"
+            >
+              <nz-descriptions-item nzTitle="Customer">
+                {{
+                  text(order.buyerSummary?.buyerName) ||
+                    text(order.buyerSummary?.companyName) ||
+                    'Not provided'
+                }}
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Customer company">
+                {{ text(order.buyerSummary?.companyName) || '—' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Customer ID" data-print-exclude>
+                <span class="code-value">{{ text(order.customerId) || '—' }}</span>
+              </nz-descriptions-item>
+              @if (order.buyerCompanyId) {
+                <nz-descriptions-item nzTitle="Buyer company ID" data-print-exclude>
+                  <span class="code-value">{{ order.buyerCompanyId }}</span>
+                </nz-descriptions-item>
+              }
+              <nz-descriptions-item nzTitle="Seller">
+                {{ text(order.sellerSummary?.companyName) || 'ERP System' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Sale type" data-print-exclude>
+                {{ text(order.saleType) || '—' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Payment method">
+                {{ paymentLabel(order.paymentMethod) || '—' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Currency">
+                {{ text(order.currencyCode) || '—' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Fulfillment">
+                {{ text(order.fulfillmentType) || '—' }}
+              </nz-descriptions-item>
+              @if (order.deliveryRoute; as route) {
+                <nz-descriptions-item nzTitle="Delivery route">
+                  {{ text(route.routeName) || '—' }}
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Origin warehouse code">
+                  <span class="code-value">{{ warehouseCode(route.originWarehouseId) }}</span>
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Destination">
+                  {{ text(route.destinationDescription) || '—' }}
+                </nz-descriptions-item>
+              } @else {
+                <nz-descriptions-item nzTitle="Delivery route">Not required</nz-descriptions-item>
+              }
+              <nz-descriptions-item nzTitle="Order ID" data-print-exclude>
+                <span class="code-value">{{ text(order.id) || '—' }}</span>
+              </nz-descriptions-item>
+            </nz-descriptions>
+          </section>
+
+          <nz-divider class="section-divider" />
+
+          <section class="panel items-panel" aria-labelledby="items-title">
+            <div class="panel-heading">
+              <div>
+                <h3 id="items-title">Order items</h3>
+                <p>Products and quantities included in this order</p>
+              </div>
+              <nz-tag class="count-badge" data-print-exclude>{{ itemCount() }}</nz-tag>
+            </div>
+
+            <nz-table
+              #itemsTable
+              class="order-items"
+              nzSize="small"
+              [nzData]="order.items ?? []"
+              [nzShowPagination]="false"
+              [nzScroll]="{ x: '700px' }"
+              [nzNoResult]="emptyItems"
+            >
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Warehouse code</th>
+                  <th class="number-cell">Qty</th>
+                  <th class="number-cell">Unit price</th>
+                  <th class="number-cell">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of itemsTable.data; track item.id ?? item.productId) {
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        <div>
+                          <strong>{{ text(item.productName) || 'Unnamed product' }}</strong>
+                          <span>SKU {{ text(item.productSku) || '—' }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="code-value">{{ warehouseCode(item.warehouseId) }}</span>
+                    </td>
+                    <td class="number-cell">{{ text(item.quantity) || '0' }}</td>
+                    <td class="number-cell">
+                      {{
+                        formatCurrency(
+                          item.unitPriceAmount,
+                          item.currencyCode || order.currencyCode
+                        )
+                      }}
+                    </td>
+                    <td class="number-cell line-total">
+                      {{ formatCurrency(itemTotal(item), item.currencyCode || order.currencyCode) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+
+            <ng-template #emptyItems>
+              <nz-empty nzNotFoundImage="simple" nzNotFoundContent="No items in this order." />
+            </ng-template>
+
+            <div class="items-total">
+              <span>Order total</span>
+              <strong>
+                {{
+                  text(order.formattedTotalAmount) ||
+                    formatCurrency(order.totalAmount, order.currencyCode)
+                }}
+              </strong>
+            </div>
+          </section>
+        </div>
+
+        <footer class="print-footer">
+          <div class="approval-field signature-field">
+            <span class="field-label">Approval</span>
+            <div class="writing-line"></div>
+            <strong>Authorized signature</strong>
+            <small>Name and title</small>
+          </div>
+          <div class="approval-field date-field">
+            <span class="field-label">Date</span>
+            <div class="date-entry" aria-label="Date in day, month, year format">
+              <span></span><b>/</b><span></span><b>/</b><span class="year-field"></span>
+            </div>
+            <strong>Date signed</strong>
+            <small>DD / MM / YYYY</small>
+          </div>
+          <p>Printed {{ printedAt() }}</p>
+        </footer>
+      </nz-card>
+    }
+  </nz-spin>
+</section>

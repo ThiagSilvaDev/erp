@@ -1,0 +1,721 @@
+<section class="mx-auto grid w-full max-w-7xl gap-4">
+  <div class="flex flex-col gap-1 border-b border-slate-200 pb-3">
+    <h1 class="m-0 text-xl font-semibold text-slate-950">Logistics</h1>
+    <p class="m-0 text-sm text-slate-500">Vehicles, drivers, and shipment movement.</p>
+  </div>
+
+  @switch (activeTab()) {
+    @case ('vehicles') {
+      <div class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Vehicles</h2>
+            <p>Fleet records used for shipment dispatch.</p>
+          </div>
+          <button nz-button nzType="primary" type="button" (click)="openVehicleCreate()">
+            <nz-icon nzType="plus" />
+            <span>New vehicle</span>
+          </button>
+        </div>
+
+        @if (vehiclesError()) {
+          <nz-alert nzType="error" [nzMessage]="vehiclesError()" nzShowIcon />
+        }
+
+        <nz-table
+          [nzData]="vehicles()"
+          [nzLoading]="vehiclesLoading()"
+          [nzShowPagination]="false"
+          [nzScroll]="{ x: '760px' }"
+        >
+          <thead>
+            <tr>
+              <th>Plate</th>
+              <th>Description</th>
+              <th>Capacity</th>
+              <th>Status</th>
+              <th class="actions-column">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (vehicle of vehicles(); track vehicle.id ?? vehicle.plate) {
+              <tr>
+                <td>{{ text(vehicle.plate) }}</td>
+                <td>{{ text(vehicle.description) }}</td>
+                <td>{{ text(vehicle.capacity) }}</td>
+                <td>
+                  <nz-tag>{{ text(vehicle.status) }}</nz-tag>
+                </td>
+                <td>
+                  <button
+                    nz-button
+                    nzType="text"
+                    type="button"
+                    aria-label="View vehicle"
+                    title="View"
+                    (click)="openVehicleDetail(vehicle)"
+                  >
+                    <nz-icon nzType="eye" />
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <div class="pagination-row">
+          <nz-pagination
+            [nzPageIndex]="vehiclesPageIndex()"
+            [nzPageSize]="pageSize"
+            [nzTotal]="vehiclesTotal()"
+            (nzPageIndexChange)="changeVehiclesPage($event)"
+          />
+        </div>
+      </div>
+    }
+
+    @case ('drivers') {
+      <div class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Drivers</h2>
+            <p>Driver records available for shipment assignments.</p>
+          </div>
+          <button nz-button nzType="primary" type="button" (click)="openDriverCreate()">
+            <nz-icon nzType="plus" />
+            <span>New driver</span>
+          </button>
+        </div>
+
+        @if (driversError()) {
+          <nz-alert nzType="error" [nzMessage]="driversError()" nzShowIcon />
+        }
+
+        <nz-table
+          [nzData]="drivers()"
+          [nzLoading]="driversLoading()"
+          [nzShowPagination]="false"
+          [nzScroll]="{ x: '760px' }"
+        >
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>License</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th class="actions-column">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (driver of drivers(); track driver.id ?? driver.licenseNumber) {
+              <tr>
+                <td>{{ driverLabel(driver) }}</td>
+                <td>{{ text(driver.licenseNumber) }}</td>
+                <td>{{ driverPhone(driver) }}</td>
+                <td>{{ driverEmail(driver) }}</td>
+                <td>
+                  <nz-tag>{{ text(driver.status) }}</nz-tag>
+                </td>
+                <td>
+                  <button
+                    nz-button
+                    nzType="text"
+                    type="button"
+                    aria-label="View driver"
+                    title="View"
+                    (click)="openDriverDetail(driver)"
+                  >
+                    <nz-icon nzType="eye" />
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <div class="pagination-row">
+          <nz-pagination
+            [nzPageIndex]="driversPageIndex()"
+            [nzPageSize]="pageSize"
+            [nzTotal]="driversTotal()"
+            (nzPageIndexChange)="changeDriversPage($event)"
+          />
+        </div>
+      </div>
+    }
+
+    @case ('shipments') {
+      <div class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Shipments</h2>
+            <p>Shipment status, route, and tracking details.</p>
+          </div>
+        </div>
+
+        <form
+          nz-form
+          nzLayout="vertical"
+          class="filter-panel"
+          [formGroup]="shipmentFilterForm"
+          (ngSubmit)="submitShipmentSearch()"
+        >
+          <nz-form-item class="m-0 min-w-0">
+            <nz-form-label nzFor="shipment-status">Status</nz-form-label>
+            <nz-form-control>
+              <nz-select id="shipment-status" formControlName="status" nzAllowClear>
+                @for (status of shipmentStatusOptions; track status) {
+                  <nz-option [nzValue]="status" [nzLabel]="status" />
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <div class="filter-actions">
+            <button nz-button nzType="primary" type="submit">Search</button>
+            <button nz-button type="button" (click)="resetShipmentSearch()">Reset</button>
+          </div>
+        </form>
+
+        @if (shipmentsError()) {
+          <nz-alert nzType="error" [nzMessage]="shipmentsError()" nzShowIcon />
+        }
+
+        <nz-table
+          [nzData]="shipments()"
+          [nzLoading]="shipmentsLoading()"
+          [nzShowPagination]="false"
+          [nzScroll]="{ x: '1040px' }"
+        >
+          <thead>
+            <tr>
+              <th class="shipment-number-column">Shipment</th>
+              <th>Status</th>
+              <th>Route</th>
+              <th>Driver</th>
+              <th>Vehicle</th>
+              <th>Destination</th>
+              <th class="actions-column shipment-actions-column">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (shipment of shipments(); track shipment.id ?? shipment.shipmentNumber) {
+              <tr>
+                <td class="shipment-number-column">{{ text(shipment.shipmentNumber) }}</td>
+                <td>
+                  <nz-tag [nzColor]="shipmentStatusColor(shipment.status)">{{
+                    text(shipment.status)
+                  }}</nz-tag>
+                </td>
+                <td>{{ text(shipment.routeName) }}</td>
+                <td>{{ driverLabel(shipment.driver) }}</td>
+                <td>{{ vehicleLabel(shipment.vehicle) }}</td>
+                <td>{{ text(shipment.destinationDescription) }}</td>
+                <td class="actions-cell">
+                  <div class="shipment-actions">
+                    @if (canAssignDispatch(shipment)) {
+                      <button
+                        nz-button
+                        nzType="text"
+                        type="button"
+                        aria-label="Assign dispatch"
+                        title="Assign"
+                        (click)="openDispatchAssignment(shipment)"
+                      >
+                        <nz-icon nzType="team" />
+                      </button>
+                    }
+                    @if (canLoadShipment(shipment)) {
+                      <button
+                        nz-button
+                        nzType="text"
+                        type="button"
+                        aria-label="Load shipment"
+                        title="Load"
+                        (click)="openShipmentEvent(shipment, 'load')"
+                      >
+                        <nz-icon nzType="inbox" />
+                      </button>
+                    }
+                    @if (canDispatchShipment(shipment)) {
+                      <button
+                        nz-button
+                        nzType="text"
+                        type="button"
+                        aria-label="Dispatch shipment"
+                        title="Dispatch"
+                        (click)="openShipmentEvent(shipment, 'dispatch')"
+                      >
+                        <nz-icon nzType="truck" />
+                      </button>
+                    }
+                    @if (canDeliverShipment(shipment)) {
+                      <button
+                        nz-button
+                        nzType="text"
+                        type="button"
+                        aria-label="Deliver shipment"
+                        title="Deliver"
+                        (click)="openShipmentEvent(shipment, 'deliver')"
+                      >
+                        <nz-icon nzType="check-circle" />
+                      </button>
+                    }
+                    <button
+                      nz-button
+                      nzType="text"
+                      type="button"
+                      aria-label="Add tracking event"
+                      title="Track"
+                      (click)="openShipmentEvent(shipment, 'tracking')"
+                    >
+                      <nz-icon nzType="environment" />
+                    </button>
+                    @if (canCancelShipment(shipment)) {
+                      <button
+                        nz-button
+                        nzType="text"
+                        nzDanger
+                        type="button"
+                        aria-label="Cancel shipment"
+                        title="Cancel"
+                        (click)="openShipmentEvent(shipment, 'cancel')"
+                      >
+                        <nz-icon nzType="stop" />
+                      </button>
+                    }
+                    @if (shipment.id) {
+                      <a
+                        nz-button
+                        nzType="text"
+                        aria-label="View shipment"
+                        title="View"
+                        [routerLink]="['/logistics/shipments', shipment.id]"
+                      >
+                        <nz-icon nzType="eye" />
+                      </a>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <div class="pagination-row">
+          <nz-pagination
+            [nzPageIndex]="shipmentsPageIndex()"
+            [nzPageSize]="pageSize"
+            [nzTotal]="shipmentsTotal()"
+            (nzPageIndexChange)="changeShipmentsPage($event)"
+          />
+        </div>
+      </div>
+    }
+  }
+</section>
+
+<nz-modal
+  [nzVisible]="isVehicleCreateOpen()"
+  nzTitle="New vehicle"
+  [nzFooter]="null"
+  [nzMaskClosable]="!isVehicleSaving()"
+  [nzClosable]="!isVehicleSaving()"
+  nzWidth="min(620px, calc(100vw - 24px))"
+  (nzOnCancel)="closeVehicleCreate()"
+>
+  <ng-container *nzModalContent>
+    <form
+      nz-form
+      nzLayout="vertical"
+      class="modal-form"
+      [formGroup]="vehicleForm"
+      (ngSubmit)="submitVehicle()"
+    >
+      <nz-form-item>
+        <nz-form-label nzFor="vehicle-plate" nzRequired>Plate</nz-form-label>
+        <nz-form-control nzErrorTip="Plate is required.">
+          <input nz-input id="vehicle-plate" formControlName="plate" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="vehicle-description" nzRequired>Description</nz-form-label>
+        <nz-form-control nzErrorTip="Description is required.">
+          <input nz-input id="vehicle-description" formControlName="description" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="vehicle-capacity">Capacity</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="vehicle-capacity" type="number" formControlName="capacity" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="modal-actions">
+        <button
+          nz-button
+          type="button"
+          [disabled]="isVehicleSaving()"
+          (click)="closeVehicleCreate()"
+        >
+          Cancel
+        </button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isVehicleSaving()">
+          Create
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="isDriverCreateOpen()"
+  nzTitle="New driver"
+  [nzFooter]="null"
+  [nzMaskClosable]="!isDriverSaving()"
+  [nzClosable]="!isDriverSaving()"
+  nzWidth="min(620px, calc(100vw - 24px))"
+  (nzOnCancel)="closeDriverCreate()"
+>
+  <ng-container *nzModalContent>
+    <form
+      nz-form
+      nzLayout="vertical"
+      class="modal-form"
+      (submit)="submitDriver(); $event.preventDefault()"
+    >
+      @if (pendingDriverUserId()) {
+        <nz-alert
+          nzType="warning"
+          nzMessage="The user account was created. Retry to finish the driver profile."
+          nzShowIcon
+        />
+      }
+      <div class="modal-form-grid">
+        <nz-form-item>
+          <nz-form-label nzFor="driver-first-name" nzRequired>First name</nz-form-label>
+          <nz-form-control nzErrorTip="First name is required.">
+            <input nz-input id="driver-first-name" [formField]="driverForm.firstName" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="driver-last-name" nzRequired>Last name</nz-form-label>
+          <nz-form-control nzErrorTip="Last name is required.">
+            <input nz-input id="driver-last-name" [formField]="driverForm.lastName" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="driver-email" nzRequired>Email</nz-form-label>
+          <nz-form-control nzErrorTip="Enter a valid email.">
+            <input nz-input id="driver-email" type="email" [formField]="driverForm.email" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="driver-phone">Phone</nz-form-label>
+          <nz-form-control>
+            <input nz-input id="driver-phone" [formField]="driverForm.phone" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="driver-birth-date">Birth date</nz-form-label>
+          <nz-form-control>
+            <input nz-input id="driver-birth-date" type="date" [formField]="driverForm.birthDate" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="driver-password" nzRequired>Temporary password</nz-form-label>
+          <nz-form-control nzErrorTip="Use at least 8 characters.">
+            <input
+              nz-input
+              id="driver-password"
+              type="password"
+              autocomplete="new-password"
+              [formField]="driverForm.password"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzFor="driver-license" nzRequired>License number</nz-form-label>
+        <nz-form-control nzErrorTip="License number is required.">
+          <input nz-input id="driver-license" [formField]="driverForm.licenseNumber" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="modal-actions">
+        <button nz-button type="button" [disabled]="isDriverSaving()" (click)="closeDriverCreate()">
+          Cancel
+        </button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isDriverSaving()">
+          {{ pendingDriverUserId() ? 'Retry driver profile' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="isDispatchAssignmentOpen()"
+  nzTitle="Assign shipment dispatch"
+  [nzFooter]="null"
+  [nzMaskClosable]="!isDispatchAssigning()"
+  [nzClosable]="!isDispatchAssigning()"
+  nzWidth="min(720px, calc(100vw - 24px))"
+  (nzOnCancel)="closeDispatchAssignment()"
+>
+  <ng-container *nzModalContent>
+    <form
+      nz-form
+      nzLayout="vertical"
+      class="modal-form"
+      [formGroup]="dispatchAssignmentForm"
+      (ngSubmit)="submitDispatchAssignment()"
+    >
+      <div class="modal-form-grid">
+        <nz-form-item>
+          <nz-form-label nzFor="dispatch-driver" nzRequired>Driver</nz-form-label>
+          <nz-form-control nzErrorTip="Driver is required.">
+            <nz-select
+              id="dispatch-driver"
+              formControlName="driverId"
+              nzShowSearch
+              [nzLoading]="driversLoading()"
+            >
+              @for (driver of drivers(); track driver.id) {
+                <nz-option [nzValue]="driver.id" [nzLabel]="driverLabel(driver)" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzFor="dispatch-vehicle" nzRequired>Vehicle</nz-form-label>
+          <nz-form-control nzErrorTip="Vehicle is required.">
+            <nz-select
+              id="dispatch-vehicle"
+              formControlName="vehicleId"
+              nzShowSearch
+              [nzLoading]="vehiclesLoading()"
+            >
+              @for (vehicle of vehicles(); track vehicle.id) {
+                <nz-option [nzValue]="vehicle.id" [nzLabel]="vehicleLabel(vehicle)" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzFor="dispatch-route">Route</nz-form-label>
+          <nz-form-control>
+            <input nz-input id="dispatch-route" formControlName="routeName" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzFor="dispatch-origin">Origin warehouse</nz-form-label>
+          <nz-form-control>
+            <input nz-input id="dispatch-origin" formControlName="originWarehouseId" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzFor="dispatch-destination">Destination</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            id="dispatch-destination"
+            formControlName="destinationDescription"
+            rows="3"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-actions">
+        <button
+          nz-button
+          type="button"
+          [disabled]="isDispatchAssigning()"
+          (click)="closeDispatchAssignment()"
+        >
+          Cancel
+        </button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isDispatchAssigning()">
+          Assign
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="isShipmentEventOpen()"
+  [nzTitle]="eventActionLabel()"
+  [nzFooter]="null"
+  [nzMaskClosable]="!isShipmentEventSaving()"
+  [nzClosable]="!isShipmentEventSaving()"
+  nzWidth="min(620px, calc(100vw - 24px))"
+  (nzOnCancel)="closeShipmentEvent()"
+>
+  <ng-container *nzModalContent>
+    <form
+      nz-form
+      nzLayout="vertical"
+      class="modal-form"
+      [formGroup]="shipmentEventForm"
+      (ngSubmit)="submitShipmentEvent()"
+    >
+      <nz-form-item>
+        <nz-form-label nzFor="shipment-event-occurred-at">Occurred at</nz-form-label>
+        <nz-form-control>
+          <input
+            nz-input
+            id="shipment-event-occurred-at"
+            type="datetime-local"
+            formControlName="occurredAt"
+          />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="shipment-event-location">Location</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="shipment-event-location" formControlName="location" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="shipment-event-notes">Notes</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input id="shipment-event-notes" formControlName="notes" rows="3"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-actions">
+        <button
+          nz-button
+          type="button"
+          [disabled]="isShipmentEventSaving()"
+          (click)="closeShipmentEvent()"
+        >
+          Cancel
+        </button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isShipmentEventSaving()">
+          Save
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="isVehicleDetailOpen()"
+  nzTitle="Vehicle detail"
+  [nzFooter]="null"
+  nzWidth="min(620px, calc(100vw - 24px))"
+  (nzOnCancel)="closeVehicleDetail()"
+>
+  <ng-container *nzModalContent>
+    @if (selectedVehicle(); as vehicle) {
+      <nz-descriptions nzBordered [nzColumn]="1">
+        <nz-descriptions-item nzTitle="Plate">{{ text(vehicle.plate) }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Description">{{
+          text(vehicle.description)
+        }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Capacity">{{ text(vehicle.capacity) }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Status">{{ text(vehicle.status) }}</nz-descriptions-item>
+      </nz-descriptions>
+    }
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="isDriverDetailOpen()"
+  nzTitle="Driver detail"
+  [nzFooter]="null"
+  nzWidth="min(620px, calc(100vw - 24px))"
+  (nzOnCancel)="closeDriverDetail()"
+>
+  <ng-container *nzModalContent>
+    @if (selectedDriver(); as driver) {
+      <nz-descriptions nzBordered [nzColumn]="1">
+        <nz-descriptions-item nzTitle="Name">{{ driverLabel(driver) }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="License number">{{
+          text(driver.licenseNumber)
+        }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Phone">{{ driverPhone(driver) }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Email">{{ driverEmail(driver) }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Status">{{ text(driver.status) }}</nz-descriptions-item>
+      </nz-descriptions>
+    }
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="isShipmentDetailOpen()"
+  nzTitle="Shipment detail"
+  [nzFooter]="null"
+  nzWidth="min(860px, calc(100vw - 24px))"
+  nzWrapClassName="shipment-detail-modal"
+  (nzOnCancel)="closeShipmentDetail()"
+>
+  <ng-container *nzModalContent>
+    @if (selectedShipment(); as shipment) {
+      <div class="shipment-detail">
+        <nz-descriptions nzBordered [nzColumn]="1">
+          @for (field of selectedShipmentFields(); track field.label) {
+            <nz-descriptions-item [nzTitle]="field.label">{{ field.value }}</nz-descriptions-item>
+          }
+        </nz-descriptions>
+
+        <section class="detail-section">
+          <h3>Items</h3>
+          <nz-table nzSize="small" [nzData]="shipment.items ?? []" [nzShowPagination]="false">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Product</th>
+                <th>Warehouse</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of shipment.items ?? []; track item.productId + '-' + item.warehouseId) {
+                <tr>
+                  <td>{{ text(item.productSku) }}</td>
+                  <td>{{ text(item.productName) }}</td>
+                  <td>{{ text(item.warehouseId) }}</td>
+                  <td>{{ text(item.quantity) }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </section>
+
+        <section class="detail-section">
+          <h3>Tracking events</h3>
+          <nz-table
+            nzSize="small"
+            [nzData]="shipment.trackingEvents ?? []"
+            [nzShowPagination]="false"
+          >
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Occurred at</th>
+                <th>Location</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (event of shipment.trackingEvents ?? []; track event.id ?? event.occurredAt) {
+                <tr>
+                  <td>{{ text(event.status) }}</td>
+                  <td>{{ formatTimestamp(event.occurredAt) }}</td>
+                  <td>{{ text(event.location) }}</td>
+                  <td>{{ text(event.notes) }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </section>
+      </div>
+    }
+  </ng-container>
+</nz-modal>

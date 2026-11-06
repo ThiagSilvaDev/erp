@@ -1,0 +1,165 @@
+<section class="mx-auto w-full max-w-6xl px-4 py-8">
+  <header class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Memberships</h1>
+      <p class="mt-1 text-sm text-slate-600">
+        Users and their roles in the current tenant. Company is the active tenant.
+      </p>
+    </div>
+    @if (canManageRoles()) {
+      <button nz-button nzType="primary" [disabled]="!availableUserOptions().length" (click)="openCreate()">
+        <nz-icon nzType="plus" />
+        New membership
+      </button>
+    }
+  </header>
+
+  @if (errorMessage()) {
+    <nz-alert class="mb-4" nzType="error" [nzMessage]="errorMessage()" nzShowIcon />
+  }
+
+  <nz-card class="shadow-sm">
+    <nz-table #table [nzData]="memberships()" [nzLoading]="isLoading()" [nzPageSize]="10" nzSize="small">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Status</th>
+          <th>Roles</th>
+          <th>Permissions</th>
+          <th>Authz version</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (membership of table.data; track membership.id) {
+          <tr>
+            <td>{{ userLabel(membership) }}</td>
+            <td>
+              <nz-tag [nzColor]="membership.status === 'ACTIVE' ? 'success' : 'default'">
+                {{ membership.status || '—' }}
+              </nz-tag>
+            </td>
+            <td class="max-w-xs">
+              <div class="flex flex-wrap gap-1">
+                @for (role of membership.roles; track role.id) {
+                  <nz-tag>{{ role.code || role.name || role.id }}</nz-tag>
+                } @empty {
+                  <span class="text-slate-400">—</span>
+                }
+              </div>
+            </td>
+            <td class="max-w-md">
+              @if ((membership.effectivePermissions ?? []).length) {
+                <div class="flex flex-wrap gap-1">
+                  @for (permission of membership.effectivePermissions; track permission) {
+                    <nz-tag>{{ permission }}</nz-tag>
+                  }
+                </div>
+              } @else {
+                <span class="text-slate-400">—</span>
+              }
+            </td>
+            <td>{{ membership.authorizationVersion ?? '—' }}</td>
+            <td class="text-right">
+              @if (canWrite() && canActivate(membership)) {
+                <button
+                  nz-button
+                  nzType="link"
+                  nzSize="small"
+                  [nzLoading]="isActingOn(membership)"
+                  (click)="activate(membership)"
+                >
+                  Activate
+                </button>
+              }
+              @if (canWrite() && canDeactivate(membership)) {
+                <button
+                  nz-button
+                  nzType="link"
+                  nzSize="small"
+                  nzDanger
+                  [nzLoading]="isActingOn(membership)"
+                  (click)="deactivate(membership)"
+                >
+                  Deactivate
+                </button>
+              }
+              @if (canManageRoles()) {
+                <button nz-button nzType="link" nzSize="small" (click)="openReplace(membership)">
+                  Edit roles
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</section>
+
+<nz-modal
+  nzTitle="New membership"
+  [nzVisible]="isCreateOpen()"
+  [nzOkLoading]="isSaving()"
+  nzOkText="Create"
+  (nzOnOk)="submitCreate()"
+  (nzOnCancel)="closeCreate()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="createForm" layout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>User</nz-form-label>
+        <nz-select formControlName="userId" nzShowSearch nzPlaceholder="Select a user" class="w-full">
+          @for (option of availableUserOptions(); track option.value) {
+            <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+          }
+        </nz-select>
+        @if (createForm.controls.userId.invalid && createForm.controls.userId.touched) {
+          <div class="mt-1 text-xs text-red-600">Select a user.</div>
+        }
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>Roles</nz-form-label>
+        <nz-select
+          formControlName="roleIds"
+          nzMode="multiple"
+          nzShowSearch
+          nzPlaceholder="Assign one or more roles"
+          class="w-full"
+        >
+          @for (option of roleOptions(); track option.value) {
+            <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+          }
+        </nz-select>
+        @if (createForm.controls.roleIds.invalid && createForm.controls.roleIds.touched) {
+          <div class="mt-1 text-xs text-red-600">Select at least one role.</div>
+        }
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  nzTitle="Edit membership roles"
+  [nzVisible]="isReplaceOpen()"
+  [nzOkLoading]="isSaving()"
+  nzOkText="Save"
+  (nzOnOk)="submitReplace()"
+  (nzOnCancel)="closeReplace()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="replaceForm" layout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Roles</nz-form-label>
+        <nz-select formControlName="roleIds" nzMode="multiple" nzShowSearch class="w-full">
+          @for (option of roleOptions(); track option.value) {
+            <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+          }
+        </nz-select>
+        @if (replaceForm.controls.roleIds.invalid && replaceForm.controls.roleIds.touched) {
+          <div class="mt-1 text-xs text-red-600">Select at least one role.</div>
+        }
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,134 @@
+<section class="mx-auto w-full max-w-5xl px-4 py-8">
+  <button nz-button nzType="text" type="button" class="!px-0 text-slate-500" (click)="cancel()">
+    <nz-icon nzType="arrow-left" />
+    Back to roles
+  </button>
+
+  <h1 class="mt-2 text-2xl font-semibold text-slate-900">{{ pageTitle() }}</h1>
+  <p class="mt-1 text-sm text-slate-600">
+    Define the role name and toggle the permissions it grants per module.
+  </p>
+
+  @if (!canWrite()) {
+    <nz-alert
+      class="mt-4"
+      nzType="warning"
+      nzShowIcon
+      nzMessage="You do not have permission to save roles"
+      nzDescription="Saving a role requires the iam:role:write permission."
+    />
+  }
+
+  @if (errorMessage()) {
+    <nz-alert class="mt-4" nzType="error" [nzMessage]="errorMessage()" nzShowIcon />
+  }
+
+  <form (ngSubmit)="submit()" novalidate class="mt-6 space-y-6">
+    <nz-card class="shadow-sm">
+      <div class="mb-4 text-sm font-semibold uppercase text-slate-500">Identity</div>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label nz-form-label nzRequired for="role-name">Name</label>
+          <nz-input-group>
+            <input id="role-name" nz-input [formControl]="nameControl" />
+          </nz-input-group>
+          @if (nameControl.invalid && nameControl.touched) {
+            <div class="mt-1 text-xs text-red-600">Name is required.</div>
+          }
+        </div>
+        <div>
+          <label nz-form-label for="role-description">Description</label>
+          <nz-input-group>
+            <input id="role-description" nz-input [formControl]="descriptionControl" />
+          </nz-input-group>
+        </div>
+      </div>
+    </nz-card>
+
+    <nz-card class="shadow-sm">
+      <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div class="text-base font-semibold text-slate-800">Permissions</div>
+          <div class="mt-0.5 text-xs text-slate-500">
+            Enabling a write permission also enables its read; turning off a read turns off its
+            write.
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <input
+            nz-input
+            placeholder="Search permissions"
+            [value]="filter()"
+            (input)="filter.set($any($event.target).value)"
+            class="w-44"
+          />
+        </div>
+      </div>
+
+      @if (isLoading()) {
+        <div class="flex justify-center py-10">
+          <nz-spin nzSimple />
+        </div>
+      } @else if (permissionGroups().length) {
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+          @for (group of permissionGroups(); track group.label) {
+            <div class="rounded-lg border border-slate-200">
+              <div
+                class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-2.5"
+              >
+                <div>
+                  <span class="text-sm font-semibold text-slate-800">{{ group.label }}</span>
+                  <span class="ml-2 text-xs text-slate-400">
+                    {{ selectedCountIn(group) }}/{{ group.options.length }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-400">All</span>
+                  <nz-switch
+                    [ngModel]="isGroupAllSelected(group)"
+                    [ngModelOptions]="{ standalone: true }"
+                    (ngModelChange)="setGroupSelected(group, $event)"
+                    [nzSize]="'small'"
+                  ></nz-switch>
+                </div>
+              </div>
+              <div class="max-h-64 overflow-y-auto px-2 py-1">
+                @for (code of group.options; track code) {
+                  <div class="flex items-center justify-between gap-3 px-2 py-1.5">
+                    <span class="text-sm text-slate-700">{{ code }}</span>
+                    <nz-switch
+                      [ngModel]="isSelected(code)"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="togglePermission(code, $event)"
+                      [nzSize]="'small'"
+                    ></nz-switch>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="py-10 text-center text-sm text-slate-400">No permission codes found.</div>
+      }
+    </nz-card>
+
+    <nz-card class="shadow-sm">
+      <div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
+        <span class="text-sm text-slate-500">{{ selectedCount() }} permission(s) selected</span>
+        <div class="flex gap-3">
+          <button nz-button nzType="default" type="button" (click)="cancel()">Cancel</button>
+          <button
+            nz-button
+            nzType="primary"
+            type="submit"
+            [nzLoading]="isSaving()"
+            [disabled]="!canWrite()"
+          >
+            Save role
+          </button>
+        </div>
+      </div>
+    </nz-card>
+  </form>
+</section>

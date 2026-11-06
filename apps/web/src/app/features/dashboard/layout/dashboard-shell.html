@@ -1,0 +1,110 @@
+<nz-layout class="app-layout">
+  <nz-sider
+    class="menu-sidebar"
+    nzCollapsible
+    nzWidth="248px"
+    nzBreakpoint="md"
+    [nzCollapsed]="state.isCollapsed()"
+    [nzTrigger]="null"
+  >
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      @if (!state.isCollapsed()) {
+        <span class="brand-name">ERP Web</span>
+      }
+    </div>
+
+    <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="state.isCollapsed()">
+      @for (item of primaryItems(); track item.path) {
+        <li nz-menu-item nzMatchRouter>
+          <a [routerLink]="item.path">
+            <nz-icon [nzType]="item.icon" />
+            <span>{{ item.label }}</span>
+          </a>
+        </li>
+      }
+
+      @for (group of submenuGroups(); track group.title) {
+        <li nz-submenu nzOpen [nzTitle]="group.title" [nzIcon]="group.icon">
+          <ul>
+            @for (item of group.items; track item.path) {
+              <li nz-menu-item nzMatchRouter>
+                <a [routerLink]="item.path">{{ item.label }}</a>
+              </li>
+            }
+          </ul>
+        </li>
+      }
+    </ul>
+  </nz-sider>
+
+  <nz-layout class="min-w-0">
+    <nz-header class="app-header">
+      <button
+        nz-button
+        nzType="text"
+        type="button"
+        class="trigger-button"
+        aria-label="Toggle navigation"
+        (click)="toggleSidebar()"
+      >
+        <nz-icon [nzType]="state.isCollapsed() ? 'menu-unfold' : 'menu-fold'" />
+      </button>
+
+      <div class="header-user">
+        <button
+          nz-button
+          nzType="default"
+          type="button"
+          class="company-switch"
+          title="Change company"
+          aria-label="Change company"
+          nz-dropdown
+          [nzDropdownMenu]="companyMenu"
+          nzTrigger="click"
+          nzPlacement="bottomRight"
+        >
+          <nz-icon nzType="apartment" />
+          <span>{{ state.companyLabel() }}</span>
+          <nz-icon nzType="down" class="company-switch-caret" />
+        </button>
+        <nz-dropdown-menu #companyMenu="nzDropdownMenu">
+          <ul nz-menu class="company-menu">
+            @for (company of state.companies(); track state.trackCompany($index, company)) {
+              <li
+                nz-menu-item
+                tabindex="0"
+                [nzSelected]="state.isActiveCompany(company)"
+                [nzDisabled]="state.switchingCompanyId() !== null"
+                (click)="state.switchCompany(company)"
+                (keydown.enter)="state.switchCompany(company)"
+                (keydown.space)="state.switchCompany(company)"
+              >
+                <span class="company-option">
+                  <span class="company-option-name">{{ state.companyName(company) }}</span>
+                  @if (state.isSwitchingCompany(company)) {
+                    <nz-icon nzType="loading" />
+                  } @else if (state.isActiveCompany(company)) {
+                    <nz-icon nzType="check" class="company-option-check" />
+                  }
+                </span>
+              </li>
+            } @empty {
+              <li nz-menu-item nzDisabled>No companies available</li>
+            }
+          </ul>
+        </nz-dropdown-menu>
+        <span class="max-w-48 truncate text-sm text-slate-600 md:max-w-72">
+          {{ state.userLabel() }}
+        </span>
+        <button nz-button nzType="default" type="button" class="shrink-0" (click)="logout()">
+          <span class="hidden sm:inline">Logout</span>
+        </button>
+      </div>
+    </nz-header>
+
+    <nz-content class="app-content">
+      <router-outlet />
+    </nz-content>
+  </nz-layout>
+</nz-layout>
