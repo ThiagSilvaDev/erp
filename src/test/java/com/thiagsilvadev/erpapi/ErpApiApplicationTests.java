@@ -258,12 +258,18 @@ class ErpApiApplicationTests {
         assertThat(page.at("/properties/content/type").asText()).isEqualTo("array");
         assertThat(page.at("/properties/content/items/$ref").asText())
                 .isEqualTo("#/components/schemas/ProductResponse");
-        Set<String> queryParameters = new HashSet<>();
-        products.path("parameters").forEach(parameter -> {
-            assertThat(parameter.path("in").asText()).isEqualTo("query");
-            queryParameters.add(parameter.path("name").asText());
-        });
+        Set<String> queryParameters = queryParameters(products);
         assertThat(queryParameters).contains("page", "size", "sort", "name", "sku");
+
+        assertThat(queryParameters(operation(document, "/api/v1/kpis/executive", "get")))
+                .contains("from", "to", "bucket")
+                .doesNotContain("complete", "ordered", "withinMaximumRange");
+        assertThat(queryParameters(operation(document, "/api/v1/financial/accounting-entries", "get")))
+                .contains("accountId", "from", "to", "page", "size", "sort")
+                .doesNotContain("completeRange", "orderedRange");
+        assertThat(queryParameters(operation(document, "/api/v1/financial/accounting-entries/balances", "get")))
+                .contains("from", "to", "currencyCode")
+                .doesNotContain("orderedRange");
 
         JsonNode companyDelete = operation(document, "/api/v1/platform/companies/{id}", "delete");
         assertThat(companyDelete.at("/responses/204").has("content")).isFalse();
@@ -304,6 +310,15 @@ class ErpApiApplicationTests {
         JsonNode operation = document.path("paths").path(path).path(verb);
         assertThat(operation.isMissingNode()).as("Documented %s %s", verb, path).isFalse();
         return operation;
+    }
+
+    private Set<String> queryParameters(JsonNode operation) {
+        Set<String> parameters = new HashSet<>();
+        operation.path("parameters").forEach(parameter -> {
+            assertThat(parameter.path("in").asText()).isEqualTo("query");
+            parameters.add(parameter.path("name").asText());
+        });
+        return parameters;
     }
 
     @TestConfiguration
