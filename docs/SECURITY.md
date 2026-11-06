@@ -23,9 +23,11 @@ requires a global token and an active platform assignment. Platform access is
 separate from tenant roles; it does not implicitly grant tenant permissions.
 
 The URL filter requires global tokens for context selection and company listing;
-use cases retain their own token checks. Health and the
-OpenAPI document are publicly accessible. Protected workflows additionally use
-method-level permission checks.
+use cases retain their own token checks. Health endpoints and, when enabled in
+the `dev` profile, the OpenAPI document (`/v3/api-docs`) and Swagger UI
+(`/swagger-ui.html`) are publicly accessible (both are disabled by default
+outside development). Protected workflows additionally use method-level
+permission checks.
 
 Sources: [login](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/usecase/LoginUseCase.java),
 [company selection](../src/main/java/com/thiagsilvadev/erpapi/iam/internal/usecase/SelectCompanyUseCase.java),

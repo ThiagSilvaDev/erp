@@ -87,7 +87,7 @@ public class IamSecurityConfiguration {
                         .access(tokenUse("platform"))
                         .requestMatchers("/api/v1/**")
                         .access(tokenUse("scoped"))
-                        .requestMatchers("/v3/api-docs")
+                        .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

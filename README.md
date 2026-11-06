@@ -171,11 +171,15 @@ administration at `/api/v1/platform/companies`.
 
 ## API documentation
 
-With the application running, the OpenAPI document is available at:
+With the application running in the `dev` profile, the OpenAPI document and
+Swagger UI are available at:
 
 ```text
 http://localhost:8080/v3/api-docs
+http://localhost:8080/swagger-ui.html
 ```
+
+OpenAPI and Swagger UI are disabled by default outside development.
 
 The API is rooted at `/api/v1`. Endpoint groups include authentication,
 catalog, companies, company contacts, customers, suppliers, contact persons,

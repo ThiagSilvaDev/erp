@@ -69,7 +69,12 @@ import com.thiagsilvadev.erpapi.user.internal.repository.UserRepository;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-@SpringBootTest(properties = {"erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes"})
+@SpringBootTest(
+        properties = {
+            "erp.iam.jwt.secret=test-secret-for-iam-jwt-signing-must-be-32-bytes",
+            "springdoc.api-docs.enabled=true",
+            "springdoc.swagger-ui.enabled=true"
+        })
 @EnableAutoConfiguration(
         exclude = {
             DataSourceAutoConfiguration.class,
@@ -87,6 +92,15 @@ class ErpApiApplicationTests {
 
     @Test
     void contextLoads() {}
+
+    @Test
+    void shouldExposeSwaggerUiAndConfigWithoutAuthenticationWhenEnabled() throws Exception {
+        mockMvc.perform(get("/v3/api-docs/swagger-config"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.configUrl").value("/v3/api-docs/swagger-config"));
+
+        mockMvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
+    }
 
     @Test
     void shouldExposeCurrentDriverShipmentInOpenApi() throws Exception {
