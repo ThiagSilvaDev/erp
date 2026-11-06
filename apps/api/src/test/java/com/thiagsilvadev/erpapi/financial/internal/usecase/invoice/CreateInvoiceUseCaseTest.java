@@ -1,0 +1,206 @@
+package com.thiagsilvadev.erpapi.financial.internal.usecase.invoice;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberService;
+import com.thiagsilvadev.erpapi.common.domain.numbering.BusinessNumberType;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.company.api.CompanySnapshot;
+import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
+import com.thiagsilvadev.erpapi.company.api.CompanyType;
+import com.thiagsilvadev.erpapi.customer.api.CustomerFacade;
+import com.thiagsilvadev.erpapi.customer.api.CustomerSnapshot;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.CreateInvoiceRequest;
+import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
+import com.thiagsilvadev.erpapi.financial.internal.model.BillingPartyType;
+import com.thiagsilvadev.erpapi.financial.internal.model.Invoice;
+import com.thiagsilvadev.erpapi.financial.internal.repository.FinancialObligationRepository;
+import com.thiagsilvadev.erpapi.financial.internal.repository.InvoiceRepository;
+import com.thiagsilvadev.erpapi.sales.api.*;
+import com.thiagsilvadev.erpapi.sales.api.PaymentMethod;
+
+@ExtendWith(MockitoExtension.class)
+class CreateInvoiceUseCaseTest {
+    private static final UUID TENANT_ID = UUID.randomUUID();
+
+    @Mock
+    private InvoiceRepository invoiceRepository;
+
+    @Mock
+    private FinancialObligationRepository financialObligationRepository;
+
+    @Mock
+    private CustomerFacade customerFacade;
+
+    @Mock
+    private CompanyFacade companyFacade;
+
+    @Mock
+    private SalesFacade salesFacade;
+
+    @Mock
+    private FinancialMapper mapper;
+
+    @Mock
+    private BusinessNumberService businessNumberService;
+
+    @Mock
+    private com.thiagsilvadev.erpapi.financial.internal.service.AccountingPostingService accountingPostingService;
+
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
+
+    @Test
+    void shouldCreateManualCustomerInvoice() {
+        UUID customerId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
+        CreateInvoiceRequest request = request(BillingPartyType.CUSTOMER, customerId, null);
+        when(customerFacade.getCustomer(TENANT_ID, customerId))
+                .thenReturn(new CustomerSnapshot(customerId, "Customer", "123", TENANT_ID));
+        when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(200L);
+        when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase().execute(request);
+
+        ArgumentCaptor<Invoice> invoiceCaptor = ArgumentCaptor.forClass(Invoice.class);
+        verify(invoiceRepository).save(invoiceCaptor.capture());
+        assertThat(invoiceCaptor.getValue().getBillingPartyType()).isEqualTo(BillingPartyType.CUSTOMER);
+        assertThat(invoiceCaptor.getValue().getBillingPartyId()).isEqualTo(customerId);
+    }
+
+    @Test
+    void shouldCreateB2bSalesOrderInvoiceForBuyerCompany() {
+        UUID salesOrderId = UUID.randomUUID();
+        UUID buyerCompanyId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
+        CreateInvoiceRequest request = request(BillingPartyType.COMPANY, buyerCompanyId, salesOrderId);
+        when(companyFacade.getCompany(buyerCompanyId)).thenReturn(company(buyerCompanyId));
+        when(salesFacade.getOrder(TENANT_ID, salesOrderId))
+                .thenReturn(new SalesOrderSnapshot(
+                        salesOrderId,
+                        100L,
+                        SaleType.B2B,
+                        FulfillmentType.PICKUP,
+                        PaymentMethod.PIX,
+                        null,
+                        TENANT_ID,
+                        buyerCompanyId,
+                        null,
+                        SalesOrderStatus.CONFIRMED,
+                        new BigDecimal("20.00"),
+                        "BRL",
+                        Set.of()));
+        when(invoiceRepository.existsByCompanyIdAndSalesOrderId(TENANT_ID, salesOrderId))
+                .thenReturn(false);
+        when(businessNumberService.next(BusinessNumberType.INVOICE)).thenReturn(201L);
+        when(invoiceRepository.save(org.mockito.ArgumentMatchers.any(Invoice.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase().execute(request);
+
+        ArgumentCaptor<Invoice> invoiceCaptor = ArgumentCaptor.forClass(Invoice.class);
+        verify(invoiceRepository).save(invoiceCaptor.capture());
+        assertThat(invoiceCaptor.getValue().getBillingPartyType()).isEqualTo(BillingPartyType.COMPANY);
+        assertThat(invoiceCaptor.getValue().getBillingPartyId()).isEqualTo(buyerCompanyId);
+    }
+
+    @Test
+    void shouldRejectSalesOrderInvoiceWithWrongBillingParty() {
+        UUID salesOrderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
+        CreateInvoiceRequest request = request(BillingPartyType.COMPANY, UUID.randomUUID(), salesOrderId);
+        when(companyFacade.getCompany(request.billingPartyId())).thenReturn(company(request.billingPartyId()));
+        when(salesFacade.getOrder(TENANT_ID, salesOrderId))
+                .thenReturn(new SalesOrderSnapshot(
+                        salesOrderId,
+                        100L,
+                        SaleType.B2C,
+                        FulfillmentType.PICKUP,
+                        PaymentMethod.PIX,
+                        null,
+                        TENANT_ID,
+                        null,
+                        customerId,
+                        SalesOrderStatus.CONFIRMED,
+                        new BigDecimal("20.00"),
+                        "BRL",
+                        Set.of()));
+        CreateInvoiceUseCase useCase = useCase();
+
+        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void shouldReportMissingSalesOrderResourceName() {
+        UUID customerId = UUID.randomUUID();
+        UUID salesOrderId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
+        CreateInvoiceRequest request = request(BillingPartyType.CUSTOMER, customerId, salesOrderId);
+        when(customerFacade.getCustomer(TENANT_ID, customerId))
+                .thenReturn(new CustomerSnapshot(customerId, "Customer", "123", TENANT_ID));
+        when(salesFacade.getOrder(TENANT_ID, salesOrderId))
+                .thenThrow(new ResourceNotFoundException("SalesOrder", salesOrderId));
+        CreateInvoiceUseCase useCase = useCase();
+
+        assertThatThrownBy(() -> useCase.execute(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
+                        .containsEntry("resourceName", "SalesOrder"));
+    }
+
+    @Test
+    void shouldReportMissingCompanyBillingPartyResourceName() {
+        UUID companyId = UUID.randomUUID();
+        TenantContext.setTenantId(TENANT_ID);
+        CreateInvoiceRequest request = request(BillingPartyType.COMPANY, companyId, null);
+        when(companyFacade.getCompany(companyId)).thenThrow(new ResourceNotFoundException("Company", companyId));
+        var useCase = useCase();
+        var exception = catchThrowableOfType(ResourceNotFoundException.class, () -> useCase.execute(request));
+        assertThat(exception).isNotNull();
+        assertThat(exception.getProperties()).containsEntry("resourceName", "Company");
+    }
+
+    private CreateInvoiceUseCase useCase() {
+        return new CreateInvoiceUseCase(
+                invoiceRepository,
+                financialObligationRepository,
+                customerFacade,
+                companyFacade,
+                salesFacade,
+                mapper,
+                businessNumberService,
+                accountingPostingService);
+    }
+
+    private static CreateInvoiceRequest request(
+            BillingPartyType billingPartyType, UUID billingPartyId, UUID salesOrderId) {
+        return new CreateInvoiceRequest(
+                billingPartyType, billingPartyId, salesOrderId, new BigDecimal("20.00"), "BRL", LocalDate.now());
+    }
+
+    private static CompanySnapshot company(UUID id) {
+        return new CompanySnapshot(
+                id, 1L, "Company", "Company", null, CompanyStatus.ACTIVE, CompanyType.CORRESPONDENT, null, null, null);
+    }
+}

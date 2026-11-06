@@ -1,0 +1,46 @@
+meta {
+  name: Create Customer
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Acme Retail Customer",
+    "document": "12345678901",
+    "ownerCompanyId": "{{companyId}}",
+    "contact": {
+      "email": "buyer@customer.example",
+      "phone": "11911112222"
+    },
+    "address": {
+      "postalCode": "01310-100",
+      "street": "Avenida Paulista",
+      "number": "2000",
+      "district": "Bela Vista",
+      "city": "Sao Paulo",
+      "region": "SP",
+      "country": "BR"
+    }
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body?.id) {
+    bru.setEnvVar("customerId", res.body.id);
+  }
+}

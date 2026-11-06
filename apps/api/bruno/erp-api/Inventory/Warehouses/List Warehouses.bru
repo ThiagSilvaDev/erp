@@ -1,0 +1,15 @@
+meta {
+  name: List Warehouses
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/inventory/warehouses
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

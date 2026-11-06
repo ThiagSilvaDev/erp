@@ -1,0 +1,15 @@
+meta {
+  name: List Vehicles
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/logistics/vehicles
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

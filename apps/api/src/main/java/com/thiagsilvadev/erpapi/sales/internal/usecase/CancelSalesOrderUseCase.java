@@ -1,0 +1,53 @@
+package com.thiagsilvadev.erpapi.sales.internal.usecase;
+
+import static com.thiagsilvadev.erpapi.sales.api.SalesPermissions.CANCEL;
+
+import java.util.UUID;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
+import com.thiagsilvadev.erpapi.inventory.api.InventoryFacade;
+import com.thiagsilvadev.erpapi.sales.api.SalesOrderStatus;
+import com.thiagsilvadev.erpapi.sales.internal.dto.SalesOrderResponse;
+import com.thiagsilvadev.erpapi.sales.internal.event.SalesOrderEventPublisher;
+import com.thiagsilvadev.erpapi.sales.internal.model.SalesOrder;
+import com.thiagsilvadev.erpapi.sales.internal.repository.SalesOrderRepository;
+
+@Component
+public class CancelSalesOrderUseCase {
+
+    private final SalesOrderRepository orderRepository;
+    private final InventoryFacade inventoryFacade;
+    private final SalesOrderEventPublisher eventPublisher;
+    private final SalesOrderResponseAssembler responseAssembler;
+
+    public CancelSalesOrderUseCase(
+            SalesOrderRepository orderRepository,
+            InventoryFacade inventoryFacade,
+            SalesOrderEventPublisher eventPublisher,
+            SalesOrderResponseAssembler responseAssembler) {
+        this.orderRepository = orderRepository;
+        this.inventoryFacade = inventoryFacade;
+        this.eventPublisher = eventPublisher;
+        this.responseAssembler = responseAssembler;
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('" + CANCEL + "')")
+    public SalesOrderResponse execute(UUID id) {
+        var sellerCompanyId = TenantContext.requireTenantId();
+        SalesOrder order = orderRepository
+                .findByIdAndSellerCompanyId(id, sellerCompanyId)
+                .orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
+        if (order.getStatus() == SalesOrderStatus.CONFIRMED) {
+            eventPublisher.salesOrderCancelled(order);
+            inventoryFacade.releaseReservationsForSalesOrder(sellerCompanyId, order.getId());
+        }
+        order.cancel();
+        return responseAssembler.toResponse(order);
+    }
+}

@@ -1,0 +1,25 @@
+meta {
+  name: List Users - Filtered
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+params:query {
+  email: maria.silva@acme.example
+  name: Maria
+  role: MANAGER
+  status: ACTIVE
+  companyId: {{companyId}}
+  page: 0
+  size: 20
+}

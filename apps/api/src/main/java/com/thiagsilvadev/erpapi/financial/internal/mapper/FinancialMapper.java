@@ -1,0 +1,30 @@
+package com.thiagsilvadev.erpapi.financial.internal.mapper;
+
+import org.mapstruct.Mapper;
+
+import com.thiagsilvadev.erpapi.financial.internal.dto.account.FinancialAccountResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.accountingaccount.AccountingAccountResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.accountingentry.AccountingEntryResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.cashmovement.CashMovementResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.financialobligation.FinancialObligationResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
+import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
+import com.thiagsilvadev.erpapi.financial.internal.model.*;
+
+@Mapper(componentModel = "spring")
+public interface FinancialMapper {
+
+    InvoiceResponse toResponse(Invoice invoice);
+
+    PaymentResponse toResponse(Payment payment);
+
+    FinancialObligationResponse toResponse(FinancialObligation financialObligation);
+
+    FinancialAccountResponse toResponse(FinancialAccount account);
+
+    CashMovementResponse toResponse(CashMovement cashMovement);
+
+    AccountingAccountResponse toResponse(AccountingAccount account);
+
+    AccountingEntryResponse toResponse(AccountingEntry entry);
+}

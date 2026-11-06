@@ -1,0 +1,46 @@
+package com.thiagsilvadev.erpapi.financial.internal.usecase.payment;
+
+import static com.thiagsilvadev.erpapi.financial.api.FinancialPermissions.READ;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
+import com.thiagsilvadev.erpapi.financial.internal.dto.payment.PaymentResponse;
+import com.thiagsilvadev.erpapi.financial.internal.mapper.FinancialMapper;
+import com.thiagsilvadev.erpapi.financial.internal.model.Payment;
+import com.thiagsilvadev.erpapi.financial.internal.repository.PaymentRepository;
+
+@Component
+public class PaymentQueryUseCase {
+
+    private final PaymentRepository paymentRepository;
+    private final FinancialMapper mapper;
+
+    public PaymentQueryUseCase(PaymentRepository paymentRepository, FinancialMapper mapper) {
+        this.paymentRepository = paymentRepository;
+        this.mapper = mapper;
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('" + READ + "')")
+    public PaymentResponse getById(UUID id) {
+        var companyId = TenantContext.requireTenantId();
+        return mapper.toResponse(paymentRepository
+                .findByIdAndCompanyId(id, companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(Payment.class, id)));
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('" + READ + "')")
+    public Page<PaymentResponse> list(Pageable pageable) {
+        var companyId = TenantContext.requireTenantId();
+        return paymentRepository.findAllByCompanyId(companyId, pageable).map(mapper::toResponse);
+    }
+}

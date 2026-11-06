@@ -1,0 +1,24 @@
+meta {
+  name: List Products - Filtered
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/catalog/products
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+params:query {
+  sku: SKU-001
+  name: widget
+  categoryId: {{categoryId}}
+  status: ACTIVE
+  page: 0
+  size: 20
+}

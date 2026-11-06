@@ -1,0 +1,63 @@
+package com.thiagsilvadev.erpapi.company.internal.repository;
+
+import java.util.Locale;
+
+import org.springframework.data.jpa.domain.Specification;
+
+import com.thiagsilvadev.erpapi.company.api.CompanyStatus;
+import com.thiagsilvadev.erpapi.company.api.CompanyType;
+import com.thiagsilvadev.erpapi.company.internal.dto.CompanySearchCriteria;
+import com.thiagsilvadev.erpapi.company.internal.model.Company;
+
+public class CompanySpecification {
+
+    private CompanySpecification() {}
+
+    public static Specification<Company> withCriteria(CompanySearchCriteria criteria) {
+        return Specification.allOf(
+                hasType(criteria.type()),
+                hasStatus(criteria.status()),
+                hasCnpj(criteria.cnpj()),
+                hasNameLike(criteria.name()));
+    }
+
+    private static Specification<Company> hasType(CompanyType type) {
+        return (root, query, cb) -> type == null ? null : cb.equal(root.get("type"), type);
+    }
+
+    private static Specification<Company> hasStatus(CompanyStatus status) {
+        return (root, query, cb) -> status == null ? null : cb.equal(root.get("status"), status);
+    }
+
+    private static Specification<Company> hasCnpj(String cnpjStr) {
+        return (root, query, cb) -> {
+            if (cnpjStr == null || cnpjStr.isBlank()) {
+                return null;
+            }
+
+            String digits = cnpjStr.replaceAll("\\D", "");
+
+            if (digits.isBlank()) {
+                return cb.disjunction();
+            }
+
+            return cb.like(root.get("cnpj").get("number"), digits + "%", '\\');
+        };
+    }
+
+    private static Specification<Company> hasNameLike(String name) {
+        return (root, query, cb) -> {
+            if (name == null || name.isBlank()) {
+                return null;
+            }
+            String pattern = "%" + escapeLike(name.trim().toLowerCase(Locale.ROOT)) + "%";
+            return cb.or(
+                    cb.like(cb.lower(root.get("legalName")), pattern, '\\'),
+                    cb.like(cb.lower(root.get("tradeName")), pattern, '\\'));
+        };
+    }
+
+    private static String escapeLike(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+}

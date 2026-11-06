@@ -1,0 +1,141 @@
+package com.thiagsilvadev.erpapi.customer.internal.usecase;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
+
+import com.thiagsilvadev.erpapi.common.domain.exception.ConflictException;
+import com.thiagsilvadev.erpapi.common.domain.exception.ResourceNotFoundException;
+import com.thiagsilvadev.erpapi.common.domain.model.Contact;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Address;
+import com.thiagsilvadev.erpapi.common.domain.model.address.Country;
+import com.thiagsilvadev.erpapi.common.tenant.TenantContext;
+import com.thiagsilvadev.erpapi.company.api.CompanyFacade;
+import com.thiagsilvadev.erpapi.customer.internal.dto.CreateCustomerRequest;
+import com.thiagsilvadev.erpapi.customer.internal.mapper.CustomerMapper;
+import com.thiagsilvadev.erpapi.customer.internal.model.Customer;
+import com.thiagsilvadev.erpapi.customer.internal.repository.CustomerRepository;
+
+@ExtendWith(MockitoExtension.class)
+class CreateCustomerUseCaseTest {
+    private static final UUID TENANT_ID = UUID.randomUUID();
+
+    @Mock
+    private CustomerRepository customerRepository;
+
+    @Mock
+    private CompanyFacade companyFacade;
+
+    @Mock
+    private CustomerMapper mapper;
+
+    @AfterEach
+    void tearDown() {
+        TenantContext.clear();
+    }
+
+    @Test
+    void shouldRejectMissingCompany() {
+        CreateCustomerRequest request = customerRequest();
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.getCompany(TENANT_ID)).thenThrow(new ResourceNotFoundException("Company", TENANT_ID));
+
+        CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
+
+        assertThatThrownBy(() -> useCase.execute(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(exception -> assertThat(((ResourceNotFoundException) exception).getProperties())
+                        .containsEntry("resourceName", "Company"));
+
+        verify(customerRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void shouldRejectDuplicatedDocument() {
+        CreateCustomerRequest request = customerRequest();
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.getCompany(TENANT_ID)).thenReturn(org.mockito.Mockito.mock());
+        when(customerRepository.existsByOwnerCompanyIdAndDocument(TENANT_ID, "12345678900"))
+                .thenReturn(true);
+
+        CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
+
+        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ConflictException.class);
+
+        verify(customerRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void shouldCreateCustomer() {
+        CreateCustomerRequest request = customerRequest();
+        Contact contact = Contact.create("customer@example.com", "11912345678");
+        Address address = address();
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.getCompany(TENANT_ID)).thenReturn(org.mockito.Mockito.mock());
+        when(customerRepository.existsByOwnerCompanyIdAndDocument(TENANT_ID, "12345678900"))
+                .thenReturn(false);
+        when(mapper.toContact(request.contact())).thenReturn(contact);
+        when(mapper.toAddress(request.address())).thenReturn(address);
+        when(customerRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Customer.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
+
+        useCase.execute(request);
+
+        ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
+        verify(customerRepository).saveAndFlush(customerCaptor.capture());
+        assertThat(customerCaptor.getValue().getOwnerCompanyId()).isEqualTo(TENANT_ID);
+    }
+
+    @Test
+    void shouldTranslateDuplicateDocumentRace() {
+        CreateCustomerRequest request = customerRequest();
+        TenantContext.setTenantId(TENANT_ID);
+        when(companyFacade.getCompany(TENANT_ID)).thenReturn(org.mockito.Mockito.mock());
+        when(customerRepository.existsByOwnerCompanyIdAndDocument(TENANT_ID, "12345678900"))
+                .thenReturn(false);
+        when(mapper.toContact(request.contact())).thenReturn(Contact.create("customer@example.com", "11912345678"));
+        when(mapper.toAddress(request.address())).thenReturn(address());
+        when(customerRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Customer.class)))
+                .thenThrow(new DataIntegrityViolationException("uk_customer_document"));
+
+        CreateCustomerUseCase useCase = new CreateCustomerUseCase(customerRepository, companyFacade, mapper);
+
+        assertThatThrownBy(() -> useCase.execute(request)).isInstanceOf(ConflictException.class);
+    }
+
+    private static CreateCustomerRequest customerRequest() {
+        return new CreateCustomerRequest(
+                "Customer",
+                "123.456.789-00",
+                new com.thiagsilvadev.erpapi.customer.internal.dto.ContactRequest(
+                        "customer@example.com", "11912345678"),
+                new com.thiagsilvadev.erpapi.customer.internal.dto.AddressRequest(
+                        "01001000", "Street", "10", null, "District", "City", "SP", "BR"));
+    }
+
+    private static Address address() {
+        return Address.builder()
+                .postalCode("01001000")
+                .street("Street")
+                .number("10")
+                .district("District")
+                .city("City")
+                .region("SP")
+                .country(Country.BR)
+                .build();
+    }
+}

@@ -1,0 +1,43 @@
+meta {
+  name: Create Sales Order
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/sales/orders
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "saleType": "B2C",
+    "fulfillmentType": "DELIVERY",
+    "deliveryRoute": {
+      "routeName": "Standard Route 1",
+      "originWarehouseId": "{{warehouseId}}",
+      "destinationDescription": "Customer Address 123"
+    },
+    "sellerCompanyId": "{{companyId}}",
+    "buyerCompanyId": null,
+    "customerId": "{{customerId}}",
+    "items": [
+      { "productId": "{{productId}}", "warehouseId": "{{warehouseId}}", "quantity": 2 }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body?.id) {
+    bru.setEnvVar("salesOrderId", res.body.id);
+  }
+}
