@@ -15,7 +15,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.CreateInvoiceRequest;
 import com.thiagsilvadev.erpapi.financial.internal.dto.invoice.InvoiceResponse;
@@ -28,7 +32,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping(value = "/api/v1/financial/invoices", produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "financial invoices")
+@Tag(name = "financial-invoices")
 interface InvoiceApi {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)

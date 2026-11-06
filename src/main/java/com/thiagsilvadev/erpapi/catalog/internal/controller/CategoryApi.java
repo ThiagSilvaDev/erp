@@ -34,9 +34,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value = "/api/v1/catalog/categories", produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "catalog")
-public interface CategoryApi {
+interface CategoryApi {
 
-    @PostMapping(consumes = "application/json")
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createCategory")
     @ApiResponse(responseCode = "201", description = "Category created")
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)

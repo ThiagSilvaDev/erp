@@ -39,9 +39,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value = "/api/v1/platform/companies", produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "companies")
-public interface CompanyApi {
+interface CompanyApi {
 
-    @PostMapping(consumes = "application/json")
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createCompany")
     @ApiResponse(responseCode = "201", description = "Company created")
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
@@ -60,7 +60,7 @@ public interface CompanyApi {
     @ApiResponse(responseCode = "404", ref = NOT_FOUND)
     CompanyResponse getById(@PathVariable UUID id);
 
-    @PutMapping(value = "/{id}", consumes = "application/json")
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateCompany")
     @ApiResponse(responseCode = "200", description = "Company updated")
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)

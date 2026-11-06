@@ -47,6 +47,12 @@ class SourceConventionsTest {
                 .filter(path -> path.getFileName().toString().endsWith("Api.java"))
                 .forEach(path -> {
                     String source = read(path);
+                    assertThat(source)
+                            .as("Package-private API interface in %s", path)
+                            .doesNotContain("public interface ");
+                    assertThat(source)
+                            .as("Interface-level JSON produces in %s", path)
+                            .containsPattern("@RequestMapping\\([^)]*produces = MediaType\\.APPLICATION_JSON_VALUE");
                     assertThat(source).as("Individual responses in %s", path).doesNotContain("@ApiResponses");
                     String declaration = source.substring(source.indexOf("interface "));
                     for (String method : declaration.split(";")) {
@@ -54,6 +60,15 @@ class SourceConventionsTest {
                             assertThat(method)
                                     .as("Documented responses in %s", path)
                                     .contains("@ApiResponse(");
+                            if (method.contains("@RequestBody")) {
+                                assertThat(method)
+                                        .as("JSON consumes on @RequestBody method in %s", path)
+                                        .contains("consumes = MediaType.APPLICATION_JSON_VALUE");
+                            } else {
+                                assertThat(method)
+                                        .as("No consumes on bodyless method in %s", path)
+                                        .doesNotContain("consumes");
+                            }
                         }
                     }
                     errorResponse.matcher(source).results().forEach(match -> assertThat(match.group())

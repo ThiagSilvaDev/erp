@@ -30,16 +30,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping(value = "/api/v1/auth", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "authentication")
-public interface AuthApi {
+interface AuthApi {
 
-    @PostMapping(value = "/login", consumes = "application/json")
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "authenticateUserAndIssueToken")
     @ApiResponse(responseCode = "200", description = "Authenticated and tokens issued")
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
     @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
     LoginResponse login(@Valid @RequestBody LoginRequest request);
 
-    @PostMapping(value = "/select-company", consumes = "application/json")
+    @PostMapping(value = "/select-company", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             operationId = "selectActiveCompanyAndIssueScopedToken",
             description = "Requires a global bearer token (token_use=global).")

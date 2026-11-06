@@ -84,24 +84,24 @@ public class OpenApiConfiguration {
                                 .description("Inventory and stock management; requires a scoped token"),
                         new Tag().name("sales").description("Sales order management; requires a scoped token"),
                         new Tag()
-                                .name("financial accounting accounts")
+                                .name("financial-accounting-accounts")
                                 .description("Accounting account management; requires a scoped token"),
                         new Tag()
-                                .name("financial accounting entries")
+                                .name("financial-accounting-entries")
                                 .description("Accounting postings and balances; requires a scoped token"),
                         new Tag()
-                                .name("financial accounts")
+                                .name("financial-accounts")
                                 .description("Financial accounts and cash movements; requires a scoped token"),
-                        new Tag().name("financial invoices").description("Invoice management; requires a scoped token"),
+                        new Tag().name("financial-invoices").description("Invoice management; requires a scoped token"),
                         new Tag()
-                                .name("financial obligations")
+                                .name("financial-obligations")
                                 .description("Receivables and payables; requires a scoped token"),
-                        new Tag().name("financial payments").description("Payment management; requires a scoped token"),
+                        new Tag().name("financial-payments").description("Payment management; requires a scoped token"),
                         new Tag()
                                 .name("logistics")
                                 .description("Driver, vehicle and shipment management; requires a scoped token"),
                         new Tag()
-                                .name("driver mobile")
+                                .name("driver-mobile")
                                 .description("Assigned driver workflows; requires a scoped token"),
                         new Tag().name("iam").description("Tenant roles and memberships; requires a scoped token"),
                         new Tag().name("kpis").description("Executive KPIs; requires a scoped token")));

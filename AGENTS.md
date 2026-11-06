@@ -159,6 +159,16 @@ Never:
 - access repositories
 - coordinate workflows
 
+Conventions:
+
+- Keep `*Api` OpenAPI contract interfaces and `*Controller` classes package-private inside `internal/controller`.
+- Use kebab-case (or a single lowercase word) for OpenAPI `@Tag` names.
+- MediaType conventions on `*Api` interfaces:
+  - Use `produces = MediaType.APPLICATION_JSON_VALUE` at the interface-level `@RequestMapping` when all endpoints return JSON.
+  - Use `consumes = MediaType.APPLICATION_JSON_VALUE` on methods that accept JSON request bodies.
+  - Omit `consumes` on methods without a request body.
+  - Explicitly declare specific media types for upload, download, or other exceptional endpoints.
+
 ---
 
 ## Use Cases

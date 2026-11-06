@@ -109,7 +109,7 @@ class ErpApiApplicationTests {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(path + "['operationId']").value("getCurrentDriverShipment"))
-                .andExpect(jsonPath(path + "['tags'][0]").value("driver mobile"))
+                .andExpect(jsonPath(path + "['tags'][0]").value("driver-mobile"))
                 .andExpect(jsonPath(path + "['responses']['200']").exists())
                 .andExpect(jsonPath(path + "['responses']['401']").exists())
                 .andExpect(jsonPath(path + "['responses']['403']").exists())
@@ -166,8 +166,10 @@ class ErpApiApplicationTests {
         Set<String> declaredTags = new HashSet<>();
         Set<String> usedTags = new HashSet<>();
         document.path("tags").forEach(tag -> {
+            String tagName = tag.path("name").asText();
+            assertThat(tagName).matches("^[a-z0-9]+(-[a-z0-9]+)*$");
             assertThat(tag.path("description").asText()).isNotBlank();
-            assertThat(declaredTags.add(tag.path("name").asText())).isTrue();
+            assertThat(declaredTags.add(tagName)).isTrue();
         });
         int operations = 0;
         for (var path : document.path("paths").properties()) {

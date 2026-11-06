@@ -37,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping(value = "/api/v1/iam", produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "iam")
-public interface TenantAccessApi {
+interface TenantAccessApi {
 
     @GetMapping("/roles")
     @Operation(operationId = "listTenantRoles")
@@ -46,7 +46,7 @@ public interface TenantAccessApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     List<TenantRoleResponse> listRoles();
 
-    @PostMapping(value = "/roles", consumes = "application/json")
+    @PostMapping(value = "/roles", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createTenantRole")
     @ApiResponse(responseCode = "201", description = "Tenant role created")
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
@@ -54,7 +54,7 @@ public interface TenantAccessApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     ResponseEntity<TenantRoleResponse> createRole(@Valid @RequestBody CreateTenantRoleRequest request);
 
-    @PutMapping(value = "/roles/{roleId}", consumes = "application/json")
+    @PutMapping(value = "/roles/{roleId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateTenantRole")
     @ApiResponse(responseCode = "200", description = "Tenant role updated")
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
@@ -74,7 +74,7 @@ public interface TenantAccessApi {
     @ApiResponse(responseCode = "409", ref = CONFLICT)
     ResponseEntity<Void> deleteRole(@PathVariable UUID roleId);
 
-    @PostMapping(value = "/memberships", consumes = "application/json")
+    @PostMapping(value = "/memberships", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createTenantMembership")
     @ApiResponse(responseCode = "201", description = "Tenant membership created")
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
@@ -91,7 +91,7 @@ public interface TenantAccessApi {
     @ApiResponse(responseCode = "403", ref = FORBIDDEN)
     List<TenantMembershipResponse> listMemberships();
 
-    @PutMapping(value = "/memberships/{membershipId}/roles", consumes = "application/json")
+    @PutMapping(value = "/memberships/{membershipId}/roles", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "replaceTenantMembershipRoles")
     @ApiResponse(responseCode = "200", description = "Membership roles replaced")
     @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
