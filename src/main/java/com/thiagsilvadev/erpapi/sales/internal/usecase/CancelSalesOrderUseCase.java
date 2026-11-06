@@ -45,9 +45,9 @@ public class CancelSalesOrderUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(SalesOrder.class, id));
         if (order.getStatus() == SalesOrderStatus.CONFIRMED) {
             eventPublisher.salesOrderCancelled(order);
+            inventoryFacade.releaseReservationsForSalesOrder(sellerCompanyId, order.getId());
         }
         order.cancel();
-        inventoryFacade.releaseReservationsForSalesOrder(sellerCompanyId, order.getId());
         return responseAssembler.toResponse(order);
     }
 }

@@ -2,10 +2,13 @@ package com.thiagsilvadev.erpapi.sales.internal.usecase;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -56,13 +59,12 @@ class SalesOrderTenantScopeUseCaseTest {
         UUID tenantId = UUID.randomUUID();
         TenantContext.setTenantId(tenantId);
         var pageable = PageRequest.of(0, 20);
-        when(orderRepository.findAll(any(Specification.class), org.mockito.ArgumentMatchers.eq(pageable)))
-                .thenReturn(new PageImpl<>(java.util.List.of()));
+        when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(new PageImpl<>(List.of()));
 
         new SalesOrderQueryUseCase(orderRepository, responseAssembler)
                 .list(new SalesOrderSearchCriteria(null, null, null, null, null), pageable);
 
-        verify(orderRepository).findAll(any(Specification.class), org.mockito.ArgumentMatchers.eq(pageable));
+        verify(orderRepository).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
@@ -118,6 +120,36 @@ class SalesOrderTenantScopeUseCaseTest {
         verify(orderRepository).findByIdAndSellerCompanyId(orderId, tenantId);
     }
 
+    @Test
+    void shouldNotReleaseReservationsWhenCancellingDraftOrder() {
+        UUID tenantId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        TenantContext.setTenantId(tenantId);
+        when(orderRepository.findByIdAndSellerCompanyId(orderId, tenantId)).thenReturn(Optional.of(order(tenantId)));
+
+        new CancelSalesOrderUseCase(orderRepository, inventoryFacade, eventPublisher, responseAssembler)
+                .execute(orderId);
+
+        verify(inventoryFacade, never()).releaseReservationsForSalesOrder(any(), any());
+        verify(eventPublisher, never()).salesOrderCancelled(any());
+    }
+
+    @Test
+    void shouldReleaseReservationsWhenCancellingConfirmedOrder() {
+        UUID tenantId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        TenantContext.setTenantId(tenantId);
+        SalesOrder order = order(tenantId);
+        order.confirm();
+        when(orderRepository.findByIdAndSellerCompanyId(orderId, tenantId)).thenReturn(Optional.of(order));
+
+        new CancelSalesOrderUseCase(orderRepository, inventoryFacade, eventPublisher, responseAssembler)
+                .execute(orderId);
+
+        verify(inventoryFacade).releaseReservationsForSalesOrder(tenantId, order.getId());
+        verify(eventPublisher).salesOrderCancelled(order);
+    }
+
     private static SalesOrder order(UUID sellerCompanyId) {
         return SalesOrder.createB2C(
                 100L,
@@ -132,6 +164,6 @@ class SalesOrderTenantScopeUseCaseTest {
                         "SKU-001",
                         "Product",
                         1,
-                        Money.of(java.math.BigDecimal.TEN, "BRL"))));
+                        Money.of(BigDecimal.TEN, "BRL"))));
     }
 }
