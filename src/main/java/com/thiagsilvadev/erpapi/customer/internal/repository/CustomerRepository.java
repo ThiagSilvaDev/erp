@@ -1,5 +1,7 @@
 package com.thiagsilvadev.erpapi.customer.internal.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +19,8 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID>, JpaSp
     Optional<Customer> findByDocument(String document);
 
     Optional<Customer> findByIdAndOwnerCompanyId(UUID id, UUID ownerCompanyId);
+
+    List<Customer> findAllByOwnerCompanyIdAndIdIn(UUID ownerCompanyId, Collection<UUID> ids);
 
     Optional<Customer> findByOwnerCompanyIdAndDocument(UUID ownerCompanyId, String document);
 }

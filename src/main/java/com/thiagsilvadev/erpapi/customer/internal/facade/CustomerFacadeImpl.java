@@ -1,5 +1,8 @@
 package com.thiagsilvadev.erpapi.customer.internal.facade;
 
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -30,6 +33,23 @@ public class CustomerFacadeImpl implements CustomerFacade {
                 .findByIdAndOwnerCompanyId(customerId, ownerCompanyId)
                 .map(customerMapper::toSnapshot)
                 .orElseThrow(() -> new ResourceNotFoundException(Customer.class, customerId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerSnapshot> getCustomers(UUID ownerCompanyId, Set<UUID> customerIds) {
+        if (customerIds == null || customerIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Customer> customers = customerRepository.findAllByOwnerCompanyIdAndIdIn(ownerCompanyId, customerIds);
+        Set<UUID> missingIds = new TreeSet<>(customerIds);
+        customers.forEach(customer -> missingIds.remove(customer.getId()));
+        if (!missingIds.isEmpty()) {
+            throw new ResourceNotFoundException(Customer.class, missingIds);
+        }
+
+        return customers.stream().map(customerMapper::toSnapshot).toList();
     }
 
     @Override
