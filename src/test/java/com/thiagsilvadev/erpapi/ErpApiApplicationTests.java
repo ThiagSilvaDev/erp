@@ -287,6 +287,33 @@ class ErpApiApplicationTests {
                 .contains("from", "to", "currencyCode")
                 .doesNotContain("orderedRange");
 
+        assertThat(document.at("/components/schemas/MoneyRequest/properties/currencyCode/description")
+                        .asText())
+                .contains("ISO 4217");
+        assertThat(document.at("/components/schemas/MoneyRequest/properties/currencyCode/example")
+                        .asText())
+                .isEqualTo("BRL");
+        assertThat(document.at("/components/schemas/CreateCompanyRequest/properties/cnpj/description")
+                        .asText())
+                .contains("14-digit Brazilian CNPJ");
+        assertThat(document.at("/components/schemas/CreateCompanyRequest/properties/cnpj/example")
+                        .asText())
+                .isEqualTo("11222333000181");
+        assertThat(document.at("/components/schemas/CreateVehicleRequest/properties/plate/description")
+                        .asText())
+                .contains("Mercosul vehicle license plate");
+        assertThat(document.at("/components/schemas/CreateVehicleRequest/properties/plate/example")
+                        .asText())
+                .isEqualTo("ABC1D23");
+        JsonNode kpiExecutive = operation(document, "/api/v1/kpis/executive", "get");
+        Map<String, String> kpiParamDescriptions = new HashMap<>();
+        kpiExecutive
+                .path("parameters")
+                .forEach(p -> kpiParamDescriptions.put(
+                        p.path("name").asText(), p.path("description").asText()));
+        assertThat(kpiParamDescriptions.get("from")).contains("Inclusive UTC date");
+        assertThat(kpiParamDescriptions.get("bucket")).contains("defaults to DAY when omitted");
+
         JsonNode companyDelete = operation(document, "/api/v1/platform/companies/{id}", "delete");
         assertThat(companyDelete.at("/responses/204").has("content")).isFalse();
         JsonNode roleDelete = operation(document, "/api/v1/iam/roles/{roleId}", "delete");

@@ -2,4 +2,11 @@ package com.thiagsilvadev.erpapi.inventory.internal.dto.warehouse;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record CreateWarehouseRequest(@NotBlank String code, @NotBlank String name) {}
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record CreateWarehouseRequest(
+        @NotBlank @Schema(
+                        description = "Warehouse code, trimmed and normalized to uppercase (max 40 characters)",
+                        example = "WH-SP-01")
+                String code,
+        @NotBlank String name) {}

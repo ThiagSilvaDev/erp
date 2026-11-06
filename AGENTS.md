@@ -409,6 +409,16 @@ Never use `Objects.requireNonNull` in `internal/model` packages.
 which cannot own module error codes. Aggregates that own an error-code contract use the `DomainErrorCode`
 overloads instead.
 
+### OpenAPI `@Schema` on DTOs
+
+Rely on Bean Validation annotations (`@NotNull`, `@NotBlank`, `@Size`, `@Email`, `@Positive`, `@PositiveOrZero`)
+for standard structural constraints; do not duplicate them in `@Schema`.
+
+Carry `@Schema` (`description`, `example`, or `pattern`) on DTO fields that have non-obvious domain formats,
+normalization rules, auto-generation/default behavior when omitted, or conditional cross-field requirements
+(such as tax IDs/CNPJ, ISO 4217 currency codes, phone numbers, postal codes/regions/countries, Mercosul
+vehicle plates, permission keys, and date-range/sale-type rules).
+
 ### Authorization expressions
 
 Guard use cases with permission constants, never with SpEL type references:

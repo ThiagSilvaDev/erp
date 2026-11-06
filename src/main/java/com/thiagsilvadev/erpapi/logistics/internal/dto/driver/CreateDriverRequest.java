@@ -5,4 +5,11 @@ import java.util.UUID;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record CreateDriverRequest(@NotNull UUID userId, @NotBlank String licenseNumber) {}
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record CreateDriverRequest(
+        @NotNull UUID userId,
+        @NotBlank @Schema(
+                        description = "Driver license number, trimmed and normalized to uppercase (max 60 characters)",
+                        example = "12345678900")
+                String licenseNumber) {}

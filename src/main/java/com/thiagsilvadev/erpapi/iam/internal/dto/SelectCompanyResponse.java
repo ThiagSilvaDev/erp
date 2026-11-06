@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public record SelectCompanyResponse(
-        String accessToken,
+        @Schema(description = "Signed JWT bearer token (token_use=global|scoped|platform)") String accessToken,
         String tokenType,
-        long expiresIn,
+        @Schema(description = "Token lifetime in seconds", example = "3600") long expiresIn,
         UUID activeCompanyId,
         List<AuthRoleResponse> roles,
         Set<String> effectivePermissions) {
