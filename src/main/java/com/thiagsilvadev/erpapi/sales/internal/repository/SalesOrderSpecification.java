@@ -13,15 +13,16 @@ public class SalesOrderSpecification {
 
     public static Specification<SalesOrder> withCriteria(SalesOrderSearchCriteria criteria) {
         Specification<SalesOrder> saleType = (root, query, cb) ->
-                criteria.saleType() == null ? null : cb.equal(root.get("saleType"), criteria.saleType());
+                criteria.saleType() == null ? null : cb.equal(root.get("buyer").get("saleType"), criteria.saleType());
         Specification<SalesOrder> seller = (root, query, cb) -> criteria.sellerCompanyId() == null
                 ? null
                 : cb.equal(root.get("sellerCompanyId"), criteria.sellerCompanyId());
         Specification<SalesOrder> buyer = (root, query, cb) -> criteria.buyerCompanyId() == null
                 ? null
-                : cb.equal(root.get("buyerCompanyId"), criteria.buyerCompanyId());
-        Specification<SalesOrder> customer = (root, query, cb) ->
-                criteria.customerId() == null ? null : cb.equal(root.get("customerId"), criteria.customerId());
+                : cb.equal(root.get("buyer").get("buyerCompanyId"), criteria.buyerCompanyId());
+        Specification<SalesOrder> customer = (root, query, cb) -> criteria.customerId() == null
+                ? null
+                : cb.equal(root.get("buyer").get("customerId"), criteria.customerId());
         Specification<SalesOrder> status =
                 (root, query, cb) -> criteria.status() == null ? null : cb.equal(root.get("status"), criteria.status());
         return Specification.allOf(saleType, seller, buyer, customer, status);
